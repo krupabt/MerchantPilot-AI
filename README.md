@@ -12,6 +12,10 @@
 2. **Autonomous Merchant Revenue Growth:** Equips merchants with an active AI Commerce Agent powered by statistical Market Basket Intelligence (Apriori / Lift mining) to discover high-affinity accessory cross-sells, generate bounded dynamic bundle offers, and lift Average Order Value (AOV).
 3. **Enterprise Security & Policy Guardrails:** Strictly enforces a **Non-Trust AI Boundary**. The LLM never controls money directly. Every proposed discount passes through a deterministic server-side Policy Engine and Human-in-the-Loop Approval Gate before touching Razorpay APIs.
 
+**🎥 Project Demo** 
+**https://drive.google.com/file/d/1OxwBcX868H3Q5mDpoODGFsRO396RkbFV/view?usp=sharing**
+
+
 ---
 
 ## 🏗️ Core Architectural Chain
