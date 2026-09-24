@@ -1,8 +1,6 @@
 # MerchantPilot AI 🚀
 ### *Making merchants AI-native and helping them grow revenue.*
 
-**Razorpay AI Buildathon — Track 01: AI Growth & Agentic Commerce**
-
 ---
 
 ## 🌟 Executive Summary
