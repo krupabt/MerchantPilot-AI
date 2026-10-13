@@ -1,5 +1,5 @@
 # MerchantPilot AI 🚀
-### *Making merchants AI-native and helping them grow revenue.*
+### *Making merchants AI-native and helping them grow revenue.* ###
 
 ---
 
