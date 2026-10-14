@@ -3,7 +3,7 @@
 
 ---
 
-## 🌟 Executive Summary
+## 🌟 Executive Summary##
 
 **MerchantPilot AI** is a production-grade Agentic Commerce platform designed to solve the two biggest challenges in autonomous e-commerce:
 1. **Making Merchants AI-Readable & Transactable:** Transforms traditional stores from visual HTML scraping into high-fidelity, machine-readable structured catalogs with real-time hardware specs, compatibility graphs, and dynamic pricing constraints.
