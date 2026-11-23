@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, Float, Boolean, DateTime, JSON, ForeignKey
+from sqlalchemy.orm import relationship
 from datetime import datetime
 from backend.app.database import Base
 
@@ -6,7 +7,7 @@ class Policy(Base):
     __tablename__ = "policies"
 
     id = Column(String(50), primary_key=True, default="pol_default")
-    merchant_id = Column(String(50), ForeignKey("merchants.id"), default="m_1001")
+    merchant_id = Column(String(50), ForeignKey("merchants.id"), default="m_1001", index=True)
     name = Column(String(150), nullable=False, default="Standard Commercial Guardrail Policy")
     max_discount_percentage = Column(Float, default=10.0)
     max_discount_amount = Column(Float, default=6000.0)
@@ -35,3 +36,5 @@ class Policy(Base):
     require_human_approval = Column(Boolean, default=True)
     is_active = Column(Boolean, default=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    merchant = relationship("Merchant", back_populates="policies")

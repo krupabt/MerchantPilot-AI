@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float, DateTime, ForeignKey
+from sqlalchemy import Column, String, Float, DateTime, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from backend.app.database import Base
@@ -7,14 +7,15 @@ class Payment(Base):
     __tablename__ = "payments"
 
     id = Column(String(50), primary_key=True)
-    order_id = Column(String(50), ForeignKey("orders.id"), nullable=False)
+    order_id = Column(String(50), ForeignKey("orders.id"), nullable=False, index=True)
     razorpay_order_id = Column(String(100), nullable=False, index=True)
     razorpay_payment_id = Column(String(100), nullable=True, index=True)
     razorpay_signature = Column(String(200), nullable=True)
     amount = Column(Float, nullable=False)
     currency = Column(String(10), default="INR")
     status = Column(String(30), default="CREATED")  # CREATED, AUTHORIZED, CAPTURED, FAILED
-    verification_status = Column(String(30), default="UNVERIFIED")  # UNVERIFIED, VERIFIED_HMAC, FAILED
+    verification_status = Column(String(30), default="UNVERIFIED")  # UNVERIFIED, VERIFIED_HMAC, VERIFIED_WEBHOOK, FAILED
+    webhook_payload = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

@@ -4,6 +4,7 @@ import random
 from sqlalchemy.orm import Session
 from backend.app.database import engine, Base, SessionLocal
 from backend.app.models.merchant import Merchant
+from backend.app.models.category import Category
 from backend.app.models.product import Product
 from backend.app.models.policy import Policy
 from backend.app.models.customer import Customer
@@ -12,6 +13,15 @@ from backend.app.models.payment import Payment
 from backend.app.models.audit import AuditLog
 from backend.app.models.user import User
 from backend.app.services.auth_service import hash_password
+
+DEMO_CATEGORIES = [
+    {"name": "Laptops", "slug": "laptops", "description": "High-performance developer laptops and workstations"},
+    {"name": "Accessories", "slug": "accessories", "description": "Ergonomic mice, laptop bags, hubs and desk essentials"},
+    {"name": "Monitors", "slug": "monitors", "description": "4K UHD professional displays and creator monitors"},
+    {"name": "Cameras", "slug": "cameras", "description": "4K cinema cameras and studio gear"},
+    {"name": "Audio", "slug": "audio", "description": "Studio monitor headphones and wireless earbuds"},
+    {"name": "Keyboards", "slug": "keyboards", "description": "Mechanical and custom tactile keyboards"}
+]
 
 DEMO_PRODUCTS = [
     {
@@ -22,6 +32,7 @@ DEMO_PRODUCTS = [
         "price": 60000.0,
         "currency": "INR",
         "stock": 18,
+        "low_stock_threshold": 5,
         "rating": 4.85,
         "image_url": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=80",
         "specs": {
@@ -43,6 +54,7 @@ DEMO_PRODUCTS = [
         "price": 1000.0,
         "currency": "INR",
         "stock": 85,
+        "low_stock_threshold": 15,
         "rating": 4.75,
         "image_url": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=600&q=80",
         "specs": {
@@ -58,153 +70,163 @@ DEMO_PRODUCTS = [
         "id": "P103",
         "name": "Apex Pro Shield Laptop Bag",
         "category": "Accessories",
-        "description": "Water-resistant weatherproof ballistic nylon laptop backpack with dedicated cushioned compartments and USB pass-through.",
+        "description": "Weatherproof military-grade ballistic nylon laptop sleeve and briefcase with shock-absorbing foam padding.",
         "price": 1500.0,
         "currency": "INR",
         "stock": 42,
-        "rating": 4.65,
+        "low_stock_threshold": 10,
+        "rating": 4.60,
         "image_url": "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=80",
         "specs": {
-            "capacity": "25 Liters",
-            "material": "1680D Ballistic Nylon with Hydrophobic Coating",
-            "compatibility": "Fits laptops up to 16-inch",
-            "features": "TSA Checkpoint Friendly, Hidden Anti-Theft Pocket"
+            "material": "1680D Ballistic Cordura Nylon",
+            "compatibility": "Fits laptops up to 16 inches",
+            "features": "Waterproof zippers, luggage pass-through strap, hidden passport pocket",
+            "dimensions": "40 x 28 x 6 cm"
         },
-        "compatible_product_ids": ["P101", "P111"],
-        "tags": ["bag", "backpack", "case", "sleeve", "protection", "travel"]
+        "compatible_product_ids": ["P101"],
+        "tags": ["bag", "case", "sleeve", "protection", "travel", "accessory"]
     },
     {
         "id": "P104",
-        "name": "Apex Tactile Mechanical Keyboard",
+        "name": "Apex KeyForge Mechanical Keyboard",
         "category": "Keyboards",
-        "description": "Hot-swappable 75% compact mechanical keyboard with factory-lubed custom switches and per-key RGB backlighting.",
-        "price": 3500.0,
+        "description": "75% compact hot-swappable mechanical keyboard with lubricated linear switches, RGB backlighting, and volume knob.",
+        "price": 4500.0,
         "currency": "INR",
         "stock": 30,
+        "low_stock_threshold": 8,
         "rating": 4.80,
         "image_url": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=600&q=80",
         "specs": {
-            "layout": "75% ANSI (82 Keys)",
-            "switches": "Apex Linear Red Hot-Swappable",
-            "keycaps": "Double-Shot PBT Cherry Profile",
-            "connectivity": "Tri-Mode (USB-C, Bluetooth 5.0, 2.4GHz)"
+            "layout": "75% Compact (82 Keys + Rotary Encoder)",
+            "switches": "Custom Pre-lubed Linear Red (45g actuation)",
+            "keycaps": "Double-shot PBT Cherry Profile",
+            "connectivity": "Tri-mode (USB-C, 2.4GHz Wireless, Bluetooth 5.0)"
         },
-        "compatible_product_ids": ["P101", "P102", "P105", "P110"],
-        "tags": ["keyboard", "mechanical", "rgb", "developer", "typing", "gaming"]
+        "compatible_product_ids": ["P101", "P102", "P105"],
+        "tags": ["keyboard", "mechanical", "typing", "coding", "rgb", "hot-swap"]
     },
     {
         "id": "P105",
         "name": "Apex 27-inch 4K UHD Monitor",
         "category": "Monitors",
-        "description": "Factory calibrated 4K IPS creator display with 90W USB-C single cable power delivery and HDR400.",
-        "price": 25000.0,
+        "description": "IPS HDR professional monitor with 99% DCI-P3 color gamut, USB-C 90W power delivery, and built-in KVM switch.",
+        "price": 28000.0,
         "currency": "INR",
         "stock": 14,
+        "low_stock_threshold": 4,
         "rating": 4.90,
         "image_url": "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&w=600&q=80",
         "specs": {
-            "panel": "27-inch IPS 4K (3840x2160) 60Hz",
-            "color_accuracy": "Delta E < 2, 99% DCI-P3",
-            "ports": "1x USB-C (90W PD, DP Alt), 2x HDMI 2.1, 1x DP 1.4, 4x USB-A 3.2",
-            "stand": "Height, Pivot, Swivel, Tilt adjustable"
+            "resolution": "3840 x 2160 (4K UHD) at 60Hz",
+            "panel": "IPS Anti-glare, 400 nits, HDR400",
+            "ports": "1x USB-C (90W PD, DP Alt), 2x HDMI 2.0, 1x DP 1.4, 4x USB 3.0",
+            "stand": "Height, Tilt, Swivel, Pivot Adjustable"
         },
         "compatible_product_ids": ["P101", "P106", "P112"],
-        "tags": ["monitor", "display", "4k", "screen", "workstation", "creator", "usb-c"]
+        "tags": ["monitor", "display", "screen", "4k", "hdr", "usb-c", "productivity"]
     },
     {
         "id": "P106",
-        "name": "Apex Ultra-HD 4K Webcam",
+        "name": "Apex Ultra-HD Webcam 4K",
         "category": "Accessories",
-        "description": "Professional 4K streaming webcam with AI auto-framing, dual noise-canceling stereo microphones, and physical privacy shutter.",
-        "price": 7000.0,
+        "description": "4K streaming webcam with AI auto-framing, dual noise-canceling stereo microphones, and physical privacy shutter.",
+        "price": 4000.0,
         "currency": "INR",
         "stock": 25,
-        "rating": 4.70,
+        "low_stock_threshold": 5,
+        "rating": 4.65,
         "image_url": "https://images.unsplash.com/photo-1588508065123-287b28e013da?auto=format&fit=crop&w=600&q=80",
         "specs": {
-            "resolution": "4K UHD @ 30fps / 1080p @ 60fps",
-            "lens": "Glass lens with 90° FOV and Autofocus",
-            "audio": "Dual Omnidirectional Noise Cancelling Mics",
+            "video": "4K@30fps / 1080p@60fps with Sony STARVIS Sensor",
+            "fov": "Adjustable 65°, 78°, 90° Field of View",
+            "microphone": "Dual Omnidirectional Noise-Canceling Mics",
             "mount": "Universal Monitor Clip + 1/4 inch Tripod Thread"
         },
-        "compatible_product_ids": ["P101", "P105", "P108"],
-        "tags": ["webcam", "camera", "video", "streaming", "zoom", "wfh", "calls"]
+        "compatible_product_ids": ["P101", "P105"],
+        "tags": ["webcam", "camera", "video", "streaming", "conferencing", "4k"]
     },
     {
         "id": "P107",
         "name": "Apex 4K Cinema Camera",
         "category": "Cameras",
-        "description": "Full-frame mirrorless cinema camera featuring 10-bit 4:2:2 internal recording, dual native ISO, and 5-axis IBIS.",
-        "price": 75000.0,
+        "description": "Full-frame mirrorless digital cinema camera with 10-bit 4:2:2 internal recording, in-body stabilization, and dual native ISO.",
+        "price": 80000.0,
         "currency": "INR",
         "stock": 8,
+        "low_stock_threshold": 3,
         "rating": 4.95,
         "image_url": "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=600&q=80",
         "specs": {
-            "sensor": "24.2MP Full-Frame Exmor R CMOS Sensor",
-            "video": "4K UHD 60p, 10-Bit 4:2:2 All-Intra, S-Cinetone",
-            "stabilization": "5-Axis In-Body Image Stabilization (5.5 Stops)",
-            "mount": "E-Mount Full Frame"
+            "sensor": "24.2 MP Full-Frame Exmor CMOS",
+            "video_format": "4K 60p 10-bit 4:2:2 All-Intra, S-Log3, HLG",
+            "stabilization": "5-axis 5.5-stop In-Body Image Stabilization",
+            "mount": "Interchangeable Cinema E-Mount",
+            "weight": "658g body only"
         },
         "compatible_product_ids": ["P108", "P109"],
-        "tags": ["camera", "cinema", "video", "photography", "dslr", "4k", "creator"]
+        "tags": ["camera", "cinema", "video", "dslr", "4k", "creator", "content", "production"]
     },
     {
         "id": "P108",
-        "name": "Apex Pro Carbon Fiber Tripod",
+        "name": "Apex Pro Carbon Tripod",
         "category": "Accessories",
-        "description": "Ultra-rigid 8-layer carbon fiber heavy-duty tripod with 360° fluid panoramic ball head and Arca-Swiss quick release.",
-        "price": 8500.0,
+        "description": "Professional 8-layer carbon fiber camera tripod with fluid video head, Arca-Swiss plate, and 12kg payload capacity.",
+        "price": 3500.0,
         "currency": "INR",
-        "stock": 20,
-        "rating": 4.88,
-        "image_url": "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?auto=format&fit=crop&w=600&q=80",
+        "stock": 35,
+        "low_stock_threshold": 8,
+        "rating": 4.70,
+        "image_url": "https://images.unsplash.com/photo-1543857778-c4a1a3e0b2eb?auto=format&fit=crop&w=600&q=80",
         "specs": {
-            "material": "8x Layer Carbon Fiber",
-            "max_load": "12 kg (26.5 lbs)",
-            "max_height": "168 cm (66 inches)",
+            "material": "8x Toray Carbon Fiber",
+            "max_height": "172 cm",
             "folded_length": "42 cm",
-            "weight": "1.35 kg"
+            "load_capacity": "12 kg",
+            "head": "Fluid Damping Video Head with 360° Panning"
         },
-        "compatible_product_ids": ["P107", "P106"],
-        "tags": ["tripod", "stand", "carbon", "camera", "mount", "video", "photo"]
+        "compatible_product_ids": ["P107"],
+        "tags": ["tripod", "stand", "stabilizer", "camera", "video", "carbon"]
     },
     {
         "id": "P109",
-        "name": "Apex Studio ANC Wireless Headphones",
+        "name": "Apex Studio Monitor Headphones",
         "category": "Audio",
-        "description": "Audiophile studio headphones with hybrid active noise cancellation, custom 45mm beryllium drivers, and LDAC high-res audio.",
-        "price": 12000.0,
+        "description": "Closed-back professional studio monitor headphones with 50mm neodymium drivers and flat acoustic curve for mixing.",
+        "price": 6500.0,
         "currency": "INR",
-        "stock": 35,
-        "rating": 4.82,
+        "stock": 28,
+        "low_stock_threshold": 6,
+        "rating": 4.80,
         "image_url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=600&q=80",
         "specs": {
-            "driver": "45mm Custom Beryllium Acoustic Drivers",
-            "anc": "4-Microphone Hybrid ANC (-38dB attenuation)",
-            "battery": "45 Hours ANC On, Fast charge 10 min = 5 hrs",
-            "codecs": "LDAC, AAC, aptX Adaptive, SBC"
+            "driver": "50mm Dynamic Neodymium Magnet",
+            "frequency_response": "15 Hz - 28,000 Hz",
+            "impedance": "38 Ohms",
+            "cable": "Detachable 3m coiled cable + 1.2m straight cable"
         },
-        "compatible_product_ids": ["P101", "P105", "P111"],
-        "tags": ["headphones", "audio", "anc", "wireless", "studio", "sound", "music"]
+        "compatible_product_ids": ["P101", "P107"],
+        "tags": ["audio", "headphone", "sound", "studio", "monitoring", "music", "creator"]
     },
     {
         "id": "P110",
-        "name": "Apex Ergonomic Extended Desk Mat",
+        "name": "Apex Desk Mat XL Extended",
         "category": "Accessories",
-        "description": "Premium 900x400mm waterproof micro-textured surface desk pad with non-slip natural rubber base and anti-fray stitched edges.",
-        "price": 800.0,
+        "description": "900x400mm waterproof micro-weave cloth gaming desk pad with stitched anti-fray edges and natural rubber grip.",
+        "price": 600.0,
         "currency": "INR",
-        "stock": 90,
-        "rating": 4.60,
+        "stock": 60,
+        "low_stock_threshold": 15,
+        "rating": 4.55,
         "image_url": "https://images.unsplash.com/photo-1616440347437-b1c73416efc2?auto=format&fit=crop&w=600&q=80",
         "specs": {
-            "dimensions": "900 x 400 x 4 mm",
-            "surface": "Spill-Resistant Micro-Weave Cloth",
-            "base": "Textured Anti-Slip Natural Rubber"
+            "size": "900 x 400 x 4 mm",
+            "surface": "Spill-resistant Micro-textured Cloth",
+            "base": "Non-slip Textured Natural Rubber",
+            "edges": "Reinforced 360° Anti-fray Stitching"
         },
-        "compatible_product_ids": ["P101", "P102", "P104", "P105"],
-        "tags": ["mat", "deskpad", "mousepad", "desk", "setup", "accessory"]
+        "compatible_product_ids": ["P102", "P104"],
+        "tags": ["mat", "pad", "mousepad", "desk", "accessory", "setup"]
     },
     {
         "id": "P111",
@@ -214,28 +236,31 @@ DEMO_PRODUCTS = [
         "price": 52000.0,
         "currency": "INR",
         "stock": 12,
+        "low_stock_threshold": 3,
         "rating": 4.78,
         "image_url": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=600&q=80",
         "specs": {
             "processor": "Intel Core Ultra 7 155H with NPU AI Boost",
             "memory": "16GB LPDDR5X 7467MHz",
-            "storage": "512GB NVMe PCIe 4.0 SSD",
-            "display": "14.0-inch 2.8K (2880x1800) OLED 120Hz 0.2ms",
+            "storage": "512GB PCIe 4.0 NVMe SSD",
+            "display": "14.0-inch 2.8K (2880x1800) OLED 120Hz 100% DCI-P3",
+            "battery": "75Wh, 18 hours runtime",
             "weight": "1.19 kg"
         },
-        "compatible_product_ids": ["P102", "P103", "P109", "P112"],
-        "tags": ["laptop", "ultrabook", "portable", "lightweight", "oled", "ai"]
+        "compatible_product_ids": ["P102", "P103", "P112"],
+        "tags": ["laptop", "ultrabook", "portable", "lightweight", "oled", "intel", "battery"]
     },
     {
         "id": "P112",
-        "name": "Apex PowerDock 10-in-1 Thunderbolt Hub",
+        "name": "Apex 10-in-1 USB-C Hub Station",
         "category": "Accessories",
-        "description": "Dual 4K display output hub with 100W Power Delivery pass-through, Gigabit Ethernet, SD 4.0 card reader, and 10Gbps USB-C.",
-        "price": 5500.0,
+        "description": "Multiport docking station with dual 4K HDMI, 100W PD charging, Gigabit Ethernet, SD card reader, and USB 3.2 10Gbps.",
+        "price": 2800.0,
         "currency": "INR",
-        "stock": 28,
-        "rating": 4.86,
-        "image_url": "https://images.unsplash.com/photo-1625842268584-8f3296236761?auto=format&fit=crop&w=600&q=80",
+        "stock": 40,
+        "low_stock_threshold": 8,
+        "rating": 4.70,
+        "image_url": "https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=600&q=80",
         "specs": {
             "power": "100W USB-C Power Delivery Input",
             "ports": "2x HDMI 4K@60Hz, 1x Gigabit RJ45, 3x USB 3.2 10Gbps, SD/TF, 3.5mm Audio",
@@ -243,13 +268,33 @@ DEMO_PRODUCTS = [
         },
         "compatible_product_ids": ["P101", "P105", "P111"],
         "tags": ["hub", "dock", "thunderbolt", "usb-c", "adapter", "monitor", "lan"]
+    },
+    {
+        "id": "P113",
+        "name": "Apex ANC Wireless Earbuds",
+        "category": "Audio",
+        "description": "True wireless earbuds with 42dB hybrid active noise cancellation, transparency mode, and 36-hour total battery life.",
+        "price": 3200.0,
+        "currency": "INR",
+        "stock": 50,
+        "low_stock_threshold": 10,
+        "rating": 4.60,
+        "image_url": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=600&q=80",
+        "specs": {
+            "anc": "Hybrid ANC up to -42dB depth with 6 mics",
+            "battery": "8 hours per bud + 28 hours via wireless charging case",
+            "codecs": "LDAC, AAC, SBC with Hi-Res Wireless Certification",
+            "waterproof": "IPX5 Sweat & Water Resistant"
+        },
+        "compatible_product_ids": ["P101"],
+        "tags": ["earbuds", "audio", "anc", "wireless", "bluetooth", "music", "mobile"]
     }
 ]
 
 def seed_database(db: Session = None):
     """
-    Seeds database with realistic electronics merchant, products, active policies,
-    and 60+ realistic historical transaction baskets for robust association rule mining.
+    Seeds database with realistic electronics merchant, categories, products,
+    active policies, customer profiles, and 60+ realistic historical transactions.
     """
     should_close = False
     if db is None:
@@ -271,7 +316,22 @@ def seed_database(db: Session = None):
             db.add(merchant)
             db.flush()
 
-        # 2. Seed Default Policy
+        # 2. Seed Product Categories
+        cat_map = {}
+        for c_data in DEMO_CATEGORIES:
+            cat = db.query(Category).filter(Category.slug == c_data["slug"]).first()
+            if not cat:
+                cat = Category(
+                    id=f"cat_{c_data['slug']}",
+                    name=c_data["name"],
+                    slug=c_data["slug"],
+                    description=c_data["description"]
+                )
+                db.add(cat)
+                db.flush()
+            cat_map[c_data["name"]] = cat
+
+        # 3. Seed Default Policy
         policy = db.query(Policy).filter(Policy.id == "pol_default").first()
         if not policy:
             policy = Policy(
@@ -297,19 +357,23 @@ def seed_database(db: Session = None):
             db.add(policy)
             db.flush()
 
-        # 3. Seed Products
+        # 4. Seed Products
         for prod_data in DEMO_PRODUCTS:
             existing = db.query(Product).filter(Product.id == prod_data["id"]).first()
+            cat_obj = cat_map.get(prod_data["category"])
+            cat_id = cat_obj.id if cat_obj else None
             if not existing:
                 prod = Product(
                     id=prod_data["id"],
                     merchant_id="m_1001",
+                    category_id=cat_id,
                     name=prod_data["name"],
                     category=prod_data["category"],
                     description=prod_data["description"],
                     price=prod_data["price"],
                     currency=prod_data["currency"],
                     stock=prod_data["stock"],
+                    low_stock_threshold=prod_data.get("low_stock_threshold", 5),
                     rating=prod_data["rating"],
                     image_url=prod_data["image_url"],
                     specs=prod_data["specs"],
@@ -319,9 +383,45 @@ def seed_database(db: Session = None):
                     created_at=datetime.utcnow() - timedelta(days=120)
                 )
                 db.add(prod)
+            else:
+                existing.category_id = cat_id
+                existing.category = prod_data["category"]
+                existing.name = prod_data["name"]
+                existing.price = prod_data["price"]
+                existing.stock = prod_data["stock"]
+                existing.specs = prod_data["specs"]
+                existing.compatible_product_ids = prod_data["compatible_product_ids"]
         db.flush()
 
-        # 4. Seed Customers
+        # 5. Seed Demo Users (Merchant and Customer)
+        merchant_user = db.query(User).filter(User.email == "merchant@merchantpilot.ai").first()
+        if not merchant_user:
+            merchant_user = User(
+                id="usr_demo_merchant",
+                name="Demo Merchant",
+                email="merchant@merchantpilot.ai",
+                password_hash=hash_password("Admin@123456"),
+                role="merchant",
+                merchant_id="m_1001",
+                created_at=datetime.utcnow() - timedelta(days=90)
+            )
+            db.add(merchant_user)
+            db.flush()
+
+        customer_user = db.query(User).filter(User.email == "customer@merchantpilot.ai").first()
+        if not customer_user:
+            customer_user = User(
+                id="usr_demo_customer",
+                name="Demo Customer",
+                email="customer@merchantpilot.ai",
+                password_hash=hash_password("Customer@123456"),
+                role="customer",
+                created_at=datetime.utcnow() - timedelta(days=60)
+            )
+            db.add(customer_user)
+            db.flush()
+
+        # 6. Seed Customers (for legacy test compatibility)
         customers = [
             ("cust_101", "Aarav Sharma", "aarav.sharma@techdev.io", "9876543210"),
             ("cust_102", "Priya Patel", "priya.patel@designstudio.in", "9876543211"),
@@ -334,24 +434,11 @@ def seed_database(db: Session = None):
                 db.add(Customer(id=cid, name=name, email=email, phone=phone, created_at=datetime.utcnow() - timedelta(days=90)))
         db.flush()
 
-        # Seed Demo Merchant User
-        if db.query(User).count() == 0:
-            db.add(User(
-                id="usr_demo_merchant",
-                name="Demo Merchant",
-                email="merchant@merchantpilot.ai",
-                password_hash=hash_password("Admin@123456"),
-                role="merchant",
-                created_at=datetime.utcnow() - timedelta(days=90)
-            ))
-            db.flush()
-
-        # 5. Seed Realistic Historical Order Baskets (60+ orders)
+        # 7. Seed Realistic Historical Order Baskets (60+ orders)
         existing_orders_count = db.query(Order).count()
         if existing_orders_count < 10:
             prod_lookup = {p["id"]: p for p in DEMO_PRODUCTS}
 
-            # High Affinity Basket Patterns for Market Basket Mining
             basket_templates = [
                 # Pattern 1: Laptop + Mouse (Heavy co-occurrence ~ 80%)
                 (["P101", "P102"], 501.0, "Developer Starter Kit", True, True, 20),
@@ -380,17 +467,22 @@ def seed_database(db: Session = None):
                     
                     subtotal = sum(prod_lookup[pid]["price"] for pid in item_ids)
                     final_amt = max(0.0, subtotal - discount)
+                    cust = random.choice(customers)
                     
                     order_rec = Order(
                         id=ord_id,
                         merchant_id="m_1001",
-                        customer_id=random.choice(customers)[0],
+                        customer_id=customer_user.id,
+                        customer_name=cust[1],
+                        customer_email=cust[2],
+                        customer_phone=cust[3],
                         session_id=f"sess_seed_{order_counter}" if is_ai else None,
                         subtotal_amount=round(subtotal, 2),
                         discount_amount=round(discount, 2),
                         final_amount=round(final_amt, 2),
                         currency="INR",
                         status="PAID",
+                        fulfillment_status="DELIVERED",
                         is_ai_assisted=is_ai,
                         is_bundle=is_bundle,
                         bundle_name=b_name,
@@ -431,7 +523,7 @@ def seed_database(db: Session = None):
 
             db.flush()
 
-        # 6. Seed Sample Audit Trail Logs
+        # 8. Seed Sample Audit Trail Logs
         existing_logs = db.query(AuditLog).count()
         if existing_logs < 5:
             sample_logs = [
@@ -461,7 +553,7 @@ def seed_database(db: Session = None):
                 ))
 
         db.commit()
-        print("Database seeded successfully with realistic electronics demo catalog and transaction history.")
+        print("Database seeded successfully with realistic electronics demo catalog, categories, users, and transaction history.")
     except Exception as e:
         db.rollback()
         print(f"Error during seeding: {e}")

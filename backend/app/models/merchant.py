@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, DateTime
+from sqlalchemy.orm import relationship
 from datetime import datetime
 from backend.app.database import Base
 
@@ -10,3 +11,8 @@ class Merchant(Base):
     email = Column(String(100), unique=True, nullable=False)
     currency = Column(String(10), default="INR")
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    products = relationship("Product", back_populates="merchant")
+    orders = relationship("Order", back_populates="merchant")
+    policies = relationship("Policy", back_populates="merchant")
+    users = relationship("User", back_populates="merchant", foreign_keys="User.merchant_id")
