@@ -5,6 +5,10 @@ import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard';
 import AIBuyer from './pages/AIBuyer';
 import Catalog from './pages/Catalog';
+import Storefront from './pages/Storefront';
+import Cart from './pages/Cart';
+import CustomerOrders from './pages/CustomerOrders';
+import CustomerProfile from './pages/CustomerProfile';
 import RevenueInsights from './pages/RevenueInsights';
 import Policies from './pages/Policies';
 import Transactions from './pages/Transactions';
@@ -21,10 +25,10 @@ function NotFound() {
       <h2 className="text-4xl font-bold text-white font-mono">404</h2>
       <p className="text-gray-400 text-sm">The requested route does not exist in MerchantPilot AI.</p>
       <a
-        href="/dashboard"
-        className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold transition"
+        href="/store"
+        className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold transition"
       >
-        Return to Dashboard
+        Go to Hardware Store
       </a>
     </div>
   );
@@ -34,7 +38,7 @@ export default function App() {
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen bg-[#0B0F19] text-gray-100 flex flex-col">
+        <div className="min-h-screen bg-[#0B0F19] text-gray-100 flex flex-col font-sans selection:bg-amber-500 selection:text-black">
           {/* Top Sticky Header */}
           <Navbar />
 
@@ -48,24 +52,37 @@ export default function App() {
                 <Route path="/login" element={<SignIn />} />
                 <Route path="/signup" element={<SignUp />} />
 
-                {/* Core Public / AI Agent Demo Pages */}
-                <Route path="/ai-buyer" element={<AIBuyer />} />
-                <Route path="/catalog" element={<Catalog />} />
+                {/* Customer Storefront & Cart Pages */}
+                <Route path="/" element={<Navigate to="/store" replace />} />
+                <Route path="/store" element={<Storefront />} />
+                <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
-
-                {/* Protected Merchant / Dashboard Pages */}
                 <Route
-                  path="/"
+                  path="/orders"
                   element={
                     <ProtectedRoute>
-                      <Navigate to="/dashboard" replace />
+                      <CustomerOrders />
                     </ProtectedRoute>
                   }
                 />
                 <Route
-                  path="/dashboard"
+                  path="/profile"
                   element={
                     <ProtectedRoute>
+                      <CustomerProfile />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Core Public / AI Agent Demo Pages */}
+                <Route path="/ai-buyer" element={<AIBuyer />} />
+                <Route path="/catalog" element={<Catalog />} />
+
+                {/* Protected Merchant / Dashboard Pages */}
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute requiredRole="merchant">
                       <Dashboard />
                     </ProtectedRoute>
                   }
@@ -73,7 +90,7 @@ export default function App() {
                 <Route
                   path="/revenue"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requiredRole="merchant">
                       <RevenueInsights />
                     </ProtectedRoute>
                   }
@@ -81,7 +98,7 @@ export default function App() {
                 <Route
                   path="/policies"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requiredRole="merchant">
                       <Policies />
                     </ProtectedRoute>
                   }
@@ -89,7 +106,7 @@ export default function App() {
                 <Route
                   path="/transactions"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requiredRole="merchant">
                       <Transactions />
                     </ProtectedRoute>
                   }
@@ -97,7 +114,7 @@ export default function App() {
                 <Route
                   path="/audit"
                   element={
-                    <ProtectedRoute>
+                    <ProtectedRoute requiredRole="merchant">
                       <AuditTrail />
                     </ProtectedRoute>
                   }
