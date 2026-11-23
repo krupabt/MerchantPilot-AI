@@ -93,7 +93,7 @@ export default function Policies() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-800 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/30">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
               FEATURE 7 — POLICY & GUARDRAIL ENGINE
             </span>
             <span className="text-xs text-gray-400 font-mono">Server-Side Deterministic Boundaries</span>
@@ -143,7 +143,7 @@ export default function Policies() {
                   step="0.1"
                   value={policy?.max_discount_percentage || 10}
                   onChange={(e) => setPolicy({ ...policy, max_discount_percentage: parseFloat(e.target.value) })}
-                  className="w-full bg-gray-900 border border-gray-800 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono focus:border-blue-500 focus:outline-none"
+                  className="w-full bg-gray-900 border border-gray-800 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono focus:border-amber-500 focus:outline-none"
                 />
                 <span className="text-[10px] text-gray-500 block">Cap per basket offer</span>
               </div>
@@ -158,7 +158,7 @@ export default function Policies() {
                   type="number"
                   value={policy?.max_discount_amount || 6000}
                   onChange={(e) => setPolicy({ ...policy, max_discount_amount: parseFloat(e.target.value) })}
-                  className="w-full bg-gray-900 border border-gray-800 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono focus:border-blue-500 focus:outline-none"
+                  className="w-full bg-gray-900 border border-gray-800 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono focus:border-amber-500 focus:outline-none"
                 />
                 <span className="text-[10px] text-gray-500 block">Absolute monetary ceiling</span>
               </div>
@@ -173,7 +173,7 @@ export default function Policies() {
                   type="number"
                   value={policy?.max_transaction_amount || 100000}
                   onChange={(e) => setPolicy({ ...policy, max_transaction_amount: parseFloat(e.target.value) })}
-                  className="w-full bg-gray-900 border border-gray-800 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono focus:border-blue-500 focus:outline-none"
+                  className="w-full bg-gray-900 border border-gray-800 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono focus:border-amber-500 focus:outline-none"
                 />
                 <span className="text-[10px] text-gray-500 block">Per-order settlement limit</span>
               </div>
@@ -226,7 +226,7 @@ export default function Policies() {
               <button
                 type="submit"
                 disabled={saving}
-                className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs shadow-lg shadow-blue-500/20 flex items-center gap-2 transition disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs shadow-lg shadow-amber-600/20 flex items-center gap-2 transition disabled:opacity-50"
               >
                 {saving ? (
                   <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

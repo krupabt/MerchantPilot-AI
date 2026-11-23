@@ -74,8 +74,8 @@ export default function AuditTrail() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-800 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/30">
-              FEATURE 11 — IMMUTABLE AUDIT TRAIL
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+              IMMUTABLE AUDIT TRAIL
             </span>
             <span className="text-xs text-gray-400 font-mono">End-to-End Decision Trace</span>
           </div>
@@ -105,7 +105,7 @@ export default function AuditTrail() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search actions, reasons, sessions..."
-            className="w-full pl-9 pr-4 py-2 bg-gray-900/80 border border-gray-800 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
+            className="w-full pl-9 pr-4 py-2 bg-gray-900/80 border border-gray-800 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition"
           />
         </div>
 
@@ -113,7 +113,7 @@ export default function AuditTrail() {
           <button
             onClick={() => setFilterResult('ALL')}
             className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition ${
-              filterResult === 'ALL' ? 'bg-blue-600 text-white' : 'bg-gray-900 text-gray-400 hover:text-white border border-gray-800'
+              filterResult === 'ALL' ? 'bg-amber-600 text-white' : 'bg-gray-900 text-gray-400 hover:text-white border border-gray-800'
             }`}
           >
             All Events ({logs.length})
