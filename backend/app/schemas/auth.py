@@ -9,7 +9,8 @@ class SignUpRequest(BaseModel):
     name: str = Field(..., min_length=2, max_length=100)
     email: str = Field(..., min_length=5, max_length=100)
     password: str = Field(..., min_length=6, max_length=100)
-    role: Optional[str] = "merchant"
+    role: Optional[str] = "customer"  # Default to customer, can be "merchant"
+    store_name: Optional[str] = None  # If registering as a merchant
 
     @field_validator("email")
     @classmethod
@@ -18,6 +19,14 @@ class SignUpRequest(BaseModel):
         if not re.match(EMAIL_REGEX, clean):
             raise ValueError("Invalid email format.")
         return clean
+
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, v: Optional[str]) -> str:
+        if v and v.lower() not in ("merchant", "customer", "buyer"):
+            raise ValueError("Role must be 'customer' or 'merchant'.")
+        # Normalize "buyer" to "customer"
+        return "customer" if (v and v.lower() in ("buyer", "customer")) else "merchant"
 
 class SignInRequest(BaseModel):
     email: str = Field(..., min_length=5, max_length=100)
@@ -31,11 +40,17 @@ class SignInRequest(BaseModel):
             raise ValueError("Invalid email format.")
         return clean
 
+class ProfileUpdateRequest(BaseModel):
+    name: Optional[str] = Field(None, min_length=2, max_length=100)
+    current_password: Optional[str] = None
+    new_password: Optional[str] = Field(None, min_length=6, max_length=100)
+
 class UserResponse(BaseModel):
     id: str
     name: str
     email: str
     role: str
+    merchant_id: Optional[str] = None
     created_at: Optional[datetime] = None
 
 class AuthResponse(BaseModel):

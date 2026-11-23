@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { signIn as apiSignIn, signUp as apiSignUp, getCurrentUser, logoutUser } from '../services/api';
+import { signIn as apiSignIn, signUp as apiSignUp, getCurrentUser, logoutUser, updateCurrentUser } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -38,12 +38,18 @@ export function AuthProvider({ children }) {
     return res.data;
   };
 
-  const signup = async (name, email, password, role = 'merchant') => {
-    const res = await apiSignUp({ name, email, password, role });
+  const signup = async (name, email, password, role = 'customer', storeName = undefined) => {
+    const res = await apiSignUp({ name, email, password, role, store_name: storeName });
     const { token: newToken, user: newUser } = res.data;
     localStorage.setItem('mp_auth_token', newToken);
     setToken(newToken);
     setUser(newUser);
+    return res.data;
+  };
+
+  const updateProfile = async (profileData) => {
+    const res = await updateCurrentUser(profileData);
+    setUser(res.data);
     return res.data;
   };
 
@@ -62,9 +68,12 @@ export function AuthProvider({ children }) {
     user,
     token,
     isAuthenticated: !!user,
+    isMerchant: user?.role === 'merchant',
+    isCustomer: user?.role === 'customer' || !user?.role || user?.role === 'buyer',
     loading,
     login,
     signup,
+    updateProfile,
     logout
   };
 
