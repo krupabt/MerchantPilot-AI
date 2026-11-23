@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import MerchantSidebar from './components/MerchantSidebar';
-import LandingPage from './pages/LandingPage';
 import Shop from './pages/Shop';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
@@ -30,10 +29,10 @@ function NotFound() {
       <h2 className="text-5xl font-extrabold text-[#F5A524] font-mono">404</h2>
       <p className="text-[#94A3B8] text-sm">The requested page does not exist in MerchantPilot AI.</p>
       <a
-        href="/shop"
+        href="/"
         className="px-5 py-2.5 bg-[#F5A524] hover:bg-[#D97706] text-black rounded-xl text-xs font-semibold transition"
       >
-        Return to Hardware Store
+        Return to Dashboard
       </a>
     </div>
   );
@@ -41,37 +40,83 @@ function NotFound() {
 
 function MainLayout() {
   const location = useLocation();
-  const isMerchantRoute = location.pathname.startsWith('/merchant') ||
-    ['/dashboard', '/catalog', '/revenue', '/policies', '/transactions', '/audit'].includes(location.pathname);
 
-  const isPublicHome = location.pathname === '/';
+  // Storefront demo paths that render full-width without merchant sidebar
+  const isStorefrontDemo = [
+    '/shop',
+    '/store',
+    '/cart',
+    '/checkout',
+    '/ai-assistant',
+    '/ai-buyer',
+    '/customer/orders',
+    '/customer/profile'
+  ].some(p => location.pathname.startsWith(p));
+
+  const isAuthPage = ['/login', '/signup'].includes(location.pathname);
 
   return (
     <div className="min-h-screen bg-[#0B0F14] text-[#F8FAFC] flex flex-col font-sans selection:bg-[#F5A524] selection:text-black">
-      {/* Top Navigation */}
+      {/* Top Header */}
       <Navbar />
 
-      {/* Main Container */}
+      {/* Main SaaS Workspace */}
       <div className="flex-1 flex max-w-full">
-        {/* Render Merchant Sidebar only on Merchant Backoffice Routes */}
-        {isMerchantRoute && <MerchantSidebar />}
+        {/* Merchant Sidebar on all SaaS pages except Auth & Storefront Demo */}
+        {!isStorefrontDemo && !isAuthPage && <MerchantSidebar />}
 
-        <main className={`flex-1 overflow-y-auto w-full ${isPublicHome ? 'p-0' : 'p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto'}`}>
+        <main className={`flex-1 overflow-y-auto w-full p-4 sm:p-6 lg:p-8 ${isStorefrontDemo ? 'max-w-7xl mx-auto' : 'max-w-7xl mx-auto'}`}>
           <Routes>
-            {/* Public Landing & Auth Routes */}
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<SignIn />} />
-            <Route path="/signup" element={<SignUp />} />
+            {/* Primary SaaS Routes */}
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Navigate to="/" replace />} />
+            <Route path="/merchant" element={<Navigate to="/" replace />} />
+            <Route path="/merchant/dashboard" element={<Navigate to="/" replace />} />
 
-            {/* Customer Storefront Routes */}
-            <Route path="/shop" element={<Shop />} />
-            <Route path="/store" element={<Navigate to="/shop" replace />} />
+            {/* AI Business Copilot */}
+            <Route path="/copilot" element={<MerchantAIAssistant />} />
+            <Route path="/merchant/ai-assistant" element={<Navigate to="/copilot" replace />} />
+
+            {/* Inventory Intelligence */}
+            <Route path="/inventory" element={<MerchantInventory />} />
+            <Route path="/merchant/inventory" element={<Navigate to="/inventory" replace />} />
+
+            {/* Sales & Revenue Analytics */}
+            <Route path="/analytics" element={<RevenueAnalytics />} />
+            <Route path="/revenue" element={<Navigate to="/analytics" replace />} />
+            <Route path="/merchant/revenue" element={<Navigate to="/analytics" replace />} />
+
+            {/* Product Intelligence (Apriori Market Basket) */}
+            <Route path="/product-intelligence" element={<MarketBasketAnalysis />} />
+            <Route path="/merchant/market-basket" element={<Navigate to="/product-intelligence" replace />} />
+
+            {/* Orders & Payments */}
+            <Route path="/orders" element={<MerchantOrders />} />
+            <Route path="/merchant/orders" element={<Navigate to="/orders" replace />} />
+            <Route path="/transactions" element={<Navigate to="/orders" replace />} />
+
+            {/* Product Catalog Management */}
+            <Route path="/catalog" element={<Catalog />} />
+            <Route path="/merchant/products" element={<Navigate to="/catalog" replace />} />
+
+            {/* Commercial Policies & Settings */}
+            <Route path="/settings" element={<Policies />} />
+            <Route path="/policies" element={<Navigate to="/settings" replace />} />
+            <Route path="/merchant/settings" element={<Navigate to="/settings" replace />} />
+
+            {/* Audit Trail */}
+            <Route path="/audit" element={<AuditTrail />} />
+            <Route path="/merchant/audit" element={<Navigate to="/audit" replace />} />
+
+            {/* Customer Storefront Demo Routes */}
+            <Route path="/store" element={<Shop />} />
+            <Route path="/shop" element={<Navigate to="/store" replace />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/ai-assistant" element={<AIShoppingAssistant />} />
-            <Route path="/ai-buyer" element={<AIShoppingAssistant />} />
+            <Route path="/ai-buyer" element={<Navigate to="/ai-assistant" replace />} />
             <Route
-              path="/orders"
+              path="/customer/orders"
               element={
                 <ProtectedRoute>
                   <CustomerOrders />
@@ -79,7 +124,7 @@ function MainLayout() {
               }
             />
             <Route
-              path="/profile"
+              path="/customer/profile"
               element={
                 <ProtectedRoute>
                   <CustomerProfile />
@@ -87,107 +132,9 @@ function MainLayout() {
               }
             />
 
-            {/* Merchant Backoffice Routes */}
-            <Route
-              path="/merchant"
-              element={<Navigate to="/merchant/dashboard" replace />}
-            />
-            <Route
-              path="/merchant/dashboard"
-              element={
-                <ProtectedRoute requiredRole="merchant">
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={<Navigate to="/merchant/dashboard" replace />}
-            />
-            <Route
-              path="/merchant/products"
-              element={
-                <ProtectedRoute requiredRole="merchant">
-                  <Catalog />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/catalog"
-              element={<Navigate to="/merchant/products" replace />}
-            />
-            <Route
-              path="/merchant/inventory"
-              element={
-                <ProtectedRoute requiredRole="merchant">
-                  <MerchantInventory />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/merchant/orders"
-              element={
-                <ProtectedRoute requiredRole="merchant">
-                  <MerchantOrders />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/transactions"
-              element={<Navigate to="/merchant/orders" replace />}
-            />
-            <Route
-              path="/merchant/revenue"
-              element={
-                <ProtectedRoute requiredRole="merchant">
-                  <RevenueAnalytics />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/revenue"
-              element={<Navigate to="/merchant/revenue" replace />}
-            />
-            <Route
-              path="/merchant/ai-assistant"
-              element={
-                <ProtectedRoute requiredRole="merchant">
-                  <MerchantAIAssistant />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/merchant/market-basket"
-              element={
-                <ProtectedRoute requiredRole="merchant">
-                  <MarketBasketAnalysis />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/merchant/audit"
-              element={
-                <ProtectedRoute requiredRole="merchant">
-                  <AuditTrail />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/audit"
-              element={<Navigate to="/merchant/audit" replace />}
-            />
-            <Route
-              path="/merchant/settings"
-              element={
-                <ProtectedRoute requiredRole="merchant">
-                  <Policies />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/policies"
-              element={<Navigate to="/merchant/settings" replace />}
-            />
+            {/* Authentication Routes */}
+            <Route path="/login" element={<SignIn />} />
+            <Route path="/signup" element={<SignUp />} />
 
             {/* 404 Fallback */}
             <Route path="*" element={<NotFound />} />

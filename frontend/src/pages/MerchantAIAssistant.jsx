@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Bot,
   Send,
@@ -9,29 +10,45 @@ import {
   Database,
   CheckCircle2,
   HelpCircle,
-  BarChart3
+  BarChart3,
+  Package,
+  Clock,
+  ArrowUpRight,
+  Lightbulb,
+  Truck
 } from 'lucide-react';
 import { postMerchantAIAssistant } from '../services/api';
 
 const PRESET_QUERIES = [
   'Which products are low in stock?',
   'What were my best-selling products?',
+  'What products are slow-moving or dead stock?',
   'What is our total revenue?',
   'What is our average order value?',
-  'What products are frequently bought together?'
+  'How many orders are unfulfilled or pending?',
+  'What products are frequently bought together?',
+  'Give me executive copilot recommendations to increase revenue'
 ];
 
 export default function MerchantAIAssistant() {
+  const location = useLocation();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([
     {
       sender: 'assistant',
-      text: 'Hello! I am your Merchant AI Business Assistant. I answer business metrics, revenue questions, inventory queries, and basket affinities by querying your live database records with zero hallucination. Ask a question below or pick a preset.',
+      text: 'Hello! I am your MerchantPilot AI Business Copilot. I analyze your sales, inventory velocity, order fulfillment, and basket affinities by querying your live database records with zero hallucination. Ask a question below or pick a preset.',
       data: null,
-      query_type: 'WELCOME'
+      query_type: 'WELCOME',
+      actionable_recommendations: []
     }
   ]);
+
+  useEffect(() => {
+    if (location.state?.prefilledQuery) {
+      handleSendQuery(location.state.prefilledQuery);
+    }
+  }, [location.state]);
 
   const handleSendQuery = async (queryText) => {
     const q = queryText || query;
@@ -53,8 +70,9 @@ export default function MerchantAIAssistant() {
           sender: 'assistant',
           text: answerData.answer || 'Query processed.',
           data: answerData.data,
-          query_type: answerData.query_type,
-          structured_table: answerData.structured_table
+          query_type: answerData.query_type || answerData.intent,
+          structured_table: answerData.structured_table,
+          actionable_recommendations: answerData.actionable_recommendations || []
         }
       ]);
     } catch (err) {
@@ -64,7 +82,8 @@ export default function MerchantAIAssistant() {
           sender: 'assistant',
           text: 'Unable to process query against database: ' + (err.response?.data?.detail || err.message),
           data: null,
-          query_type: 'ERROR'
+          query_type: 'ERROR',
+          actionable_recommendations: []
         }
       ]);
     } finally {
@@ -78,15 +97,15 @@ export default function MerchantAIAssistant() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2A3441] pb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono uppercase bg-[#F5A524]/10 border border-[#F5A524]/30 text-[#F5A524] px-2 py-0.5 rounded flex items-center gap-1">
+            <span className="text-[10px] font-mono uppercase bg-[#F5A524]/10 border border-[#F5A524]/30 text-[#F5A524] px-2 py-0.5 rounded flex items-center gap-1 font-bold">
               <Sparkles className="w-3 h-3" />
-              SQL-Grounded Intelligence
+              SQL-Grounded Business Copilot
             </span>
-            <span className="text-xs text-[#94A3B8] font-mono">Zero Hallucination</span>
+            <span className="text-xs text-[#94A3B8] font-mono">Zero Hallucination • Relational DB Grounded</span>
           </div>
-          <h1 className="text-2xl font-bold text-[#F8FAFC] tracking-tight">Merchant AI Business Assistant</h1>
+          <h1 className="text-2xl font-bold text-[#F8FAFC] tracking-tight">Merchant AI Business Copilot</h1>
           <p className="text-xs text-[#94A3B8]">
-            Ask questions in plain English to inspect inventory levels, analyze revenue, and explore product performance.
+            Ask plain English questions to diagnose sales velocity, evaluate reorder alerts, inspect dead stock, and make data-driven decisions.
           </p>
         </div>
       </div>
@@ -109,7 +128,7 @@ export default function MerchantAIAssistant() {
       </div>
 
       {/* Chat Messages Container */}
-      <div className="surface-card p-6 min-h-[420px] max-h-[560px] overflow-y-auto space-y-4">
+      <div className="surface-card p-6 min-h-[440px] max-h-[600px] overflow-y-auto space-y-4">
         {messages.map((msg, idx) => {
           const isUser = msg.sender === 'user';
 
@@ -140,50 +159,191 @@ export default function MerchantAIAssistant() {
                 {/* Structured Data Visualization for Low Stock */}
                 {msg.query_type === 'LOW_STOCK_ALERT' && Array.isArray(msg.data) && msg.data.length > 0 && (
                   <div className="rounded-xl bg-[#1C222B] border border-[#2A3441] p-3 text-xs space-y-2 mt-2">
-                    <span className="font-mono text-[10px] text-[#F59E0B] uppercase font-bold block">
-                      Low-Stock Hardware Items
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[10px] text-[#F59E0B] uppercase font-bold flex items-center gap-1.5">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        Low-Stock Replenishment Queue
+                      </span>
+                      <span className="text-[10px] text-[#94A3B8] font-mono">{msg.data.length} SKU(s) flagged</span>
+                    </div>
                     <div className="divide-y divide-[#2A3441]">
                       {msg.data.map((item) => (
-                        <div key={item.id} className="py-1.5 flex justify-between items-center text-[11px]">
+                        <div key={item.id} className="py-2 flex justify-between items-center text-[11px]">
                           <div>
                             <span className="font-semibold text-[#F8FAFC]">{item.name}</span>
-                            <span className="text-[#94A3B8] font-mono block">SKU: {item.id}</span>
+                            <span className="text-[#94A3B8] font-mono block text-[10px]">SKU: {item.id} • Category: {item.category}</span>
                           </div>
-                          <span className="font-mono font-bold text-[#F59E0B] bg-[#F59E0B]/10 px-2 py-0.5 rounded">
-                            {item.stock} left (threshold: {item.low_stock_threshold})
-                          </span>
+                          <div className="text-right">
+                            <span className={`font-mono font-bold px-2 py-0.5 rounded text-[10px] ${
+                              item.stock <= 0 ? 'bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/30' : 'bg-[#F59E0B]/10 text-[#F59E0B]'
+                            }`}>
+                              {item.status || `${item.stock} left`}
+                            </span>
+                            <span className="text-[#94A3B8] block text-[9px] font-mono mt-0.5">Threshold: {item.threshold || item.low_stock_threshold}</span>
+                          </div>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Structured Data Visualization for Revenue Summary */}
-                {msg.query_type === 'REVENUE_SUMMARY' && msg.data && typeof msg.data === 'object' && (
+                {/* Top Selling Products Visual Card */}
+                {msg.query_type === 'TOP_SELLING_PRODUCTS' && Array.isArray(msg.data) && msg.data.length > 0 && (
+                  <div className="rounded-xl bg-[#1C222B] border border-[#2A3441] p-3 text-xs space-y-2 mt-2">
+                    <span className="font-mono text-[10px] text-[#10B981] uppercase font-bold flex items-center gap-1.5">
+                      <TrendingUp className="w-3.5 h-3.5" />
+                      Top Performing Items by Sales Volume
+                    </span>
+                    <div className="divide-y divide-[#2A3441]">
+                      {msg.data.map((item, i) => (
+                        <div key={item.product_id || i} className="py-2 flex justify-between items-center text-[11px]">
+                          <div className="flex items-center gap-2">
+                            <span className="w-5 h-5 rounded-full bg-[#151A21] border border-[#2A3441] flex items-center justify-center font-mono font-bold text-[10px] text-[#F5A524]">
+                              #{i + 1}
+                            </span>
+                            <div>
+                              <span className="font-semibold text-[#F8FAFC]">{item.name}</span>
+                              <span className="text-[#94A3B8] font-mono block text-[10px]">SKU: {item.product_id}</span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-bold text-[#F8FAFC] block">{item.revenue}</span>
+                            <span className="text-[#10B981] font-mono text-[10px]">{item.units_sold} units sold</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Slow Moving / Dead Stock Visual Card */}
+                {msg.query_type === 'SLOW_MOVING_PRODUCTS' && Array.isArray(msg.data) && msg.data.length > 0 && (
+                  <div className="rounded-xl bg-[#1C222B] border border-[#2A3441] p-3 text-xs space-y-2 mt-2">
+                    <span className="font-mono text-[10px] text-[#EF4444] uppercase font-bold flex items-center gap-1.5">
+                      <Package className="w-3.5 h-3.5" />
+                      Stagnant Inventory & Liquid Capital Risk
+                    </span>
+                    <div className="divide-y divide-[#2A3441]">
+                      {msg.data.map((item, i) => (
+                        <div key={item.id || i} className="py-2 flex justify-between items-center text-[11px]">
+                          <div>
+                            <span className="font-semibold text-[#F8FAFC]">{item.name}</span>
+                            <span className="text-[#94A3B8] font-mono block text-[10px]">Units Sold: {item.units_sold} • Stock: {item.stock}</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-bold text-[#EF4444] block font-mono">{item.tied_capital}</span>
+                            <span className="text-[#94A3B8] font-mono text-[9px]">Tied-up Capital</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Structured Data Visualization for Revenue / AOV / Copilot Summary */}
+                {(msg.query_type === 'REVENUE_SUMMARY' || msg.query_type === 'AVERAGE_ORDER_VALUE' || msg.query_type === 'BUSINESS_COPILOT_INSIGHTS') && msg.data && typeof msg.data === 'object' && !Array.isArray(msg.data) && (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
+                    {msg.data.total_revenue !== undefined && (
+                      <div className="p-2.5 rounded-lg bg-[#1C222B] border border-[#2A3441]">
+                        <span className="text-[10px] text-[#94A3B8] block font-mono uppercase">Settled Revenue</span>
+                        <span className="text-sm font-bold text-[#F8FAFC]">
+                          ₹{msg.data.total_revenue?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    )}
+                    {(msg.data.total_orders !== undefined || msg.data.completed_orders !== undefined) && (
+                      <div className="p-2.5 rounded-lg bg-[#1C222B] border border-[#2A3441]">
+                        <span className="text-[10px] text-[#94A3B8] block font-mono uppercase">Completed Orders</span>
+                        <span className="text-sm font-bold text-[#F8FAFC]">{msg.data.total_orders ?? msg.data.completed_orders}</span>
+                      </div>
+                    )}
+                    {msg.data.aov !== undefined && (
+                      <div className="p-2.5 rounded-lg bg-[#1C222B] border border-[#2A3441]">
+                        <span className="text-[10px] text-[#94A3B8] block font-mono uppercase">Avg Order Value</span>
+                        <span className="text-sm font-bold text-[#F5A524]">
+                          ₹{msg.data.aov?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    )}
+                    {msg.data.total_discounts_granted !== undefined && (
+                      <div className="p-2.5 rounded-lg bg-[#1C222B] border border-[#2A3441]">
+                        <span className="text-[10px] text-[#94A3B8] block font-mono uppercase">Discounts Granted</span>
+                        <span className="text-sm font-bold text-[#10B981]">
+                          ₹{msg.data.total_discounts_granted?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    )}
+                    {msg.data.active_products !== undefined && (
+                      <div className="p-2.5 rounded-lg bg-[#1C222B] border border-[#2A3441]">
+                        <span className="text-[10px] text-[#94A3B8] block font-mono uppercase">Active SKUs</span>
+                        <span className="text-sm font-bold text-[#F8FAFC]">{msg.data.active_products}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Fulfillment Status Cards */}
+                {msg.query_type === 'FULFILLMENT_STATUS' && msg.data && typeof msg.data === 'object' && (
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
                     <div className="p-2.5 rounded-lg bg-[#1C222B] border border-[#2A3441]">
-                      <span className="text-[10px] text-[#94A3B8] block font-mono uppercase">Revenue</span>
-                      <span className="text-sm font-bold text-[#F8FAFC]">
-                        ₹{msg.data.total_revenue?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                      </span>
+                      <span className="text-[10px] text-[#EF4444] block font-mono uppercase">Unfulfilled</span>
+                      <span className="text-sm font-bold text-[#EF4444]">{msg.data.unfulfilled || 0}</span>
                     </div>
                     <div className="p-2.5 rounded-lg bg-[#1C222B] border border-[#2A3441]">
-                      <span className="text-[10px] text-[#94A3B8] block font-mono uppercase">Orders</span>
-                      <span className="text-sm font-bold text-[#F8FAFC]">{msg.data.total_orders}</span>
+                      <span className="text-[10px] text-[#F5A524] block font-mono uppercase">Processing</span>
+                      <span className="text-sm font-bold text-[#F5A524]">{msg.data.processing || 0}</span>
                     </div>
                     <div className="p-2.5 rounded-lg bg-[#1C222B] border border-[#2A3441]">
-                      <span className="text-[10px] text-[#94A3B8] block font-mono uppercase">Avg Order Value</span>
-                      <span className="text-sm font-bold text-[#F5A524]">
-                        ₹{msg.data.aov?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                      </span>
+                      <span className="text-[10px] text-[#3B82F6] block font-mono uppercase">Shipped</span>
+                      <span className="text-sm font-bold text-[#3B82F6]">{msg.data.shipped || 0}</span>
                     </div>
                     <div className="p-2.5 rounded-lg bg-[#1C222B] border border-[#2A3441]">
-                      <span className="text-[10px] text-[#94A3B8] block font-mono uppercase">Discounts Granted</span>
-                      <span className="text-sm font-bold text-[#10B981]">
-                        ₹{msg.data.total_discounts_granted?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                      </span>
+                      <span className="text-[10px] text-[#10B981] block font-mono uppercase">Delivered</span>
+                      <span className="text-sm font-bold text-[#10B981]">{msg.data.delivered || 0}</span>
                     </div>
+                  </div>
+                )}
+
+                {/* Bundle Recommendations Card */}
+                {msg.query_type === 'BUNDLE_RECOMMENDATIONS' && Array.isArray(msg.data) && msg.data.length > 0 && (
+                  <div className="rounded-xl bg-[#1C222B] border border-[#2A3441] p-3 text-xs space-y-2.5 mt-2">
+                    <span className="font-mono text-[10px] text-[#F5A524] uppercase font-bold flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      Affinity Bundles & Cross-Sell Opportunities
+                    </span>
+                    <div className="space-y-2">
+                      {msg.data.map((b, i) => (
+                        <div key={i} className="p-2.5 rounded-lg bg-[#151A21] border border-[#2A3441] space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-[#F8FAFC]">{b.bundle_title}</span>
+                            <span className="text-[#10B981] font-mono font-bold">{b.bundle_price}</span>
+                          </div>
+                          <div className="text-[10px] text-[#94A3B8] flex items-center gap-2">
+                            <span>Catalog: {b.original_price}</span>
+                            <span className="text-[#F5A524] font-semibold">{b.discount}</span>
+                          </div>
+                          <p className="text-[10px] text-[#64748B] italic">{b.rationale}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Actionable Recommendations Pills */}
+                {Array.isArray(msg.actionable_recommendations) && msg.actionable_recommendations.length > 0 && (
+                  <div className="pt-2 border-t border-[#2A3441] space-y-1.5">
+                    <span className="text-[10px] font-mono text-[#F5A524] uppercase font-bold flex items-center gap-1">
+                      <Lightbulb className="w-3 h-3" />
+                      Copilot Action Directives:
+                    </span>
+                    <ul className="space-y-1">
+                      {msg.actionable_recommendations.map((rec, i) => (
+                        <li key={i} className="text-[11px] text-[#94A3B8] flex items-start gap-1.5">
+                          <span className="text-[#10B981] font-bold">✓</span>
+                          <span>{rec}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 )}
               </div>
@@ -198,7 +358,7 @@ export default function MerchantAIAssistant() {
             </div>
             <div className="bg-[#151A21] border border-[#2A3441] rounded-2xl px-4 py-3 text-xs text-[#94A3B8] flex items-center gap-2">
               <Database className="w-3.5 h-3.5 text-[#F5A524] animate-spin" />
-              <span>Querying relational database records...</span>
+              <span>Querying live database records and calculating business metrics...</span>
             </div>
           </div>
         )}
@@ -214,7 +374,7 @@ export default function MerchantAIAssistant() {
       >
         <input
           type="text"
-          placeholder="Ask a question about sales, inventory, or orders (e.g. 'What is our total revenue?')..."
+          placeholder="Ask a question about sales, inventory velocity, dead stock, or fulfillment (e.g. 'What products are low in stock?')..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           disabled={loading}
@@ -226,7 +386,7 @@ export default function MerchantAIAssistant() {
           className="px-5 py-3 rounded-xl bg-[#F5A524] hover:bg-[#D97706] text-black font-semibold text-xs transition flex items-center gap-1.5 shadow-sm disabled:opacity-50"
         >
           <Send className="w-3.5 h-3.5" />
-          <span>Ask</span>
+          <span>Ask Copilot</span>
         </button>
       </form>
     </div>

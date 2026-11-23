@@ -46,6 +46,11 @@ class ActionItem(BaseModel):
 class ChatResponse(BaseModel):
     session_id: str
     message: str
+    pitch: Optional[str] = None
+    products: List[Dict[str, Any]] = Field(default_factory=list)
+    bundle_name: Optional[str] = None
+    negotiation: Optional[Dict[str, Any]] = None
+    pipeline_steps: List[Dict[str, Any]] = Field(default_factory=list)
     intent: Optional[Dict[str, Any]] = None
     recommendations: Optional[Dict[str, Any]] = None
     offer: Optional[OfferDetails] = None

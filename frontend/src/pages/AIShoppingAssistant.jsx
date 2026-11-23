@@ -228,15 +228,18 @@ export default function AIShoppingAssistant() {
         <div className="space-y-6 animate-in fade-in">
           {/* Step-by-Step Architecture Pipeline */}
           <AgentJourneyPipeline
-            status={chatResponse.negotiation?.policy_passed === false ? 'VIOLATION' : 'SUCCESS'}
-            steps={chatResponse.pipeline_steps || []}
+            activeStep={chatResponse.negotiation?.policy_passed === false ? 6 : 7}
+            isBlocked={chatResponse.negotiation?.policy_passed === false}
           />
 
           {/* Policy Violation Card if Blocked */}
           {chatResponse.negotiation?.policy_passed === false && (
             <PolicyViolationCard
-              violation={chatResponse.negotiation}
-              originalQuery={inputQuery}
+              policyEvaluation={chatResponse.policy_evaluation || chatResponse.negotiation}
+              onReset={() => {
+                setInputQuery('Suggest a laptop under ₹60,000 for programming.');
+                setChatResponse(null);
+              }}
             />
           )}
 
@@ -351,9 +354,21 @@ export default function AIShoppingAssistant() {
         <ApprovalGateModal
           isOpen={isApprovalOpen}
           onClose={() => setIsApprovalOpen(false)}
-          proposal={chatResponse.negotiation}
-          products={chatResponse.products || []}
+          offer={chatResponse?.offer || {
+            items: (chatResponse?.products || []).map(p => ({
+              name: p.name,
+              quantity: 1,
+              unit_price: p.price,
+              total_price: p.price
+            })),
+            original_total: chatResponse?.negotiation?.original_total,
+            discount_amount: chatResponse?.negotiation?.proposed_discount,
+            discount_percentage: chatResponse?.negotiation?.discount_percentage,
+            final_amount: chatResponse?.negotiation?.final_total
+          }}
+          policyEvaluation={chatResponse?.policy_evaluation || chatResponse?.negotiation}
           onApprove={handleApproveProposal}
+          loading={orderProcessing}
         />
       )}
 

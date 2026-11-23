@@ -83,7 +83,7 @@ export default function MerchantOrders() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2A3441] pb-4">
         <div>
-          <span className="text-[10px] font-mono uppercase bg-[#F5A524]/10 border border-[#F5A524]/30 text-[#F5A524] px-2 py-0.5 rounded">
+          <span className="text-[10px] font-mono uppercase bg-[#F5A524]/10 border border-[#F5A524]/30 text-[#F5A524] px-2 py-0.5 rounded font-bold">
             Settlement & Logistics
           </span>
           <h1 className="text-2xl font-bold text-[#F8FAFC] tracking-tight mt-1">Merchant Orders & Fulfillment</h1>
@@ -99,6 +99,30 @@ export default function MerchantOrders() {
           <RefreshCw className="w-3.5 h-3.5" />
           <span>Refresh</span>
         </button>
+      </div>
+
+      {/* 4 Order Status Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="surface-card p-3.5 space-y-1">
+          <span className="text-[10px] font-mono uppercase text-[#94A3B8] block">Total Volume</span>
+          <span className="text-xl font-bold text-[#F8FAFC]">{orders.length}</span>
+          <span className="text-[10px] text-[#94A3B8] block">Customer transactions</span>
+        </div>
+        <div className="surface-card p-3.5 space-y-1">
+          <span className="text-[10px] font-mono uppercase text-[#10B981] block">Paid Settlements</span>
+          <span className="text-xl font-bold text-[#10B981]">{orders.filter(o => o.status === 'PAID').length}</span>
+          <span className="text-[10px] text-[#94A3B8] block">Verified payments</span>
+        </div>
+        <div className="surface-card p-3.5 space-y-1">
+          <span className="text-[10px] font-mono uppercase text-[#EF4444] block">Pending Dispatch</span>
+          <span className="text-xl font-bold text-[#EF4444]">{orders.filter(o => o.fulfillment_status === 'UNFULFILLED' || !o.fulfillment_status).length}</span>
+          <span className="text-[10px] text-[#94A3B8] block">Awaiting packaging</span>
+        </div>
+        <div className="surface-card p-3.5 space-y-1">
+          <span className="text-[10px] font-mono uppercase text-[#3B82F6] block">Delivered / Shipped</span>
+          <span className="text-xl font-bold text-[#3B82F6]">{orders.filter(o => ['DELIVERED', 'SHIPPED'].includes(o.fulfillment_status)).length}</span>
+          <span className="text-[10px] text-[#94A3B8] block">In transit or complete</span>
+        </div>
       </div>
 
       {/* Filter and Search Bar */}

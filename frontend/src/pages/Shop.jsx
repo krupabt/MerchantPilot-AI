@@ -111,26 +111,33 @@ export default function Shop() {
       {/* Header Banner */}
       <div className="rounded-2xl bg-gradient-to-r from-[#151A21] via-[#1C222B] to-[#151A21] border border-[#2A3441] p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="space-y-2 max-w-xl">
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#F5A524]/10 border border-[#F5A524]/30 text-[11px] font-mono text-[#F5A524]">
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-[#F5A524]/10 border border-[#F5A524]/30 text-[11px] font-mono text-[#F5A524] font-bold">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Developer Hardware Store</span>
+            <span>Customer Demonstration Storefront • Secondary Module</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-[#F8FAFC] tracking-tight">
-            High-Performance Developer Hardware
+            Developer Hardware Catalog
           </h1>
           <p className="text-xs sm:text-sm text-[#94A3B8] leading-relaxed">
-            Authentic hardware inventory, real-time stock levels, and instant Razorpay settlement.
+            Experience end-to-end customer commerce: machine-readable catalog, live stock checks, autonomous AI shopping recommendations, and Razorpay Test Mode settlement.
           </p>
         </div>
 
-        <Link
-          to="/ai-assistant"
-          className="px-5 py-3 rounded-xl bg-[#1C222B] hover:bg-[#242D38] border border-[#F5A524]/40 hover:border-[#F5A524] text-[#F5A524] text-xs font-semibold flex items-center gap-2 transition shrink-0 shadow-sm"
-        >
-          <Sparkles className="w-4 h-4" />
-          <span>Ask AI Shopping Assistant</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </Link>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 shrink-0">
+          <Link
+            to="/"
+            className="px-4 py-2.5 rounded-xl bg-[#1C222B] hover:bg-[#242D38] border border-[#2A3441] text-[#94A3B8] hover:text-[#F8FAFC] text-xs font-semibold flex items-center justify-center gap-2 transition"
+          >
+            <span>← Executive Dashboard</span>
+          </Link>
+          <Link
+            to="/ai-assistant"
+            className="px-4 py-2.5 rounded-xl bg-[#F5A524] hover:bg-[#D97706] text-black text-xs font-semibold flex items-center justify-center gap-2 transition shadow-amber-glow"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>AI Buyer Assistant</span>
+          </Link>
+        </div>
       </div>
 
       {/* Filters & Search Controls */}

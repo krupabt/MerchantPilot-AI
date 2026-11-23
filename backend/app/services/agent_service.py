@@ -292,9 +292,57 @@ class AgentService:
             approval_token=policy_eval.get("approval_token")
         )
 
+        products_list = [
+            {
+                "id": p.id,
+                "name": p.name,
+                "price": float(p.price),
+                "category": p.category,
+                "stock": int(p.stock),
+                "description": p.description or "",
+                "image_url": p.image_url,
+                "specs": p.specs or {}
+            }
+            for p in bundle_products
+        ]
+
+        negotiation_dict = {
+            "policy_passed": policy_eval["passed"],
+            "status": policy_eval["status"],
+            "reason": policy_eval["reason"],
+            "proposed_discount": float(offer.discount_amount),
+            "discount_amount": float(offer.discount_amount),
+            "original_total": float(offer.original_total),
+            "final_total": float(offer.final_amount),
+            "final_amount": float(offer.final_amount),
+            "discount_percentage": float(offer.discount_percentage),
+            "max_allowed_discount": float(policy_eval["max_allowed_discount"]),
+            "requested_discount": float(policy_eval["requested_discount"]),
+            "max_discount_percentage": float(policy_eval["max_discount_percentage"]),
+            "requested_discount_percentage": float(policy_eval["requested_discount_percentage"]),
+            "approval_token": policy_eval.get("approval_token")
+        }
+
+        pipeline_steps_list = [
+            {
+                "id": idx + 1,
+                "step_number": idx + 1,
+                "tool": item.tool,
+                "label": item.tool.replace("_", " ").title(),
+                "summary": item.result_summary,
+                "status": "COMPLETED"
+            }
+            for idx, item in enumerate(action_trace)
+        ]
+
         return ChatResponse(
             session_id=session_id,
             message=explanation_msg,
+            pitch=explanation_msg,
+            products=products_list,
+            bundle_name=offer.bundle_title,
+            negotiation=negotiation_dict,
+            pipeline_steps=pipeline_steps_list,
             intent={
                 "detected_categories": detected_categories,
                 "budget": extracted_budget,

@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Dict, Any, List, Optional
 from backend.app.database import get_db
 from backend.app.models.order import Order
+from backend.app.models.product import Product
 from backend.app.models.audit import AuditLog
 from backend.app.models.user import User
 from backend.app.services.revenue_service import RevenueService
@@ -29,7 +30,15 @@ def get_dashboard_stats(
     blocked_count = db.query(AuditLog).filter(AuditLog.policy_result == "VIOLATION").count()
     total_ai_sessions = db.query(AuditLog.session_id).distinct().count()
 
+    # 4. Active products count
+    active_products_count = db.query(Product).filter(
+        Product.merchant_id == merchant_id,
+        Product.is_active == True
+    ).count()
+
     return {
+        "total_revenue": merchant_stats["total_revenue"],
+        "active_products": active_products_count,
         "revenue_insights": rev_insights,
         "blocked_actions_count": blocked_count,
         "total_ai_sessions": total_ai_sessions,

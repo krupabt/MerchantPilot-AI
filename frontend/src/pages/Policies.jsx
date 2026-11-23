@@ -93,10 +93,10 @@ export default function Policies() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-800 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
-              FEATURE 7 — POLICY & GUARDRAIL ENGINE
+            <span className="text-[10px] font-mono uppercase bg-[#F5A524]/10 border border-[#F5A524]/30 text-[#F5A524] px-2 py-0.5 rounded font-bold">
+              Commercial Policy & Margin Guardrails
             </span>
-            <span className="text-xs text-gray-400 font-mono">Server-Side Deterministic Boundaries</span>
+            <span className="text-xs text-[#94A3B8] font-mono">Server-Side Deterministic Boundaries</span>
           </div>
           <h2 className="text-2xl font-bold text-white tracking-tight">
             Commercial Guardrails & Safety Policies
