@@ -4,8 +4,8 @@
 
 @layer base {
   body {
-    @apply bg-[#0B0F19] text-slate-100 antialiased;
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    @apply bg-[#0B0F14] text-[#F8FAFC] antialiased selection:bg-[#F5A524] selection:text-black;
+    font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
 
   code, pre, .font-mono {
@@ -13,39 +13,40 @@
   }
 }
 
-/* Custom fintech glass and dark gradients */
-.fintech-card {
-  background: rgba(17, 24, 39, 0.75);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(31, 41, 55, 0.8);
+/* Polished Card & Surface Styling */
+.surface-card {
+  background-color: #1C222B;
+  border: 1px solid #2A3441;
+  border-radius: 0.75rem;
 }
 
-.fintech-card-hover {
-  transition: all 0.2s ease-in-out;
+.surface-card-hover {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.fintech-card-hover:hover {
-  border-color: rgba(51, 149, 255, 0.4);
-  box-shadow: 0 4px 20px -2px rgba(51, 149, 255, 0.1);
+.surface-card-hover:hover {
+  border-color: #F5A524;
+  box-shadow: 0 4px 20px -2px rgba(245, 165, 36, 0.12);
   transform: translateY(-2px);
-}
-
-.glow-blue {
-  box-shadow: 0 0 25px -5px rgba(51, 149, 255, 0.3);
-}
-
-.glow-green {
-  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.3);
-}
-
-.glow-red {
-  box-shadow: 0 0 25px -5px rgba(239, 68, 68, 0.3);
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0B0F14;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2A3441;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #F5A524;
 }
 
 ::-webkit-scrollbar-track {

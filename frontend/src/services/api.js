@@ -25,7 +25,7 @@ export const updateCurrentUser = (data) => api.put('/auth/me', data);
 export const logoutUser = () => api.post('/auth/logout');
 
 // Merchant Portal APIs
-export const getMerchantStats = () => api.get('/merchant/stats');
+export const getMerchantStats = () => api.get('/dashboard/stats');
 export const getMerchantProducts = (params) => api.get('/merchant/products', { params });
 export const createMerchantProduct = (data) => api.post('/merchant/products', data);
 export const updateMerchantProduct = (id, data) => api.put(`/merchant/products/${id}`, data);
