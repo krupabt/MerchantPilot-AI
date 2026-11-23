@@ -15,14 +15,17 @@ import {
   RefreshCw,
   Cpu,
   Zap,
-  Lock
+  Lock,
+  ShoppingCart,
+  Check
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import AgentJourneyPipeline from '../components/AgentJourneyPipeline';
 import ApprovalGateModal from '../components/ApprovalGateModal';
 import RazorpayCheckoutModal from '../components/RazorpayCheckoutModal';
 import PolicyViolationCard from '../components/PolicyViolationCard';
-import { postAgentChat, createCheckoutOrder } from '../services/api';
+import { postAgentChat, createCheckoutOrder, addToCustomerCart } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const PRESET_QUERIES = [
   {
@@ -38,13 +41,19 @@ const PRESET_QUERIES = [
     type: 'violation'
   },
   {
-    title: 'Scenario 3: Content Creator Studio Bundle',
+    title: 'Scenario 3: Audio (Headphones under ₹60,000)',
+    query: 'Suggest high-end wireless headphones under ₹60,000.',
+    badge: 'Audio Discovery',
+    type: 'success'
+  },
+  {
+    title: 'Scenario 4: Content Creator Studio Bundle',
     query: 'I need a 4K camera and a heavy duty tripod.',
     badge: 'Creator Affinity',
     type: 'success'
   },
   {
-    title: 'Scenario 4: Ergonomic Remote Workstation',
+    title: 'Scenario 5: Ergonomic Remote Workstation',
     query: 'Looking for a 4K monitor and a webcam under ₹35,000.',
     badge: 'WFH Pair',
     type: 'success'
@@ -52,10 +61,12 @@ const PRESET_QUERIES = [
 ];
 
 export default function AIBuyer() {
+  const { user, isAuthenticated } = useAuth();
   const [inputQuery, setInputQuery] = useState('I need a laptop for programming under ₹65,000 and a mouse.');
   const [loading, setLoading] = useState(false);
   const [chatResponse, setChatResponse] = useState(null);
   const [error, setError] = useState(null);
+  const [cartToast, setCartToast] = useState('');
 
   // Approval & Checkout State
   const [isApprovalOpen, setIsApprovalOpen] = useState(false);
@@ -74,8 +85,8 @@ export default function AIBuyer() {
     try {
       const res = await postAgentChat({
         message: q,
-        customer_name: 'Demo AI Buyer',
-        customer_email: 'buyer@merchantpilot.ai'
+        customer_name: user?.name || 'Demo AI Buyer',
+        customer_email: user?.email || 'buyer@merchantpilot.ai'
       });
       setChatResponse(res.data);
     } catch (err) {
@@ -83,6 +94,41 @@ export default function AIBuyer() {
       setError(err.response?.data?.detail || 'Failed to process inquiry with merchant agent.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddToCartItem = async (productId, name) => {
+    if (!isAuthenticated) {
+      setCartToast('Please sign in to add items to your shopping cart.');
+      setTimeout(() => setCartToast(''), 3500);
+      return;
+    }
+    try {
+      await addToCustomerCart({ product_id: productId, quantity: 1 });
+      setCartToast(`Added "${name}" to your cart!`);
+      setTimeout(() => setCartToast(''), 3000);
+    } catch (err) {
+      setCartToast(err.response?.data?.detail || 'Failed to add item to cart');
+      setTimeout(() => setCartToast(''), 3500);
+    }
+  };
+
+  const handleAddBundleToCart = async () => {
+    if (!chatResponse?.cart_items) return;
+    if (!isAuthenticated) {
+      setCartToast('Please sign in to add items to your shopping cart.');
+      setTimeout(() => setCartToast(''), 3500);
+      return;
+    }
+    try {
+      for (const item of chatResponse.cart_items) {
+        await addToCustomerCart({ product_id: item.product_id, quantity: item.quantity || 1 });
+      }
+      setCartToast(`All bundle items added to your shopping cart!`);
+      setTimeout(() => setCartToast(''), 3000);
+    } catch (err) {
+      setCartToast(err.response?.data?.detail || 'Failed to add bundle to cart');
+      setTimeout(() => setCartToast(''), 3500);
     }
   };
 
@@ -101,9 +147,9 @@ export default function AIBuyer() {
 
       const orderPayload = {
         session_id: chatResponse.session_id,
-        customer_name: 'Demo AI Buyer',
-        customer_email: 'buyer@merchantpilot.ai',
-        customer_phone: '9999999999',
+        customer_name: user?.name || 'Demo AI Buyer',
+        customer_email: user?.email || 'buyer@merchantpilot.ai',
+        customer_phone: user?.phone || '9999999999',
         items: itemsPayload,
         discount_amount: chatResponse.offer.discount_amount,
         bundle_name: chatResponse.offer.bundle_title,
@@ -126,20 +172,20 @@ export default function AIBuyer() {
   const isViolation = chatResponse?.policy_evaluation?.status === 'VIOLATION' || chatResponse?.policy_evaluation?.passed === false;
 
   return (
-    <div className="space-y-8 animate-fadeIn max-w-7xl mx-auto pb-12">
+    <div className="space-y-8 animate-fadeIn max-w-7xl mx-auto pb-16">
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-800 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/30">
-              CORE BUILDATHON DEMO
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+              AI SHOPPING ASSISTANT & AGENT FLOW
             </span>
             <span className="text-xs text-emerald-400 font-mono flex items-center gap-1">
-              <Zap className="w-3.5 h-3.5" /> Agentic Commerce Flow
+              <Zap className="w-3.5 h-3.5" /> Agentic Commerce Engine
             </span>
           </div>
           <h2 className="text-2xl font-bold text-white tracking-tight">
-            AI Buyer → AI Merchant Agent Engine
+            AI Buyer → Merchant Pilot Autonomous Engine
           </h2>
           <p className="text-xs text-gray-400 mt-1 max-w-2xl leading-relaxed">
             Autonomous procurement interface translating natural-language buyer requirements into machine-readable catalog search, revenue-maximizing cross-sells, deterministic policy checks, and Razorpay Test Mode checkout.
@@ -148,20 +194,31 @@ export default function AIBuyer() {
 
         <Link
           to="/audit"
-          className="px-3.5 py-2 rounded-xl bg-gray-850 hover:bg-gray-800 border border-gray-700 text-gray-300 text-xs font-medium flex items-center gap-2 self-start transition"
+          className="px-3.5 py-2 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-700 text-gray-300 text-xs font-medium flex items-center gap-2 self-start transition"
         >
-          <FileSearch className="w-4 h-4 text-blue-400" />
+          <FileSearch className="w-4 h-4 text-amber-400" />
           <span>Inspect Live Audit Trail</span>
         </Link>
       </div>
 
+      {/* Cart Toast Notification */}
+      {cartToast && (
+        <div className="fixed bottom-6 right-6 z-50 p-4 bg-gray-900 border border-amber-500/50 rounded-2xl shadow-2xl flex items-center gap-3 text-xs text-white animate-slideUp">
+          <Check className="w-4 h-4 text-emerald-400" />
+          <span>{cartToast}</span>
+          <Link to="/cart" className="text-amber-400 hover:underline font-bold ml-2">
+            View Cart →
+          </Link>
+        </div>
+      )}
+
       {/* Preset Scenario Buttons for Judges */}
       <div className="space-y-2">
         <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-          <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
           <span>Interactive Demo Scenarios (One-Click Testing)</span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           {PRESET_QUERIES.map((preset, idx) => (
             <button
               key={idx}
@@ -172,19 +229,19 @@ export default function AIBuyer() {
               className={`p-3.5 rounded-xl text-left border transition-all ${
                 preset.type === 'violation'
                   ? 'bg-red-950/20 border-red-500/30 hover:border-red-500/60 text-red-200'
-                  : 'bg-gray-900/70 border-gray-800 hover:border-blue-500/40 text-gray-200'
+                  : 'bg-gray-900/70 border-gray-800 hover:border-amber-500/40 text-gray-200'
               }`}
             >
               <div className="flex items-center justify-between mb-1.5">
                 <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
                   preset.type === 'violation'
                     ? 'bg-red-500/20 text-red-300 border border-red-500/40'
-                    : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                    : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                 }`}>
                   {preset.badge}
                 </span>
               </div>
-              <p className="text-xs font-semibold text-white mb-1">{preset.title}</p>
+              <p className="text-xs font-semibold text-white mb-1 truncate">{preset.title}</p>
               <p className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed">"{preset.query}"</p>
             </button>
           ))}
@@ -192,7 +249,7 @@ export default function AIBuyer() {
       </div>
 
       {/* Natural Language Input Bar */}
-      <div className="bg-[#111827]/90 border border-blue-500/30 rounded-2xl p-4 shadow-xl shadow-blue-950/20">
+      <div className="bg-[#111827]/90 border border-amber-500/30 rounded-2xl p-4 shadow-xl shadow-amber-950/20">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -200,7 +257,7 @@ export default function AIBuyer() {
           }}
           className="flex items-center gap-3"
         >
-          <div className="p-2.5 rounded-xl bg-blue-600/20 text-blue-400 shrink-0">
+          <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400 shrink-0">
             <Bot className="w-5 h-5" />
           </div>
           <input
@@ -213,7 +270,7 @@ export default function AIBuyer() {
           <button
             type="submit"
             disabled={loading || !inputQuery.trim()}
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold text-xs shadow-lg shadow-blue-500/25 flex items-center gap-2 transition disabled:opacity-50 shrink-0"
+            className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs shadow-lg shadow-amber-600/25 flex items-center gap-2 transition disabled:opacity-50 shrink-0"
           >
             {loading ? (
               <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -262,7 +319,7 @@ export default function AIBuyer() {
                 {chatResponse.recommendations?.primary && (
                   <div className="bg-[#111827]/80 border border-gray-800 rounded-2xl p-5 hover:border-gray-700 transition">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                      <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
                         1. PRIMARY CATALOG DISCOVERY
                       </span>
                       <span className="text-xs text-emerald-400 font-mono font-semibold">
@@ -279,11 +336,20 @@ export default function AIBuyer() {
                           ID: {chatResponse.recommendations.primary.id} | Category: {chatResponse.recommendations.primary.category}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <span className="text-xs text-gray-400 block">Catalog Price</span>
-                        <span className="text-xl font-bold text-white font-mono">
-                          ₹{chatResponse.recommendations.primary.price?.toLocaleString('en-IN')}
-                        </span>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <span className="text-xs text-gray-400 block">Catalog Price</span>
+                          <span className="text-xl font-bold text-white font-mono">
+                            ₹{chatResponse.recommendations.primary.price?.toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => handleAddToCartItem(chatResponse.recommendations.primary.id, chatResponse.recommendations.primary.name)}
+                          className="p-2.5 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-800 text-amber-400 hover:text-white transition"
+                          title="Add primary product to cart"
+                        >
+                          <ShoppingCart className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -291,15 +357,15 @@ export default function AIBuyer() {
 
                 {/* Revenue Intelligence Recommendation */}
                 {chatResponse.recommendations?.cross_sell && (
-                  <div className="bg-gradient-to-r from-blue-950/30 to-emerald-950/20 border border-blue-500/30 rounded-2xl p-5 relative overflow-hidden">
+                  <div className="bg-gradient-to-r from-amber-950/20 via-[#141721] to-emerald-950/20 border border-amber-500/30 rounded-2xl p-5 relative overflow-hidden">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-blue-400" />
+                        <Sparkles className="w-4 h-4 text-amber-400" />
                         <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                           2. REVENUE INTELLIGENCE AFFINITY
                         </span>
                       </div>
-                      <span className="text-xs text-blue-300 font-mono">
+                      <span className="text-xs text-amber-400 font-mono">
                         Statistical Lift: {chatResponse.recommendations.cross_sell.lift || '2.4x'}
                       </span>
                     </div>
@@ -313,15 +379,24 @@ export default function AIBuyer() {
                           ID: {chatResponse.recommendations.cross_sell.product_id} | Recommended Accessory
                         </p>
                       </div>
-                      <div className="text-right">
-                        <span className="text-xs text-gray-400 block">Individual Price</span>
-                        <span className="text-lg font-bold text-white font-mono">
-                          ₹{chatResponse.recommendations.cross_sell.price?.toLocaleString('en-IN')}
-                        </span>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <span className="text-xs text-gray-400 block">Individual Price</span>
+                          <span className="text-lg font-bold text-white font-mono">
+                            ₹{chatResponse.recommendations.cross_sell.price?.toLocaleString('en-IN')}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => handleAddToCartItem(chatResponse.recommendations.cross_sell.product_id, chatResponse.recommendations.cross_sell.name)}
+                          className="p-2.5 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-800 text-amber-400 hover:text-white transition"
+                          title="Add recommended accessory to cart"
+                        >
+                          <ShoppingCart className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
 
-                    <div className="bg-gray-900/80 rounded-xl p-3 border border-blue-500/20 text-xs text-blue-200">
+                    <div className="bg-gray-900/80 rounded-xl p-3 border border-amber-500/20 text-xs text-amber-200">
                       💡 <span className="font-semibold text-white">Explainable Rationale:</span> {chatResponse.recommendations.cross_sell.pitch}
                     </div>
                   </div>
@@ -335,7 +410,7 @@ export default function AIBuyer() {
                   <div className="space-y-2 font-mono text-xs">
                     {chatResponse.action_trace?.map((act, i) => (
                       <div key={i} className="p-2.5 rounded-xl bg-gray-900/60 border border-gray-800 flex items-start gap-2.5">
-                        <span className="text-blue-400 font-bold shrink-0">[{act.tool}]</span>
+                        <span className="text-amber-400 font-bold shrink-0">[{act.tool}]</span>
                         <span className="text-gray-300">{act.result_summary}</span>
                       </div>
                     ))}
@@ -346,58 +421,65 @@ export default function AIBuyer() {
               {/* Right Col: Bounded Offer & Approval Gate CTA */}
               <div className="space-y-5">
                 {chatResponse.offer && (
-                  <div className="bg-[#111827] border border-blue-500/40 rounded-2xl p-6 shadow-2xl space-y-5 sticky top-24">
+                  <div className="bg-[#111827] border border-amber-500/40 rounded-2xl p-6 shadow-2xl space-y-5 sticky top-24">
                     <div className="flex items-center justify-between border-b border-gray-800 pb-3">
-                      <div>
-                        <h4 className="text-base font-bold text-white">AI Bounded Bundle Offer</h4>
-                        <p className="text-xs text-gray-400">{chatResponse.offer.bundle_title}</p>
-                      </div>
-                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                        VERIFIED
+                      <span className="text-xs font-bold text-white uppercase tracking-wider">
+                        Generated Commercial Offer
+                      </span>
+                      <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                        {chatResponse.offer.is_bundle ? 'AI Bundle Offer' : 'Single Item'}
                       </span>
                     </div>
 
-                    <div className="space-y-2.5 text-xs">
-                      <div className="flex justify-between text-gray-400">
-                        <span>Combined Catalog Total:</span>
-                        <span className="font-mono text-gray-300">₹{chatResponse.offer.original_total?.toLocaleString('en-IN')}</span>
+                    <div className="space-y-2.5">
+                      <div className="flex justify-between text-xs text-gray-400">
+                        <span>Original Catalog Total</span>
+                        <span className="font-mono line-through text-gray-500">
+                          ₹{chatResponse.offer.original_total?.toLocaleString('en-IN')}
+                        </span>
                       </div>
-                      <div className="flex justify-between text-emerald-400 font-medium">
-                        <span>AI Bundle Discount ({chatResponse.offer.discount_percentage}%):</span>
-                        <span className="font-mono">-₹{chatResponse.offer.discount_amount?.toLocaleString('en-IN')}</span>
+                      <div className="flex justify-between text-xs text-emerald-400 font-semibold">
+                        <span>AI Bundle Discount</span>
+                        <span className="font-mono">
+                          -₹{chatResponse.offer.discount_amount?.toLocaleString('en-IN')} ({chatResponse.offer.discount_percentage?.toFixed(1)}%)
+                        </span>
                       </div>
-                      <div className="border-t border-gray-800 pt-3 flex justify-between items-baseline">
-                        <span className="text-sm font-bold text-white">Final Payable:</span>
-                        <span className="text-2xl font-bold text-blue-400 font-mono">
+                      <div className="border-t border-gray-800 pt-3 flex justify-between items-center">
+                        <span className="text-sm font-bold text-white">Final Payable Amount</span>
+                        <span className="text-2xl font-black text-amber-400 font-mono">
                           ₹{chatResponse.offer.final_amount?.toLocaleString('en-IN')}
                         </span>
                       </div>
                     </div>
 
-                    {/* Policy Passed Note */}
-                    <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/30 text-xs text-emerald-300 flex items-start gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    {/* Policy Passed Badge */}
+                    <div className="p-3 bg-emerald-950/20 border border-emerald-500/30 rounded-xl flex items-center gap-2.5 text-xs text-emerald-300">
+                      <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
                       <div>
-                        <span className="font-bold block">Guardrail Limit Passed:</span>
-                        <span className="text-[11px] text-gray-300">
-                          {chatResponse.offer.discount_percentage}% is below merchant's 10.0% max discount ceiling.
+                        <span className="font-semibold block">Commercial Policy Verified</span>
+                        <span className="text-[11px] text-emerald-400/80">
+                          Within merchant 10% max allowable discount limit.
                         </span>
                       </div>
                     </div>
 
-                    {/* Approval Trigger Button */}
-                    <button
-                      type="button"
-                      onClick={() => setIsApprovalOpen(true)}
-                      className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 via-blue-500 to-emerald-500 hover:from-blue-500 hover:to-emerald-400 text-white font-bold text-sm shadow-xl shadow-blue-500/25 flex items-center justify-center gap-2 transition"
-                    >
-                      <Lock className="w-4 h-4" />
-                      <span>Review & Approve Payment</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
+                    {/* Approval Action Button */}
+                    <div className="space-y-2 pt-2">
+                      <button
+                        onClick={() => setIsApprovalOpen(true)}
+                        className="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-lg shadow-amber-600/25 flex items-center justify-center gap-2 transition"
+                      >
+                        <Lock className="w-4 h-4" />
+                        <span>Review & Approve via Gate</span>
+                      </button>
 
-                    <div className="text-center text-[10px] text-gray-500">
-                      Requires explicit human authorization prior to Razorpay order generation.
+                      <button
+                        onClick={handleAddBundleToCart}
+                        className="w-full py-2.5 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-800 text-gray-300 hover:text-white font-medium text-xs flex items-center justify-center gap-2 transition"
+                      >
+                        <ShoppingCart className="w-4 h-4 text-amber-400" />
+                        <span>Add Entire Bundle to Cart</span>
+                      </button>
                     </div>
                   </div>
                 )}
@@ -407,25 +489,54 @@ export default function AIBuyer() {
         </div>
       )}
 
-      {/* Approval Gate Modal */}
-      <ApprovalGateModal
-        isOpen={isApprovalOpen}
-        onClose={() => setIsApprovalOpen(false)}
-        onApprove={handleApproveOffer}
-        offer={chatResponse?.offer}
-        policyEvaluation={chatResponse?.policy_evaluation}
-        loading={orderProcessing}
-      />
+      {/* Human-In-The-Loop Approval Gate Modal */}
+      {isApprovalOpen && chatResponse && (
+        <ApprovalGateModal
+          isOpen={isApprovalOpen}
+          onClose={() => setIsApprovalOpen(false)}
+          onApprove={handleApproveOffer}
+          offer={chatResponse.offer}
+          policyEvaluation={chatResponse.policy_evaluation}
+          loading={orderProcessing}
+        />
+      )}
 
       {/* Razorpay Test Mode Checkout Modal */}
-      <RazorpayCheckoutModal
-        isOpen={isCheckoutOpen}
-        onClose={() => setIsCheckoutOpen(false)}
-        orderData={createdOrderData}
-        onPaymentSuccess={(res) => {
-          setSettledPayment(res);
-        }}
-      />
+      {isCheckoutOpen && createdOrderData && (
+        <RazorpayCheckoutModal
+          isOpen={isCheckoutOpen}
+          onClose={() => setIsCheckoutOpen(false)}
+          orderData={createdOrderData}
+          onPaymentSuccess={(paymentResult) => {
+            setSettledPayment(paymentResult);
+            setIsCheckoutOpen(false);
+          }}
+        />
+      )}
+
+      {/* Settled Payment Success Confirmation Banner */}
+      {settledPayment && (
+        <div className="p-6 rounded-3xl bg-emerald-950/30 border border-emerald-500/40 space-y-3 animate-slideUp">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-white">Payment Successfully Settled in Test Mode!</h3>
+              <p className="text-xs text-emerald-300">
+                Cryptographic HMAC signature verified. Order #{settledPayment.order_id} recorded in database ledger.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 text-xs font-mono text-gray-300 pt-2">
+            <span>Payment ID: <strong className="text-white">{settledPayment.razorpay_payment_id}</strong></span>
+            <span>Settled Amount: <strong className="text-emerald-400">₹{settledPayment.amount_inr?.toLocaleString('en-IN')}</strong></span>
+            <Link to="/transactions" className="text-amber-400 hover:underline">
+              View in Settlement Ledger →
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
