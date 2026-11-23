@@ -8,7 +8,9 @@ import {
   ShoppingBag,
   Zap,
   Info,
-  CheckCircle2
+  CheckCircle2,
+  AlertTriangle,
+  Database
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -20,7 +22,7 @@ import {
 } from 'recharts';
 import { getRevenueInsights } from '../services/api';
 
-const COLORS = ['#3395FF', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#6366F1'];
+const COLORS = ['#F59E0B', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#D97706'];
 
 export default function RevenueInsights() {
   const [data, setData] = useState(null);
@@ -45,8 +47,8 @@ export default function RevenueInsights() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
-          <p className="text-sm text-gray-400 font-medium">Mining Basket Co-Occurrences & Rules...</p>
+          <div className="w-10 h-10 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin" />
+          <p className="text-sm text-gray-400 font-medium">Mining Genuine Apriori Co-Occurrences & Association Rules...</p>
         </div>
       </div>
     );
@@ -57,62 +59,79 @@ export default function RevenueInsights() {
     value: Math.round(value)
   }));
 
+  const isInsufficient = data?.status === 'INSUFFICIENT_DATA' || (data?.total_orders || 0) < 5;
+
   return (
     <div className="space-y-8 animate-fadeIn max-w-7xl mx-auto pb-12">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-800 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-              FEATURE 4 — REVENUE INTELLIGENCE
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+              REVENUE INTELLIGENCE ENGINE
             </span>
-            <span className="text-xs text-gray-400 font-mono">Market Basket Analysis & Lift Mining</span>
+            <span className="text-xs text-gray-400 font-mono">Apriori Market Basket Association Mining</span>
           </div>
           <h2 className="text-2xl font-bold text-white tracking-tight">
-            Revenue Intelligence & Association Rules
+            Market Basket Analysis & Lift Mining
           </h2>
           <p className="text-xs text-gray-400 mt-1 max-w-2xl leading-relaxed">
             Discover statistical product affinity pairings, high-converting bundle discount opportunities, and autonomous upselling pathways derived from real transaction baskets.
           </p>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-gray-900 border border-gray-800 text-xs text-gray-400 font-mono">
-          Model: <span className="text-emerald-400 font-bold">Apriori / Lift Affinity</span>
+        <div className="p-2.5 rounded-xl bg-gray-900 border border-gray-800 text-xs text-gray-400 font-mono flex items-center gap-2">
+          <Database className="w-4 h-4 text-amber-400" />
+          <span>Sample Size: <strong className="text-white">{data?.sample_size || data?.total_orders || 0} Orders</strong></span>
         </div>
       </div>
+
+      {/* Insufficient Data Banner */}
+      {isInsufficient && (
+        <div className="p-4 rounded-2xl bg-amber-950/30 border border-amber-500/40 flex items-start gap-3 text-xs text-amber-300">
+          <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold block text-sm text-white mb-1">Insufficient Transaction History</span>
+            <p className="leading-relaxed">
+              Market basket analysis requires at least 5 completed customer orders to compute statistically significant support, confidence, and lift metrics.
+              Complete orders in the store or test via the AI Shopping Assistant to generate live baskets.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Primary KPI Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-[#111827]/80 border border-gray-800 rounded-2xl p-5">
           <span className="text-xs text-gray-400 font-medium block mb-2">Total Gross Volume</span>
           <div className="text-2xl font-bold text-white font-mono">
-            ₹{data?.total_revenue?.toLocaleString('en-IN')}
+            ₹{data?.total_revenue?.toLocaleString('en-IN') || 0}
           </div>
-          <span className="text-[11px] text-gray-500 block mt-1">{data?.total_orders} Settled Orders</span>
+          <span className="text-[11px] text-gray-500 block mt-1">{data?.total_orders || 0} Settled Orders</span>
         </div>
 
-        <div className="bg-[#111827]/80 border border-blue-500/30 rounded-2xl p-5">
-          <span className="text-xs text-blue-300 font-medium block mb-2">AI-Assisted Revenue</span>
-          <div className="text-2xl font-bold text-blue-400 font-mono">
-            ₹{data?.ai_assisted_revenue?.toLocaleString('en-IN')}
+        <div className="bg-[#111827]/80 border border-amber-500/30 rounded-2xl p-5">
+          <span className="text-xs text-amber-300 font-medium block mb-2">AI-Assisted Revenue</span>
+          <div className="text-2xl font-bold text-amber-400 font-mono">
+            ₹{data?.ai_assisted_revenue?.toLocaleString('en-IN') || 0}
           </div>
-          <span className="text-[11px] text-blue-400/80 block mt-1">{data?.ai_revenue_percentage}% Contribution</span>
+          <span className="text-[11px] text-amber-400/80 block mt-1">{data?.ai_revenue_percentage || 0}% Contribution</span>
         </div>
 
         <div className="bg-[#111827]/80 border border-gray-800 rounded-2xl p-5">
           <span className="text-xs text-gray-400 font-medium block mb-2">Cross-Sell Bundle Volume</span>
           <div className="text-2xl font-bold text-emerald-400 font-mono">
-            ₹{data?.cross_sell_revenue?.toLocaleString('en-IN')}
+            ₹{data?.cross_sell_revenue?.toLocaleString('en-IN') || 0}
           </div>
           <span className="text-[11px] text-emerald-500 block mt-1">Multi-item Affinity Checkout</span>
         </div>
 
         <div className="bg-[#111827]/80 border border-gray-800 rounded-2xl p-5">
-          <span className="text-xs text-gray-400 font-medium block mb-2">Upsell Tier Expansion</span>
-          <div className="text-2xl font-bold text-purple-400 font-mono">
-            ₹{data?.upsell_revenue?.toLocaleString('en-IN')}
+          <span className="text-xs text-gray-400 font-medium block mb-2">Average Order Value (AOV)</span>
+          <div className="text-2xl font-bold text-white font-mono">
+            ₹{data?.average_order_value?.toLocaleString('en-IN') || 0}
           </div>
-          <span className="text-[11px] text-purple-400/80 block mt-1">Spec-driven Upgrades</span>
+          <span className="text-[11px] text-gray-500 block mt-1">Basket Size per Order</span>
         </div>
       </div>
 
@@ -120,65 +139,71 @@ export default function RevenueInsights() {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-blue-400" />
+            <Sparkles className="w-4 h-4 text-amber-400" />
             <span>Autonomous Bundle Opportunities (Mined from Transactions)</span>
           </h3>
-          <span className="text-[11px] text-gray-500 font-mono">Merchant Policy Compliant</span>
+          <span className="text-[11px] text-gray-500 font-mono">Merchant Policy Compliant (≤10%)</span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {data?.active_bundle_opportunities?.map((b) => (
-            <div
-              key={b.bundle_id}
-              className="bg-[#111827]/80 border border-gray-800 hover:border-blue-500/40 rounded-2xl p-5 flex flex-col justify-between transition group"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                    {b.bundle_id}
-                  </span>
-                  <span className="text-[11px] font-mono font-semibold text-emerald-400">
-                    {b.historical_conversion_rate}% Conv.
-                  </span>
-                </div>
-
-                <h4 className="text-base font-bold text-white group-hover:text-blue-400 transition mb-2">
-                  {b.title}
-                </h4>
-
-                <div className="bg-gray-900/60 rounded-xl p-3 border border-gray-800 space-y-1 mb-3 text-xs">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
-                    Products Included:
-                  </span>
-                  {b.product_names.map((name, idx) => (
-                    <div key={idx} className="flex items-center gap-1.5 text-gray-300 truncate">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                      <span>{name}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <p className="text-xs text-gray-400 leading-relaxed mb-4">
-                  💡 <span className="font-semibold text-gray-300">Rationale:</span> {b.rationale}
-                </p>
-              </div>
-
-              <div className="border-t border-gray-800 pt-3 flex items-center justify-between">
+        {data?.active_bundle_opportunities?.length === 0 ? (
+          <div className="text-center py-12 bg-[#111827]/60 border border-gray-800 rounded-2xl text-xs text-gray-400">
+            No active bundles mined yet. More order history is required to determine product affinity pairs.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {data?.active_bundle_opportunities?.map((b) => (
+              <div
+                key={b.bundle_id}
+                className="bg-[#111827]/80 border border-gray-800 hover:border-amber-500/40 rounded-2xl p-5 flex flex-col justify-between transition group shadow-lg"
+              >
                 <div>
-                  <span className="text-[10px] text-gray-500 line-through block">
-                    ₹{b.individual_total?.toLocaleString('en-IN')}
-                  </span>
-                  <span className="text-lg font-bold text-white font-mono">
-                    ₹{b.bundle_price?.toLocaleString('en-IN')}
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                      {b.bundle_id}
+                    </span>
+                    <span className="text-[11px] font-mono font-semibold text-emerald-400">
+                      {b.historical_conversion_rate}% Affinity
+                    </span>
+                  </div>
+
+                  <h4 className="text-base font-bold text-white group-hover:text-amber-400 transition mb-2">
+                    {b.title}
+                  </h4>
+
+                  <div className="bg-gray-900/60 rounded-xl p-3 border border-gray-800 space-y-1 mb-3 text-xs">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
+                      Products Included:
+                    </span>
+                    {b.product_names.map((name, idx) => (
+                      <div key={idx} className="flex items-center gap-1.5 text-gray-300 truncate">
+                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                        <span>{name}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <p className="text-xs text-gray-400 leading-relaxed mb-4">
+                    💡 <span className="font-semibold text-gray-300">Rationale:</span> {b.rationale}
+                  </p>
+                </div>
+
+                <div className="border-t border-gray-800 pt-3 flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] text-gray-500 line-through block">
+                      ₹{b.individual_total?.toLocaleString('en-IN')}
+                    </span>
+                    <span className="text-lg font-bold text-white font-mono">
+                      ₹{b.bundle_price?.toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 text-xs font-semibold border border-emerald-500/20">
+                    Save ₹{b.discount_amount} ({b.discount_pct}%)
                   </span>
                 </div>
-                <span className="px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 text-xs font-semibold border border-emerald-500/20">
-                  Save ₹{b.discount_amount} ({b.discount_pct}%)
-                </span>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Mined Association Rules Table & Category Distribution */}
@@ -200,27 +225,31 @@ export default function RevenueInsights() {
                 <tr className="border-b border-gray-800 text-gray-400 font-medium">
                   <th className="py-2.5 px-3">Antecedent (If Bought)</th>
                   <th className="py-2.5 px-3">Consequent (Recommend)</th>
+                  <th className="py-2.5 px-2 text-center">Support</th>
                   <th className="py-2.5 px-2 text-center">Confidence</th>
                   <th className="py-2.5 px-2 text-center">Lift</th>
                   <th className="py-2.5 px-3">Explainable Pitch</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-800/60">
+              <tbody className="divide-y divide-gray-800/60 font-mono">
                 {data?.top_associations?.map((rule, idx) => (
                   <tr key={idx} className="hover:bg-gray-900/40 transition">
-                    <td className="py-3 px-3 font-medium text-white max-w-[140px] truncate">
+                    <td className="py-3 px-3 font-sans font-medium text-white max-w-[140px] truncate">
                       {rule.antecedent_name}
                     </td>
-                    <td className="py-3 px-3 font-medium text-blue-400 max-w-[140px] truncate">
+                    <td className="py-3 px-3 font-sans font-medium text-amber-400 max-w-[140px] truncate">
                       {rule.consequent_name}
                     </td>
-                    <td className="py-3 px-2 text-center font-mono text-emerald-400 font-bold">
+                    <td className="py-3 px-2 text-center text-gray-300">
+                      {rule.support}
+                    </td>
+                    <td className="py-3 px-2 text-center text-emerald-400 font-bold">
                       {Math.round(rule.confidence * 100)}%
                     </td>
-                    <td className="py-3 px-2 text-center font-mono text-purple-400 font-bold">
+                    <td className="py-3 px-2 text-center text-amber-400 font-bold">
                       {rule.lift}x
                     </td>
-                    <td className="py-3 px-3 text-gray-400 leading-snug max-w-[200px]">
+                    <td className="py-3 px-3 font-sans text-gray-400 leading-snug max-w-[200px]">
                       {rule.recommendation_pitch}
                     </td>
                   </tr>
@@ -264,8 +293,8 @@ export default function RevenueInsights() {
             </div>
           </div>
 
-          <div className="text-[11px] text-gray-500 pt-3 border-t border-gray-800 text-center">
-            Mined from 60+ historical customer baskets
+          <div className="text-[11px] text-gray-500 pt-3 border-t border-gray-800 text-center font-mono">
+            Mined from {data?.sample_size || data?.total_orders || 0} customer baskets
           </div>
         </div>
       </div>

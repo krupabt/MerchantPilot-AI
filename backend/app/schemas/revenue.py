@@ -36,3 +36,6 @@ class RevenueInsightsResponse(BaseModel):
     top_associations: List[AssociationRule]
     active_bundle_opportunities: List[BundleOpportunity]
     category_breakdown: Dict[str, float]
+    sample_size: Optional[int] = None
+    status: Optional[str] = "SUCCESS"
+    message: Optional[str] = None
