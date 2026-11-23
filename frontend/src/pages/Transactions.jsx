@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Receipt, Search, Filter, CheckCircle2, AlertCircle, RefreshCw, CreditCard, Bot } from 'lucide-react';
-import { getTransactions } from '../services/api';
+import { Receipt, Search, Filter, CheckCircle2, AlertCircle, RefreshCw, CreditCard, Bot, Truck, Check } from 'lucide-react';
+import { getTransactions, updateOrderFulfillment } from '../services/api';
 
 export default function Transactions() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterChannel, setFilterChannel] = useState('ALL'); // 'ALL' | 'AI' | 'DIRECT'
+  const [updatingId, setUpdatingId] = useState(null);
+  const [successMsg, setSuccessMsg] = useState('');
 
   const fetchTransactions = async () => {
     setLoading(true);
@@ -23,6 +25,22 @@ export default function Transactions() {
     fetchTransactions();
   }, []);
 
+  const handleFulfillmentChange = async (orderId, newStatus) => {
+    setUpdatingId(orderId);
+    try {
+      await updateOrderFulfillment(orderId, newStatus);
+      setTransactions(prev =>
+        prev.map(t => t.id === orderId ? { ...t, fulfillment_status: newStatus } : t)
+      );
+      setSuccessMsg(`Order ${orderId} updated to ${newStatus}`);
+      setTimeout(() => setSuccessMsg(''), 3000);
+    } catch (err) {
+      console.error('Failed to update fulfillment:', err);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   const filtered = transactions.filter((t) => {
     if (filterChannel === 'AI') return t.is_ai_assisted;
     if (filterChannel === 'DIRECT') return !t.is_ai_assisted;
@@ -35,16 +53,16 @@ export default function Transactions() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-800 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/30">
-              SETTLEMENT LEDGER
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+              SETTLEMENT & FULFILLMENT LEDGER
             </span>
-            <span className="text-xs text-gray-400 font-mono">Razorpay Order & Payment Records</span>
+            <span className="text-xs text-gray-400 font-mono">Razorpay Order & Fulfillment Records</span>
           </div>
           <h2 className="text-2xl font-bold text-white tracking-tight">
-            Order Transactions & Settlements
+            Order Transactions & Fulfillment
           </h2>
           <p className="text-xs text-gray-400 mt-1 max-w-2xl leading-relaxed">
-            Real-time financial audit records linking AI buyer sessions, server-calculated amounts, Razorpay order IDs, and HMAC-SHA256 signature verifications.
+            Real-time financial audit records linking AI buyer sessions, server-calculated amounts, Razorpay order IDs, HMAC-SHA256 signature verifications, and order fulfillment status.
           </p>
         </div>
 
@@ -57,12 +75,19 @@ export default function Transactions() {
         </button>
       </div>
 
+      {successMsg && (
+        <div className="p-3 bg-emerald-950/40 border border-emerald-500/40 rounded-xl text-emerald-300 text-xs flex items-center gap-2">
+          <Check className="w-4 h-4 text-emerald-400" />
+          <span>{successMsg}</span>
+        </div>
+      )}
+
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 bg-[#111827]/80 border border-gray-800 rounded-2xl p-2 w-fit">
         <button
           onClick={() => setFilterChannel('ALL')}
           className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition ${
-            filterChannel === 'ALL' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
+            filterChannel === 'ALL' ? 'bg-amber-600 text-white' : 'text-gray-400 hover:text-white'
           }`}
         >
           All Orders ({transactions.length})
@@ -70,7 +95,7 @@ export default function Transactions() {
         <button
           onClick={() => setFilterChannel('AI')}
           className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition ${
-            filterChannel === 'AI' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
+            filterChannel === 'AI' ? 'bg-amber-600 text-white' : 'text-gray-400 hover:text-white'
           }`}
         >
           AI-Assisted Only
@@ -78,7 +103,7 @@ export default function Transactions() {
         <button
           onClick={() => setFilterChannel('DIRECT')}
           className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition ${
-            filterChannel === 'DIRECT' ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-white'
+            filterChannel === 'DIRECT' ? 'bg-amber-600 text-white' : 'text-gray-400 hover:text-white'
           }`}
         >
           Direct Storefront
@@ -89,7 +114,7 @@ export default function Transactions() {
       <div className="bg-[#111827]/80 border border-gray-800 rounded-2xl overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <div className="w-8 h-8 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
+            <div className="w-8 h-8 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin" />
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -102,6 +127,7 @@ export default function Transactions() {
                   <th className="py-3 px-4">Pricing Breakdown</th>
                   <th className="py-3 px-4">Razorpay Reference</th>
                   <th className="py-3 px-4">Verification</th>
+                  <th className="py-3 px-4">Fulfillment</th>
                   <th className="py-3 px-4 text-right">Status</th>
                 </tr>
               </thead>
@@ -126,7 +152,7 @@ export default function Transactions() {
 
                     <td className="py-3.5 px-4 font-sans">
                       {tx.is_ai_assisted ? (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center gap-1 w-fit">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1 w-fit">
                           <Bot className="w-3 h-3" /> AI Agent
                         </span>
                       ) : (
@@ -172,6 +198,31 @@ export default function Transactions() {
                           UNVERIFIED
                         </span>
                       )}
+                    </td>
+
+                    <td className="py-3.5 px-4 font-sans">
+                      <select
+                        value={tx.fulfillment_status || 'UNFULFILLED'}
+                        disabled={updatingId === tx.id}
+                        onChange={(e) => handleFulfillmentChange(tx.id, e.target.value)}
+                        className={`text-xs px-2.5 py-1 rounded-lg border bg-gray-900 font-medium focus:outline-none transition ${
+                          tx.fulfillment_status === 'DELIVERED'
+                            ? 'text-emerald-400 border-emerald-500/30'
+                            : tx.fulfillment_status === 'SHIPPED'
+                            ? 'text-blue-400 border-blue-500/30'
+                            : tx.fulfillment_status === 'PROCESSING'
+                            ? 'text-amber-400 border-amber-500/30'
+                            : tx.fulfillment_status === 'CANCELLED'
+                            ? 'text-red-400 border-red-500/30'
+                            : 'text-gray-400 border-gray-700'
+                        }`}
+                      >
+                        <option value="UNFULFILLED">UNFULFILLED</option>
+                        <option value="PROCESSING">PROCESSING</option>
+                        <option value="SHIPPED">SHIPPED</option>
+                        <option value="DELIVERED">DELIVERED</option>
+                        <option value="CANCELLED">CANCELLED</option>
+                      </select>
                     </td>
 
                     <td className="py-3.5 px-4 text-right">

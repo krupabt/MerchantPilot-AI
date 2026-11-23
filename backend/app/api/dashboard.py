@@ -1,75 +1,77 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query, Header, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import func
-from typing import Dict, Any, List
-from datetime import datetime, timedelta
+from typing import Dict, Any, List, Optional
 from backend.app.database import get_db
-from backend.app.models.order import Order, OrderItem
+from backend.app.models.order import Order
 from backend.app.models.audit import AuditLog
-from backend.app.models.product import Product
+from backend.app.models.user import User
 from backend.app.services.revenue_service import RevenueService
+from backend.app.services.merchant_service import MerchantService
+from backend.app.api.deps import get_optional_user
 
 router = APIRouter(prefix="/dashboard", tags=["Merchant Dashboard"])
 
-@router.get("/stats", summary="Overview Metrics for Fintech Dashboard")
-def get_dashboard_stats(db: Session = Depends(get_db)):
+@router.get("/stats", summary="Overview Metrics for Merchant Fintech Dashboard")
+def get_dashboard_stats(
+    current_user: Optional[User] = Depends(get_optional_user),
+    db: Session = Depends(get_db)
+):
+    # Resolve merchant_id from token if available, fallback to demo store "m_1001"
+    merchant_id = current_user.merchant_id if (current_user and current_user.merchant_id) else "m_1001"
+    
+    # 1. Real database-derived statistics via MerchantService
+    merchant_stats = MerchantService.get_merchant_stats(db, merchant_id=merchant_id)
+    
+    # 2. Revenue insights from real transaction baskets
     rev_insights = RevenueService.get_revenue_insights(db)
     
-    # Blocked actions count
+    # 3. Policy violations & AI sessions from audit logs
     blocked_count = db.query(AuditLog).filter(AuditLog.policy_result == "VIOLATION").count()
-    total_ai_sessions = db.query(func.count(func.distinct(AuditLog.session_id))).scalar() or 0
-    total_orders = db.query(Order).count()
-    
-    # Recent orders
-    recent_orders_db = db.query(Order).order_by(Order.created_at.desc()).limit(8).all()
-    recent_orders = [
-        {
-            "id": o.id,
-            "amount": o.final_amount,
-            "status": o.status,
-            "is_ai_assisted": o.is_ai_assisted,
-            "is_bundle": o.is_bundle,
-            "bundle_name": o.bundle_name,
-            "items_count": len(o.items),
-            "created_at": o.created_at.isoformat()
-        }
-        for o in recent_orders_db
-    ]
-
-    # Time series simulation for revenue graph
-    now = datetime.utcnow()
-    revenue_trend = [
-        {"day": (now - timedelta(days=6)).strftime("%a"), "traditional_revenue": 145000, "ai_revenue": 45000, "bundles_sold": 6},
-        {"day": (now - timedelta(days=5)).strftime("%a"), "traditional_revenue": 160000, "ai_revenue": 62000, "bundles_sold": 9},
-        {"day": (now - timedelta(days=4)).strftime("%a"), "traditional_revenue": 138000, "ai_revenue": 78000, "bundles_sold": 11},
-        {"day": (now - timedelta(days=3)).strftime("%a"), "traditional_revenue": 172000, "ai_revenue": 95000, "bundles_sold": 14},
-        {"day": (now - timedelta(days=2)).strftime("%a"), "traditional_revenue": 190000, "ai_revenue": 120000, "bundles_sold": 18},
-        {"day": (now - timedelta(days=1)).strftime("%a"), "traditional_revenue": 210000, "ai_revenue": 142000, "bundles_sold": 22},
-        {"day": now.strftime("%a"), "traditional_revenue": 235000, "ai_revenue": 168000, "bundles_sold": 26},
-    ]
+    total_ai_sessions = db.query(AuditLog.session_id).distinct().count()
 
     return {
         "revenue_insights": rev_insights,
         "blocked_actions_count": blocked_count,
-        "total_ai_sessions": max(total_ai_sessions, 48),
-        "total_orders": total_orders,
-        "recent_orders": recent_orders,
-        "revenue_trend": revenue_trend
+        "total_ai_sessions": total_ai_sessions,
+        "total_orders": merchant_stats["total_orders"],
+        "pending_orders": merchant_stats["pending_orders"],
+        "completed_orders": merchant_stats["completed_orders"],
+        "average_order_value": merchant_stats["average_order_value"],
+        "out_of_stock_count": merchant_stats["out_of_stock_count"],
+        "low_stock_count": merchant_stats["low_stock_count"],
+        "top_selling_products": merchant_stats["top_selling_products"],
+        "low_stock_products": merchant_stats["low_stock_products"],
+        "recent_orders": merchant_stats["recent_orders"],
+        "revenue_trend": merchant_stats["revenue_trend"]
     }
 
 @router.get("/transactions", summary="List All Merchant Transactions")
-def get_transactions(db: Session = Depends(get_db)):
-    orders = db.query(Order).order_by(Order.created_at.desc()).limit(100).all()
+def get_transactions(
+    current_user: Optional[User] = Depends(get_optional_user),
+    db: Session = Depends(get_db)
+):
+    merchant_id = current_user.merchant_id if (current_user and current_user.merchant_id) else "m_1001"
+    orders = (
+        db.query(Order)
+        .filter(Order.merchant_id == merchant_id)
+        .order_by(Order.created_at.desc())
+        .limit(100)
+        .all()
+    )
     res = []
     for o in orders:
         res.append({
             "id": o.id,
             "session_id": o.session_id,
+            "customer_name": o.customer_name or "Store Customer",
+            "customer_email": o.customer_email or "",
+            "customer_phone": o.customer_phone or "",
             "subtotal": o.subtotal_amount,
             "discount": o.discount_amount,
             "final_amount": o.final_amount,
             "currency": o.currency,
             "status": o.status,
+            "fulfillment_status": o.fulfillment_status or "UNFULFILLED",
             "is_ai_assisted": o.is_ai_assisted,
             "is_bundle": o.is_bundle,
             "bundle_name": o.bundle_name,
@@ -89,6 +91,6 @@ def get_transactions(db: Session = Depends(get_db)):
                 "verification_status": o.payment.verification_status,
                 "status": o.payment.status
             } if o.payment else None,
-            "created_at": o.created_at.isoformat()
+            "created_at": o.created_at.isoformat() if o.created_at else ""
         })
     return res

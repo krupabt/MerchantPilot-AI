@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from backend.app.config import settings
 from backend.app.database import engine, Base, SessionLocal
-from backend.app.api import api_router
+from backend.app.api import api_router, root_api_router
 from backend.app.seed.seed_data import seed_database
 from backend.app.models.product import Product
 
@@ -40,8 +40,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include All API Routers under /api
+# Include All API Routers under /api and root fallback
 app.include_router(api_router)
+app.include_router(root_api_router)
 
 @app.get("/")
 def root():
@@ -64,6 +65,7 @@ def root():
     }
 
 @app.get("/health")
+@app.get("/api/health")
 def health_check():
     return {"status": "healthy", "service": "MerchantPilot AI Backend"}
 

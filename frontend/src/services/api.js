@@ -24,6 +24,30 @@ export const getCurrentUser = () => api.get('/auth/me');
 export const updateCurrentUser = (data) => api.put('/auth/me', data);
 export const logoutUser = () => api.post('/auth/logout');
 
+// Merchant Portal APIs
+export const getMerchantStats = () => api.get('/merchant/stats');
+export const getMerchantProducts = (params) => api.get('/merchant/products', { params });
+export const createMerchantProduct = (data) => api.post('/merchant/products', data);
+export const updateMerchantProduct = (id, data) => api.put(`/merchant/products/${id}`, data);
+export const archiveMerchantProduct = (id) => api.delete(`/merchant/products/${id}`);
+export const updateProductStock = (id, stock) => api.post(`/merchant/products/${id}/stock`, { stock });
+export const updateMerchantStock = updateProductStock;
+export const getMerchantOrders = (params) => api.get('/merchant/orders', { params });
+export const getMerchantOrderDetails = (id) => api.get(`/merchant/orders/${id}`);
+export const updateOrderFulfillment = (id, fulfillment_status) =>
+  api.put(`/merchant/orders/${id}/fulfillment`, { fulfillment_status });
+export const getMerchantCategories = () => api.get('/merchant/categories');
+export const createMerchantCategory = (data) => api.post('/merchant/categories', data);
+
+// Customer Storefront & Cart APIs
+export const getCustomerCart = () => api.get('/customer/cart');
+export const addToCustomerCart = (data) => api.post('/customer/cart/items', data);
+export const updateCustomerCartItem = (itemId, quantity) => api.put(`/customer/cart/items/${itemId}`, { quantity });
+export const removeCustomerCartItem = (itemId) => api.delete(`/customer/cart/items/${itemId}`);
+export const clearCustomerCart = () => api.delete('/customer/cart');
+export const getCustomerOrders = () => api.get('/customer/orders');
+export const getCustomerOrderDetails = (id) => api.get(`/customer/orders/${id}`);
+
 // Agent APIs
 export const getAgentCatalog = (params) => api.get('/agent/catalog', { params });
 export const getAgentProduct = (id) => api.get(`/agent/products/${id}`);
@@ -54,5 +78,8 @@ export const getAuditLogs = (params) => api.get('/audit/logs', { params });
 // Dashboard Stats & Transactions
 export const getDashboardStats = () => api.get('/dashboard/stats');
 export const getTransactions = () => api.get('/dashboard/transactions');
+
+// AI Assistant APIs
+export const postMerchantAIAssistant = (query) => api.post('/merchant/ai-assistant', { query });
 
 export default api;
