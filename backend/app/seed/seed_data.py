@@ -407,6 +407,10 @@ def seed_database(db: Session = None):
             )
             db.add(merchant_user)
             db.flush()
+        else:
+            if not merchant_user.merchant_id:
+                merchant_user.merchant_id = "m_1001"
+                db.flush()
 
         customer_user = db.query(User).filter(User.email == "customer@merchantpilot.ai").first()
         if not customer_user:

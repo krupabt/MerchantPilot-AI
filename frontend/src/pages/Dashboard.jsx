@@ -30,7 +30,7 @@ import {
   Legend
 } from 'recharts';
 import { Link } from 'react-router-dom';
-import { getDashboardStats } from '../services/api';
+import { getDashboardStats, postMerchantAIAssistant } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 export default function Dashboard() {
@@ -38,6 +38,11 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // AI Assistant State
+  const [aiQuery, setAiQuery] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiResponse, setAiResponse] = useState(null);
 
   const fetchStats = async () => {
     setLoading(true);
@@ -56,6 +61,24 @@ export default function Dashboard() {
   useEffect(() => {
     fetchStats();
   }, []);
+
+  const handleAskAI = async (queryText) => {
+    const q = queryText || aiQuery;
+    if (!q.trim()) return;
+    setAiLoading(true);
+    try {
+      const res = await postMerchantAIAssistant(q);
+      setAiResponse(res.data);
+    } catch (err) {
+      console.error('Merchant AI query error:', err);
+      setAiResponse({
+        answer: 'Failed to execute query against database records. Please try again.',
+        structured_table: null
+      });
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -113,6 +136,109 @@ export default function Dashboard() {
             </Link>
           </div>
         </div>
+      </div>
+
+      {/* Merchant AI Business Assistant (Database Grounded) */}
+      <div className="bg-[#141721] border border-amber-500/30 rounded-2xl p-6 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-800 pb-3">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+              <Bot className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-white">Merchant AI Business Assistant</h3>
+              <p className="text-xs text-gray-400">Ask natural-language questions computed from real database transactions.</p>
+            </div>
+          </div>
+          <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 w-fit">
+            Database Aggregations Active
+          </span>
+        </div>
+
+        {/* Preset Query Chips */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-gray-500 font-medium">Quick Queries:</span>
+          {[
+            'Which products are low in stock?',
+            'Which products sold the most?',
+            'What is our average order value?',
+            'What product bundles should I create to increase revenue?',
+            'Show fulfillment status'
+          ].map((chip, idx) => (
+            <button
+              key={idx}
+              onClick={() => {
+                setAiQuery(chip);
+                handleAskAI(chip);
+              }}
+              className="text-xs px-3 py-1 rounded-xl bg-gray-900 hover:bg-amber-950/30 border border-gray-800 hover:border-amber-500/30 text-gray-300 hover:text-amber-400 transition"
+            >
+              {chip}
+            </button>
+          ))}
+        </div>
+
+        {/* Input Form */}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleAskAI();
+          }}
+          className="flex items-center gap-2"
+        >
+          <input
+            type="text"
+            value={aiQuery}
+            onChange={(e) => setAiQuery(e.target.value)}
+            placeholder="Ask business query (e.g. 'How much revenue this month?', 'Which items are low in stock?')..."
+            className="flex-1 px-4 py-2.5 bg-gray-900 border border-gray-800 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-500"
+          />
+          <button
+            type="submit"
+            disabled={aiLoading || !aiQuery.trim()}
+            className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold shadow-md shadow-amber-600/20 disabled:opacity-50 transition shrink-0"
+          >
+            {aiLoading ? 'Computing...' : 'Ask AI'}
+          </button>
+        </form>
+
+        {/* AI Answer & Structured Table */}
+        {aiResponse && (
+          <div className="p-4 bg-gray-900/80 rounded-xl border border-gray-800 space-y-3 animate-fadeIn">
+            <div className="text-xs text-amber-200 leading-relaxed font-sans">
+              <span className="font-bold text-amber-400 block mb-1">AI Business Analysis:</span>
+              <p>{aiResponse.answer}</p>
+            </div>
+
+            {aiResponse.structured_table && aiResponse.structured_table.rows?.length > 0 && (
+              <div className="border-t border-gray-800 pt-3">
+                <span className="text-[11px] font-bold text-gray-400 block mb-2">
+                  {aiResponse.structured_table.title}
+                </span>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-gray-800 text-gray-400 text-[10px]">
+                        {aiResponse.structured_table.headers.map((h, i) => (
+                          <th key={i} className="pb-1.5 px-2">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-800/60 font-mono">
+                      {aiResponse.structured_table.rows.map((row, i) => (
+                        <tr key={i} className="hover:bg-gray-800/40">
+                          {Object.values(row).map((val, j) => (
+                            <td key={j} className="py-2 px-2 text-gray-300 font-sans">{String(val)}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Primary KPI Metric Cards (Real Database Derived) */}
