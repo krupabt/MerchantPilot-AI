@@ -1,12 +1,12 @@
 # MerchantPilot AI 2.0 🚀
-### *AI-Native Autonomous Commerce & Revenue Intelligence Platform*
+### *Making merchants AI-native and helping them grow revenue.*
 
 **Production URL:** [https://merchantpilot-ai.vercel.app](https://merchantpilot-ai.vercel.app)  
 **Razorpay Buildathon — Track 01: AI Growth & Agentic Commerce**
 
 ---
 
-## 🌟 Executive Summary
+## 🌟 Executive Summary##
 
 **MerchantPilot AI 2.0** transforms standard e-commerce into an autonomous, AI-native commerce and revenue engine. Built for both customers and merchants, it bridges the gap between natural language agentic shoppers and strict commercial safety boundaries.
 
@@ -32,6 +32,10 @@
    - Idempotent concurrency-safe inventory deduction preventing double-decrementing.
 7. **Comprehensive Automated Test Suite:**
    - **48 automated tests** across 11 test suites with **100% pass rate**.
+
+**🎥 Project Demo** 
+**https://drive.google.com/file/d/1OxwBcX868H3Q5mDpoODGFsRO396RkbFV/view?usp=sharing**
+
 
 ---
 
