@@ -281,10 +281,11 @@ class AgentService:
         else:
             # Scenario 1: Successful recommendation with Approval Gate
             bundle_pitch = selected_cross_sell.get("pitch", "") if selected_cross_sell else ""
+            specs_display = f"*(Specs: {', '.join([f'{k}: {v}' for k, v in list((primary_product.specs or {}).items())[:3]])})*\n\n" if primary_product.specs else ""
             explanation_msg = (
                 f"I've configured the ideal setup for your requirements!\n\n"
                 f"**1. Primary Product:** **{primary_product.name}** — ₹{primary_product.price:,.2f}\n"
-                f"*(Specs: {', '.join([f'{k}: {v}' for k, v in list(primary_product.specs.items())[:3]])})*\n\n"
+                f"{specs_display}"
             )
             if len(bundle_products) > 1:
                 explanation_msg += (

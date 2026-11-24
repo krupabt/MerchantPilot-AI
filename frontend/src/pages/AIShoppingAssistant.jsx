@@ -155,32 +155,32 @@ export default function AIShoppingAssistant() {
     <div className="space-y-6 max-w-5xl mx-auto pb-16">
       {/* Toast Notification */}
       {cartToast && (
-        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-lg bg-white border border-[#DEE3DC] text-[#202923] shadow-lg text-xs flex items-center gap-2 animate-in fade-in">
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-lg bg-white border border-[#E5E5E5] text-[#222222] shadow-lg text-xs flex items-center gap-2 animate-in fade-in">
           <Check className="w-4 h-4 text-[#347A52]" />
           <span className="font-medium">{cartToast}</span>
         </div>
       )}
 
       {/* Header */}
-      <div className="pb-3 border-b border-[#DEE3DC]">
+      <div className="pb-3 border-b border-[#E5E5E5]">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-[10px] font-mono uppercase bg-[#EAEDE7] border border-[#DEE3DC] text-[#234E42] px-2 py-0.5 rounded flex items-center gap-1 font-medium">
-            <Sparkles className="w-3 h-3 text-[#234E42]" />
+          <span className="text-[10px] font-mono uppercase bg-[#FAF5F2] border border-[#E5E5E5] text-[#C65D3B] px-2 py-0.5 rounded flex items-center gap-1 font-medium">
+            <Sparkles className="w-3 h-3 text-[#C65D3B]" />
             AI Shopping Assistant
           </span>
-          <span className="text-xs text-[#6B746E] font-mono">Live Database Grounded</span>
+          <span className="text-xs text-[#71717A] font-mono">Live Database Grounded</span>
         </div>
-        <h1 className="text-xl font-semibold text-[#202923] tracking-tight">
+        <h1 className="text-xl font-semibold text-[#222222] tracking-tight">
           Autonomous Hardware Shopping Assistant
         </h1>
-        <p className="text-xs text-[#6B746E] mt-0.5 max-w-2xl leading-relaxed">
+        <p className="text-xs text-[#71717A] mt-0.5 max-w-2xl leading-relaxed">
           Type your hardware requirements and budget. The assistant extracts specs, verifies live stock in the database, runs association rule mining for accessories, and enforces merchant policy boundaries.
         </p>
       </div>
 
       {/* Preset Chips */}
       <div className="space-y-1.5">
-        <span className="text-[11px] font-mono text-[#6B746E] uppercase">Try an example inquiry:</span>
+        <span className="text-[11px] font-mono text-[#71717A] uppercase">Try an example inquiry:</span>
         <div className="flex flex-wrap gap-2">
           {QUICK_PRESETS.map((p, idx) => (
             <button
@@ -190,10 +190,10 @@ export default function AIShoppingAssistant() {
                 handleSendQuery(p.query);
               }}
               disabled={loading}
-              className="px-3 py-1.5 rounded-lg bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] hover:border-[#B8D4C4] text-xs text-[#202923] transition text-left disabled:opacity-50 flex items-center gap-1.5 shadow-xs"
+              className="px-3 py-1.5 rounded-lg bg-white hover:bg-[#F7F7F5] border border-[#E5E5E5] hover:border-[#F0D5CB] text-xs text-[#222222] transition text-left disabled:opacity-50 flex items-center gap-1.5 shadow-xs"
             >
               <span>{p.label}</span>
-              <span className="text-[9px] font-mono text-[#234E42] bg-[#EAEDE7] px-1.5 py-0.2 rounded border border-[#DEE3DC]">
+              <span className="text-[9px] font-mono text-[#C65D3B] bg-[#FAF5F2] px-1.5 py-0.2 rounded border border-[#E5E5E5]">
                 {p.badge}
               </span>
             </button>
@@ -209,12 +209,12 @@ export default function AIShoppingAssistant() {
             value={inputQuery}
             onChange={(e) => setInputQuery(e.target.value)}
             placeholder="Tell me what you need (e.g. 'Suggest a laptop under ₹60,000 for programming and a wireless mouse')..."
-            className="w-full bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs rounded-lg p-3 pr-24 focus:outline-none focus:border-[#234E42] resize-none"
+            className="w-full bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] text-xs rounded-lg p-3 pr-24 focus:outline-none focus:border-[#C65D3B] resize-none"
           />
           <button
             onClick={() => handleSendQuery()}
             disabled={loading || !inputQuery.trim()}
-            className="absolute right-2.5 bottom-3 px-3.5 py-1.5 rounded-lg bg-[#234E42] hover:bg-[#1c3f35] text-white font-medium text-xs transition flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+            className="absolute right-2.5 bottom-3 px-3.5 py-1.5 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition flex items-center gap-1.5 shadow-xs disabled:opacity-50"
           >
             {loading ? <Bot className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
             <span>{loading ? 'Searching...' : 'Send'}</span>
@@ -223,7 +223,7 @@ export default function AIShoppingAssistant() {
       </div>
 
       {error && (
-        <div className="p-3 rounded-lg bg-[#FDF4F4] border border-[#DEE3DC] text-xs text-[#B94A48] flex items-center gap-2">
+        <div className="p-3 rounded-lg bg-[#FDF4F4] border border-[#E5E5E5] text-xs text-[#B94A48] flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
@@ -253,19 +253,19 @@ export default function AIShoppingAssistant() {
           {chatResponse.negotiation?.policy_passed !== false && (
             <div className="surface-card p-5 space-y-5">
               {/* Intent & Pitch Header */}
-              <div className="space-y-1.5 pb-3 border-b border-[#DEE3DC]">
+              <div className="space-y-1.5 pb-3 border-b border-[#E5E5E5]">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono uppercase bg-[#EAEDE7] text-[#234E42] border border-[#DEE3DC] px-2 py-0.5 rounded font-semibold">
+                  <span className="text-[10px] font-mono uppercase bg-[#FAF5F2] text-[#C65D3B] border border-[#E5E5E5] px-2 py-0.5 rounded font-semibold">
                     Catalog Match Confirmed
                   </span>
                   {chatResponse.intent?.budget && (
-                    <span className="text-xs text-[#6B746E] font-mono">
+                    <span className="text-xs text-[#71717A] font-mono">
                       Budget Cap: ₹{chatResponse.intent.budget.toLocaleString('en-IN')}
                     </span>
                   )}
                 </div>
 
-                <h3 className="text-sm font-semibold text-[#202923]">
+                <h3 className="text-sm font-semibold text-[#222222]">
                   Recommendation Pitch
                 </h3>
                 <MarkdownText
@@ -276,7 +276,7 @@ export default function AIShoppingAssistant() {
 
               {/* Recommended Hardware Products */}
               <div className="space-y-2.5">
-                <span className="text-[11px] font-mono uppercase text-[#202923] font-semibold block">
+                <span className="text-[11px] font-mono uppercase text-[#222222] font-semibold block">
                   Matched Catalog Items ({chatResponse.products?.length || 0})
                 </span>
 
@@ -284,29 +284,29 @@ export default function AIShoppingAssistant() {
                   {(chatResponse.products || []).map((product) => (
                     <div
                       key={product.id}
-                      className="p-3.5 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC] flex flex-col justify-between space-y-2.5"
+                      className="p-3.5 rounded-lg bg-[#F7F7F5] border border-[#E5E5E5] flex flex-col justify-between space-y-2.5"
                     >
                       <div className="space-y-1">
                         <div className="flex items-center justify-between text-xs">
-                          <span className="font-mono text-[#234E42] text-[10px] font-semibold">{product.id}</span>
-                          <span className="text-[#347A52] font-mono text-[10px] bg-white border border-[#DEE3DC] px-1.5 py-0.5 rounded">
+                          <span className="font-mono text-[#C65D3B] text-[10px] font-semibold">{product.id}</span>
+                          <span className="text-[#347A52] font-mono text-[10px] bg-white border border-[#E5E5E5] px-1.5 py-0.5 rounded">
                             {product.stock} in Stock
                           </span>
                         </div>
-                        <h4 className="text-xs font-semibold text-[#202923]">{product.name}</h4>
-                        <p className="text-[11px] text-[#6B746E] line-clamp-2">{product.description}</p>
+                        <h4 className="text-xs font-semibold text-[#222222]">{product.name}</h4>
+                        <p className="text-[11px] text-[#71717A] line-clamp-2">{product.description}</p>
                       </div>
 
-                      <div className="flex items-center justify-between pt-2 border-t border-[#DEE3DC]">
-                        <span className="text-xs font-semibold text-[#202923]">
+                      <div className="flex items-center justify-between pt-2 border-t border-[#E5E5E5]">
+                        <span className="text-xs font-semibold text-[#222222]">
                           ₹{product.price?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                         </span>
 
                         <button
                           onClick={() => handleAddToCart(product)}
-                          className="px-2.5 py-1 rounded-lg bg-white hover:bg-[#EAEDE7] border border-[#DEE3DC] text-[#202923] text-xs font-medium flex items-center gap-1.5 transition"
+                          className="px-2.5 py-1 rounded-lg bg-white hover:bg-[#FAF5F2] border border-[#E5E5E5] text-[#222222] text-xs font-medium flex items-center gap-1.5 transition"
                         >
-                          <ShoppingCart className="w-3.5 h-3.5 text-[#234E42]" />
+                          <ShoppingCart className="w-3.5 h-3.5 text-[#C65D3B]" />
                           <span>Add to Cart</span>
                         </button>
                       </div>
@@ -317,15 +317,15 @@ export default function AIShoppingAssistant() {
 
               {/* Commercial Proposal Summary Bar */}
               {chatResponse.negotiation && (
-                <div className="p-3.5 rounded-lg bg-[#EAEDE7]/60 border border-[#DEE3DC] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5">
+                <div className="p-3.5 rounded-lg bg-[#FAF5F2]/60 border border-[#E5E5E5] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5">
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-[#202923]">Commercial Proposal</span>
-                      <span className="text-[10px] text-[#347A52] font-mono bg-white border border-[#DEE3DC] px-2 py-0.5 rounded">
+                      <span className="text-xs font-semibold text-[#222222]">Commercial Proposal</span>
+                      <span className="text-[10px] text-[#347A52] font-mono bg-white border border-[#E5E5E5] px-2 py-0.5 rounded">
                         Policy Compliant
                       </span>
                     </div>
-                    <p className="text-xs text-[#6B746E]">
+                    <p className="text-xs text-[#71717A]">
                       Total: ₹{chatResponse.negotiation.original_total?.toLocaleString('en-IN')}
                       {chatResponse.negotiation.proposed_discount > 0 && (
                         <span className="text-[#347A52] ml-2 font-medium">
@@ -336,14 +336,14 @@ export default function AIShoppingAssistant() {
                   </div>
 
                   <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <span className="text-base font-bold text-[#234E42]">
+                    <span className="text-base font-bold text-[#C65D3B]">
                       ₹{chatResponse.negotiation.final_total?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </span>
 
                     <button
                       onClick={handleProceedToApproval}
                       disabled={orderProcessing}
-                      className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-[#234E42] hover:bg-[#1c3f35] text-white font-medium text-xs transition shadow-xs flex items-center justify-center gap-1.5"
+                      className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition shadow-xs flex items-center justify-center gap-1.5"
                     >
                       <CreditCard className="w-3.5 h-3.5" />
                       <span>Review & Checkout</span>

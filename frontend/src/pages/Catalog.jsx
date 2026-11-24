@@ -167,12 +167,12 @@ export default function Catalog() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#DEE3DC]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E5E5E5]">
         <div>
-          <h1 className="text-2xl sm:text-[28px] font-bold text-[#202923] tracking-tight">
+          <h1 className="text-2xl sm:text-[28px] font-bold text-[#222222] tracking-tight">
             Catalog & product management
           </h1>
-          <p className="text-sm text-[#6B746E] mt-0.5">
+          <p className="text-sm text-[#71717A] mt-0.5">
             Add products, organize categories, and configure specifications for shoppers and shopping agents.
           </p>
         </div>
@@ -180,16 +180,16 @@ export default function Catalog() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-3.5 py-1.5 rounded-md bg-[#234E42] hover:bg-[#1B3D34] text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs"
+            className="px-3.5 py-1.5 rounded-md bg-[#C65D3B] hover:bg-[#b04f30] text-white text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add product</span>
           </button>
           <button
             onClick={() => setShowCategoryModal(true)}
-            className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs"
+            className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs"
           >
-            <Tag className="w-3.5 h-3.5 text-[#234E42]" />
+            <Tag className="w-3.5 h-3.5 text-[#C65D3B]" />
             <span>New category</span>
           </button>
         </div>
@@ -200,7 +200,7 @@ export default function Catalog() {
           className={`p-3 rounded-md border text-xs flex items-center justify-between ${
             statusMsg.type === 'error'
               ? 'bg-[#FBEFEF] border-[#B94A48]/30 text-[#B94A48]'
-              : 'bg-[#EAF4EE] border-[#B8D4C4] text-[#347A52]'
+              : 'bg-[#FAF5F2] border-[#F0D5CB] text-[#347A52]'
           }`}
         >
           <div className="flex items-center gap-2">
@@ -220,13 +220,13 @@ export default function Catalog() {
       {/* Toolbar */}
       <div className="surface-card p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-[#8E9891] absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[#71717A] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search specs, tags, products..."
-            className="w-full pl-9 pr-3.5 py-2 bg-[#F6F5F1] border border-[#DEE3DC] rounded-md text-xs text-[#202923] placeholder-[#8E9891] focus:outline-none focus:border-[#234E42] focus:bg-white transition-colors"
+            className="w-full pl-9 pr-3.5 py-2 bg-[#F7F7F5] border border-[#E5E5E5] rounded-md text-xs text-[#222222] placeholder-[#71717A] focus:outline-none focus:border-[#C65D3B] focus:bg-white transition-colors"
           />
         </div>
 
@@ -237,8 +237,8 @@ export default function Catalog() {
               onClick={() => setSelectedCategory(cat)}
               className={`px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors ${
                 selectedCategory === cat
-                  ? 'bg-[#234E42] text-white shadow-xs'
-                  : 'bg-[#F6F5F1] text-[#6B746E] hover:text-[#202923] border border-[#DEE3DC]'
+                  ? 'bg-[#C65D3B] text-white shadow-xs'
+                  : 'bg-[#F7F7F5] text-[#71717A] hover:text-[#222222] border border-[#E5E5E5]'
               }`}
             >
               {cat}
@@ -249,7 +249,7 @@ export default function Catalog() {
 
       {/* Product Cards Grid */}
       {loading ? (
-        <div className="flex items-center justify-center py-16 text-xs text-[#6B746E]">
+        <div className="flex items-center justify-center py-16 text-xs text-[#71717A]">
           Loading product catalog...
         </div>
       ) : (
@@ -261,7 +261,7 @@ export default function Catalog() {
               <div key={p.id} className="surface-card p-4 space-y-3 flex flex-col justify-between">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-[#6B746E] bg-[#F6F5F1] px-2 py-0.5 rounded border border-[#DEE3DC]">
+                    <span className="text-[11px] font-medium text-[#71717A] bg-[#F7F7F5] px-2 py-0.5 rounded border border-[#E5E5E5]">
                       {p.category}
                     </span>
                     <span
@@ -270,37 +270,37 @@ export default function Catalog() {
                           ? 'bg-[#FBEFEF] text-[#B94A48]'
                           : isLow
                           ? 'bg-[#FDF4EB] text-[#B77932]'
-                          : 'bg-[#EAF4EE] text-[#347A52]'
+                          : 'bg-[#FAF5F2] text-[#347A52]'
                       }`}
                     >
                       {isOut ? 'Out of stock' : `${p.stock} in stock`}
                     </span>
                   </div>
 
-                  <h3 className="text-sm font-semibold text-[#202923]">{p.name}</h3>
-                  <p className="text-xs text-[#6B746E] line-clamp-2 leading-relaxed">{p.description}</p>
+                  <h3 className="text-sm font-semibold text-[#222222]">{p.name}</h3>
+                  <p className="text-xs text-[#71717A] line-clamp-2 leading-relaxed">{p.description}</p>
                 </div>
 
-                <div className="pt-3 border-t border-[#DEE3DC] flex items-center justify-between">
+                <div className="pt-3 border-t border-[#E5E5E5] flex items-center justify-between">
                   <div>
-                    <span className="text-base font-bold text-[#202923] block leading-tight">
+                    <span className="text-base font-bold text-[#222222] block leading-tight">
                       ₹{p.price?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </span>
-                    <span className="text-[10px] text-[#6B746E]">
+                    <span className="text-[10px] text-[#71717A]">
                       Cost: ₹{(p.cost_price || 0).toLocaleString('en-IN')} (Margin: {p.price > 0 ? Math.round(((p.price - (p.cost_price || 0)) / p.price) * 100) : 0}%)
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => handleQuickStockUpdate(p.id, p.stock, 5)}
-                      className="px-2 py-1 bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] rounded text-[11px] font-medium"
+                      className="px-2 py-1 bg-white hover:bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] rounded text-[11px] font-medium"
                       title="Add 5 units"
                     >
                       +5
                     </button>
                     <button
                       onClick={() => handleArchive(p.id)}
-                      className="p-1 hover:bg-[#FBEFEF] text-[#8E9891] hover:text-[#B94A48] rounded transition-colors"
+                      className="p-1 hover:bg-[#FBEFEF] text-[#71717A] hover:text-[#B94A48] rounded transition-colors"
                       title="Archive product"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -316,10 +316,10 @@ export default function Catalog() {
       {/* Add Product Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white border border-[#DEE3DC] rounded-xl max-w-lg w-full p-5 space-y-4 shadow-modal">
-            <div className="flex items-center justify-between border-b border-[#DEE3DC] pb-3">
-              <h3 className="text-base font-semibold text-[#202923]">Add catalog product</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-[#6B746E] hover:text-[#202923]">
+          <div className="bg-white border border-[#E5E5E5] rounded-xl max-w-lg w-full p-5 space-y-4 shadow-modal">
+            <div className="flex items-center justify-between border-b border-[#E5E5E5] pb-3">
+              <h3 className="text-base font-semibold text-[#222222]">Add catalog product</h3>
+              <button onClick={() => setShowAddModal(false)} className="text-[#71717A] hover:text-[#222222]">
                 ✕
               </button>
             </div>
@@ -327,56 +327,56 @@ export default function Catalog() {
             <form onSubmit={handleCreateProduct} className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[#202923] font-medium block mb-1">Product ID / Code *</label>
+                  <label className="text-[#222222] font-medium block mb-1">Product ID / Code *</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. prod_mouse_01"
                     value={newProduct.id}
                     onChange={(e) => setNewProduct({ ...newProduct, id: e.target.value })}
-                    className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-md px-3 py-1.5"
+                    className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-md px-3 py-1.5"
                   />
                 </div>
                 <div>
-                  <label className="text-[#202923] font-medium block mb-1">SKU (Barcode/Tag)</label>
+                  <label className="text-[#222222] font-medium block mb-1">SKU (Barcode/Tag)</label>
                   <input
                     type="text"
                     placeholder="e.g. SKU-WM-001"
                     value={newProduct.sku}
                     onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })}
-                    className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-md px-3 py-1.5"
+                    className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-md px-3 py-1.5"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[#202923] font-medium block mb-1">Product name *</label>
+                  <label className="text-[#222222] font-medium block mb-1">Product name *</label>
                   <input
                     type="text"
                     required
                     placeholder="Apex Pro Wireless Mouse"
                     value={newProduct.name}
                     onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                    className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-md px-3 py-1.5"
+                    className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-md px-3 py-1.5"
                   />
                 </div>
                 <div>
-                  <label className="text-[#202923] font-medium block mb-1">Category *</label>
+                  <label className="text-[#222222] font-medium block mb-1">Category *</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. Electronics"
                     value={newProduct.category}
                     onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-                    className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-md px-3 py-1.5"
+                    className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-md px-3 py-1.5"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
-                  <label className="text-[#202923] font-medium block mb-1">Selling Price (₹) *</label>
+                  <label className="text-[#222222] font-medium block mb-1">Selling Price (₹) *</label>
                   <input
                     type="number"
                     step="0.01"
@@ -384,11 +384,11 @@ export default function Catalog() {
                     placeholder="700.00"
                     value={newProduct.price}
                     onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-                    className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-md px-3 py-1.5"
+                    className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-md px-3 py-1.5"
                   />
                 </div>
                 <div>
-                  <label className="text-[#202923] font-medium block mb-1">Cost Price (₹) *</label>
+                  <label className="text-[#222222] font-medium block mb-1">Cost Price (₹) *</label>
                   <input
                     type="number"
                     step="0.01"
@@ -396,54 +396,54 @@ export default function Catalog() {
                     placeholder="400.00"
                     value={newProduct.cost_price}
                     onChange={(e) => setNewProduct({ ...newProduct, cost_price: e.target.value })}
-                    className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-md px-3 py-1.5"
+                    className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-md px-3 py-1.5"
                   />
                 </div>
                 <div>
-                  <label className="text-[#202923] font-medium block mb-1">Initial Stock *</label>
+                  <label className="text-[#222222] font-medium block mb-1">Initial Stock *</label>
                   <input
                     type="number"
                     required
                     placeholder="20"
                     value={newProduct.stock}
                     onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
-                    className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-md px-3 py-1.5"
+                    className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-md px-3 py-1.5"
                   />
                 </div>
                 <div>
-                  <label className="text-[#202923] font-medium block mb-1">Low Alert Qty</label>
+                  <label className="text-[#222222] font-medium block mb-1">Low Alert Qty</label>
                   <input
                     type="number"
                     placeholder="5"
                     value={newProduct.low_stock_threshold}
                     onChange={(e) => setNewProduct({ ...newProduct, low_stock_threshold: e.target.value })}
-                    className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-md px-3 py-1.5"
+                    className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-md px-3 py-1.5"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[#202923] font-medium block mb-1">Description</label>
+                <label className="text-[#222222] font-medium block mb-1">Description</label>
                 <textarea
                   rows={3}
                   placeholder="High precision 2.4GHz wireless mouse with ergonomic grip..."
                   value={newProduct.description}
                   onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                  className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-md px-3 py-1.5"
+                  className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-md px-3 py-1.5"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#DEE3DC]">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#E5E5E5]">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-3.5 py-1.5 rounded-md border border-[#DEE3DC] text-[#6B746E]"
+                  className="px-3.5 py-1.5 rounded-md border border-[#E5E5E5] text-[#71717A]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded-md bg-[#234E42] text-white font-medium shadow-xs"
+                  className="px-4 py-1.5 rounded-md bg-[#C65D3B] text-white font-medium shadow-xs"
                 >
                   Publish product
                 </button>
@@ -456,48 +456,48 @@ export default function Catalog() {
       {/* Add Category Modal */}
       {showCategoryModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white border border-[#DEE3DC] rounded-xl max-w-sm w-full p-5 space-y-4 shadow-modal">
-            <div className="flex items-center justify-between border-b border-[#DEE3DC] pb-3">
-              <h3 className="text-base font-semibold text-[#202923]">Create category</h3>
-              <button onClick={() => setShowCategoryModal(false)} className="text-[#6B746E] hover:text-[#202923]">
+          <div className="bg-white border border-[#E5E5E5] rounded-xl max-w-sm w-full p-5 space-y-4 shadow-modal">
+            <div className="flex items-center justify-between border-b border-[#E5E5E5] pb-3">
+              <h3 className="text-base font-semibold text-[#222222]">Create category</h3>
+              <button onClick={() => setShowCategoryModal(false)} className="text-[#71717A] hover:text-[#222222]">
                 ✕
               </button>
             </div>
 
             <form onSubmit={handleCreateCategory} className="space-y-3 text-xs">
               <div>
-                <label className="text-[#202923] font-medium block mb-1">Category name</label>
+                <label className="text-[#222222] font-medium block mb-1">Category name</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Monitors"
                   value={newCatName}
                   onChange={(e) => setNewCatName(e.target.value)}
-                  className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-md px-3 py-1.5"
+                  className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-md px-3 py-1.5"
                 />
               </div>
               <div>
-                <label className="text-[#202923] font-medium block mb-1">Description</label>
+                <label className="text-[#222222] font-medium block mb-1">Description</label>
                 <input
                   type="text"
                   placeholder="Display devices and peripherals"
                   value={newCatDesc}
                   onChange={(e) => setNewCatDesc(e.target.value)}
-                  className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-md px-3 py-1.5"
+                  className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-md px-3 py-1.5"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#DEE3DC]">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#E5E5E5]">
                 <button
                   type="button"
                   onClick={() => setShowCategoryModal(false)}
-                  className="px-3.5 py-1.5 rounded-md border border-[#DEE3DC] text-[#6B746E]"
+                  className="px-3.5 py-1.5 rounded-md border border-[#E5E5E5] text-[#71717A]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded-md bg-[#234E42] text-white font-medium shadow-xs"
+                  className="px-4 py-1.5 rounded-md bg-[#C65D3B] text-white font-medium shadow-xs"
                 >
                   Create
                 </button>

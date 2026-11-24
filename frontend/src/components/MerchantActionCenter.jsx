@@ -120,15 +120,15 @@ export default function MerchantActionCenter({ onActionExecuted }) {
   return (
     <div className="surface-card p-5 space-y-4">
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#DEE3DC] pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E5E5E5] pb-3">
         <div>
           <div className="flex items-center gap-2 mb-0.5">
-            <h2 className="text-base font-semibold text-[#202923]">Recommended actions</h2>
-            <span className="text-[11px] font-medium text-[#234E42] bg-[#EAF4EE] px-2 py-0.5 rounded border border-[#B8D4C4]">
+            <h2 className="text-base font-semibold text-[#222222]">Recommended actions</h2>
+            <span className="text-[11px] font-medium text-[#C65D3B] bg-[#FAF5F2] px-2 py-0.5 rounded border border-[#F0D5CB]">
               {pendingCount} pending review
             </span>
           </div>
-          <p className="text-xs text-[#6B746E]">
+          <p className="text-xs text-[#71717A]">
             Data-backed actions derived from sales velocity and stock runway. Explicit merchant confirmation required.
           </p>
         </div>
@@ -137,15 +137,15 @@ export default function MerchantActionCenter({ onActionExecuted }) {
           <button
             onClick={fetchActions}
             disabled={loading}
-            className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
+            className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-[#6B746E] ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-[#71717A] ${loading ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
           </button>
           <button
             onClick={handleGenerate}
             disabled={generating}
-            className="px-3.5 py-1.5 rounded-md bg-[#234E42] hover:bg-[#1B3D34] text-white font-medium text-xs transition-colors shadow-xs flex items-center gap-1.5 disabled:opacity-50"
+            className="px-3.5 py-1.5 rounded-md bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition-colors shadow-xs flex items-center gap-1.5 disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${generating ? 'animate-spin' : ''}`} />
             <span>{generating ? 'Analyzing data...' : 'Scan & generate'}</span>
@@ -158,10 +158,10 @@ export default function MerchantActionCenter({ onActionExecuted }) {
         <div
           className={`p-3 rounded-md border text-xs flex items-center justify-between gap-2 transition-all ${
             feedbackMessage.type === 'success'
-              ? 'bg-[#EAF4EE] border-[#B8D4C4] text-[#347A52]'
+              ? 'bg-[#FAF5F2] border-[#F0D5CB] text-[#347A52]'
               : feedbackMessage.type === 'error'
               ? 'bg-[#FBEFEF] border-[#B94A48]/30 text-[#B94A48]'
-              : 'bg-[#F6F5F1] border-[#DEE3DC] text-[#202923]'
+              : 'bg-[#F7F7F5] border-[#E5E5E5] text-[#222222]'
           }`}
         >
           <div className="flex items-center gap-2">
@@ -174,7 +174,7 @@ export default function MerchantActionCenter({ onActionExecuted }) {
           </div>
           <button
             onClick={() => setFeedbackMessage(null)}
-            className="text-xs text-[#6B746E] hover:text-[#202923]"
+            className="text-xs text-[#71717A] hover:text-[#222222]"
           >
             ✕
           </button>
@@ -182,7 +182,7 @@ export default function MerchantActionCenter({ onActionExecuted }) {
       )}
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-1.5 border-b border-[#DEE3DC] pb-2 text-xs">
+      <div className="flex items-center gap-1.5 border-b border-[#E5E5E5] pb-2 text-xs">
         {[
           { key: 'PENDING', label: `Pending review (${pendingCount})` },
           { key: 'EXECUTED', label: `Executed (${executedCount})` },
@@ -194,8 +194,8 @@ export default function MerchantActionCenter({ onActionExecuted }) {
             onClick={() => setFilter(tab.key)}
             className={`px-3 py-1.5 rounded-md font-medium text-xs transition-colors ${
               filter === tab.key
-                ? 'bg-[#234E42] text-white shadow-xs'
-                : 'text-[#6B746E] hover:text-[#202923] hover:bg-[#EAEDE7]'
+                ? 'bg-[#C65D3B] text-white shadow-xs'
+                : 'text-[#71717A] hover:text-[#222222] hover:bg-[#FAF5F2]'
             }`}
           >
             {tab.label}
@@ -204,10 +204,10 @@ export default function MerchantActionCenter({ onActionExecuted }) {
       </div>
 
       {/* Actions List */}
-      <div className="divide-y divide-[#DEE3DC]">
+      <div className="divide-y divide-[#E5E5E5]">
         {loading && actions.length === 0 ? (
-          <div className="py-8 text-center text-xs text-[#6B746E]">
-            <RefreshCw className="w-4 h-4 animate-spin mx-auto mb-2 text-[#234E42]" />
+          <div className="py-8 text-center text-xs text-[#71717A]">
+            <RefreshCw className="w-4 h-4 animate-spin mx-auto mb-2 text-[#C65D3B]" />
             Loading actions...
           </div>
         ) : filteredActions.length > 0 ? (
@@ -222,7 +222,7 @@ export default function MerchantActionCenter({ onActionExecuted }) {
               >
                 <div className="space-y-1.5 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-[#F6F5F1] text-[#6B746E] border border-[#DEE3DC]">
+                    <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-[#F7F7F5] text-[#71717A] border border-[#E5E5E5]">
                       {action.category} • {action.action_type}
                     </span>
                     <span
@@ -230,25 +230,25 @@ export default function MerchantActionCenter({ onActionExecuted }) {
                         isPending
                           ? 'bg-[#FDF4EB] text-[#B77932] border border-[#B77932]/20'
                           : isExecuted
-                          ? 'bg-[#EAF4EE] text-[#347A52] border border-[#B8D4C4]'
-                          : 'bg-[#F6F5F1] text-[#6B746E]'
+                          ? 'bg-[#FAF5F2] text-[#347A52] border border-[#F0D5CB]'
+                          : 'bg-[#F7F7F5] text-[#71717A]'
                       }`}
                     >
                       {action.status}
                     </span>
                   </div>
 
-                  <h3 className="text-sm font-semibold text-[#202923]">{action.title}</h3>
-                  <p className="text-xs text-[#6B746E]">{action.description}</p>
+                  <h3 className="text-sm font-semibold text-[#222222]">{action.title}</h3>
+                  <p className="text-xs text-[#71717A]">{action.description}</p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pt-1">
-                    <div className="p-2 rounded bg-[#F6F5F1] border border-[#DEE3DC] text-[11px]">
-                      <span className="font-semibold text-[#202923] block mb-0.5">Reason & Evidence:</span>
-                      <p className="text-[#6B746E]">{action.evidence}</p>
+                    <div className="p-2 rounded bg-[#F7F7F5] border border-[#E5E5E5] text-[11px]">
+                      <span className="font-semibold text-[#222222] block mb-0.5">Reason & Evidence:</span>
+                      <p className="text-[#71717A]">{action.evidence}</p>
                     </div>
-                    <div className="p-2 rounded bg-[#F6F5F1] border border-[#DEE3DC] text-[11px]">
+                    <div className="p-2 rounded bg-[#F7F7F5] border border-[#E5E5E5] text-[11px]">
                       <span className="font-semibold text-[#347A52] block mb-0.5">Projected Impact:</span>
-                      <p className="text-[#6B746E]">{action.expected_impact}</p>
+                      <p className="text-[#71717A]">{action.expected_impact}</p>
                     </div>
                   </div>
                 </div>
@@ -259,32 +259,32 @@ export default function MerchantActionCenter({ onActionExecuted }) {
                     <>
                       <button
                         onClick={() => setSelectedAction(action)}
-                        className="px-3 py-1.5 rounded-md bg-[#234E42] hover:bg-[#1B3D34] text-white font-medium text-xs flex items-center gap-1.5 transition-colors shadow-xs"
+                        className="px-3 py-1.5 rounded-md bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs flex items-center gap-1.5 transition-colors shadow-xs"
                       >
                         <Check className="w-3.5 h-3.5" />
                         <span>Review & approve</span>
                       </button>
                       <button
                         onClick={() => handleReject(action.id, action.title)}
-                        className="px-2.5 py-1.5 rounded-md border border-[#DEE3DC] hover:bg-[#FBEFEF] text-[#6B746E] hover:text-[#B94A48] text-xs font-medium transition-colors"
+                        className="px-2.5 py-1.5 rounded-md border border-[#E5E5E5] hover:bg-[#FBEFEF] text-[#71717A] hover:text-[#B94A48] text-xs font-medium transition-colors"
                       >
                         Dismiss
                       </button>
                     </>
                   ) : isExecuted ? (
-                    <span className="flex items-center gap-1 text-[11px] font-medium text-[#347A52] bg-[#EAF4EE] px-2.5 py-1 rounded-md border border-[#B8D4C4]">
+                    <span className="flex items-center gap-1 text-[11px] font-medium text-[#347A52] bg-[#FAF5F2] px-2.5 py-1 rounded-md border border-[#F0D5CB]">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       Applied & logged
                     </span>
                   ) : (
-                    <span className="text-xs text-[#6B746E]">Dismissed</span>
+                    <span className="text-xs text-[#71717A]">Dismissed</span>
                   )}
                 </div>
               </div>
             );
           })
         ) : (
-          <div className="py-8 text-center text-xs text-[#6B746E]">
+          <div className="py-8 text-center text-xs text-[#71717A]">
             No {filter.toLowerCase()} actions found.
           </div>
         )}
@@ -293,63 +293,63 @@ export default function MerchantActionCenter({ onActionExecuted }) {
       {/* Confirmation Modal */}
       {selectedAction && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white border border-[#DEE3DC] rounded-xl max-w-lg w-full p-5 space-y-4 shadow-modal animate-in fade-in">
-            <div className="flex items-center justify-between border-b border-[#DEE3DC] pb-3">
+          <div className="bg-white border border-[#E5E5E5] rounded-xl max-w-lg w-full p-5 space-y-4 shadow-modal animate-in fade-in">
+            <div className="flex items-center justify-between border-b border-[#E5E5E5] pb-3">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-[#B77932]" />
-                <h3 className="text-base font-semibold text-[#202923]">Confirm database modification</h3>
+                <h3 className="text-base font-semibold text-[#222222]">Confirm database modification</h3>
               </div>
               <button
                 onClick={() => setSelectedAction(null)}
-                className="text-[#6B746E] hover:text-[#202923] text-sm"
+                className="text-[#71717A] hover:text-[#222222] text-sm"
               >
                 ✕
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
-              <p className="text-[#6B746E] leading-relaxed">
+              <p className="text-[#71717A] leading-relaxed">
                 Executing this action will modify live database records and create an immutable record in the merchant audit log.
               </p>
 
-              <div className="p-3 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC] space-y-1.5">
-                <span className="text-[11px] font-semibold text-[#202923] block">Action:</span>
-                <p className="font-medium text-[#202923] text-sm">{selectedAction.title}</p>
-                <p className="text-xs text-[#6B746E]">{selectedAction.description}</p>
+              <div className="p-3 rounded-lg bg-[#F7F7F5] border border-[#E5E5E5] space-y-1.5">
+                <span className="text-[11px] font-semibold text-[#222222] block">Action:</span>
+                <p className="font-medium text-[#222222] text-sm">{selectedAction.title}</p>
+                <p className="text-xs text-[#71717A]">{selectedAction.description}</p>
               </div>
 
-              <div className="p-3 rounded-lg bg-[#EAF4EE] border border-[#B8D4C4] space-y-1">
+              <div className="p-3 rounded-lg bg-[#FAF5F2] border border-[#F0D5CB] space-y-1">
                 <span className="text-[11px] font-semibold text-[#347A52] block">State change to apply:</span>
                 {selectedAction.action_type === 'REORDER_STOCK' ? (
-                  <p className="text-[#202923]">
+                  <p className="text-[#222222]">
                     • Increment product stock by <strong>+{selectedAction.payload?.reorder_quantity || 20} units</strong>
                     <br />
-                    • Record execution event in <code className="font-mono text-[11px] text-[#234E42]">audit_logs</code>
+                    • Record execution event in <code className="font-mono text-[11px] text-[#C65D3B]">audit_logs</code>
                   </p>
                 ) : selectedAction.action_type === 'DEPLOY_BUNDLE' ? (
-                  <p className="text-[#202923]">
+                  <p className="text-[#222222]">
                     • Publish affinity bundle in product catalog within policy margin limit (≤ 10% discount).
                   </p>
                 ) : (
-                  <p className="text-[#202923]">
+                  <p className="text-[#222222]">
                     • Apply operational policy update to tenant database records.
                   </p>
                 )}
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#DEE3DC]">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#E5E5E5]">
               <button
                 onClick={() => setSelectedAction(null)}
                 disabled={executing}
-                className="px-3.5 py-1.5 rounded-md border border-[#DEE3DC] hover:bg-[#F6F5F1] text-xs font-medium text-[#6B746E] transition-colors"
+                className="px-3.5 py-1.5 rounded-md border border-[#E5E5E5] hover:bg-[#F7F7F5] text-xs font-medium text-[#71717A] transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmExecute}
                 disabled={executing}
-                className="px-4 py-1.5 rounded-md bg-[#234E42] hover:bg-[#1B3D34] text-white text-xs font-semibold transition-colors shadow-xs flex items-center gap-1.5 disabled:opacity-50"
+                className="px-4 py-1.5 rounded-md bg-[#C65D3B] hover:bg-[#b04f30] text-white text-xs font-semibold transition-colors shadow-xs flex items-center gap-1.5 disabled:opacity-50"
               >
                 {executing ? (
                   <>

@@ -2,57 +2,36 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
-  MessageSquare,
-  CheckSquare,
-  Package,
-  ShoppingBag,
   ShoppingCart,
-  TrendingUp,
+  Package,
   Boxes,
-  Sliders,
-  History,
+  ShoppingBag,
+  CreditCard,
+  BarChart3,
+  TrendingUp,
+  Bot,
+  ShieldCheck,
+  Activity,
+  Settings as SettingsIcon,
   Store,
-  ArrowUpRight,
   LogOut,
-  ChevronRight,
-  UploadCloud,
-  Layers
+  PlusCircle
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const NAV_GROUPS = [
-  {
-    title: 'WORKSPACE',
-    items: [
-      { name: 'Overview', path: '/', icon: LayoutDashboard },
-      { name: 'Business Copilot', path: '/copilot', icon: MessageSquare },
-      { name: 'Action Center', path: '/actions', icon: CheckSquare },
-    ]
-  },
-  {
-    title: 'OPERATIONS',
-    items: [
-      { name: 'In-Store Sales (POS)', path: '/sales', icon: ShoppingCart },
-      { name: 'Product Catalog', path: '/catalog', icon: Layers },
-      { name: 'Stock & Runway', path: '/inventory', icon: Package },
-      { name: 'Orders & Payments', path: '/orders', icon: ShoppingBag },
-    ]
-  },
-  {
-    title: 'INTELLIGENCE',
-    items: [
-      { name: 'Sales Analytics', path: '/analytics', icon: TrendingUp },
-      { name: 'Basket Affinity', path: '/product-intelligence', icon: Boxes },
-      { name: 'Data Import (CSV)', path: '/import', icon: UploadCloud },
-    ]
-  },
-  {
-    title: 'PREFERENCES',
-    items: [
-      { name: 'Business Settings', path: '/settings', icon: Sliders },
-      { name: 'Activity Log', path: '/audit', icon: History },
-    ]
-  }
+const NAV_ITEMS = [
+  { name: 'Overview', path: '/', icon: LayoutDashboard },
+  { name: 'New Sale', path: '/sales', icon: PlusCircle, highlight: true },
+  { name: 'Products', path: '/catalog', icon: Package },
+  { name: 'Inventory', path: '/inventory', icon: Boxes },
+  { name: 'Orders', path: '/orders', icon: ShoppingBag },
+  { name: 'Payments', path: '/orders?tab=payments', icon: CreditCard },
+  { name: 'Sales Reports', path: '/analytics', icon: BarChart3 },
+  { name: 'Product Insights', path: '/product-intelligence', icon: TrendingUp },
+  { name: 'AI Assistant', path: '/copilot', icon: Bot },
+  { name: 'Discount Rules', path: '/policies', icon: ShieldCheck },
+  { name: 'Activity', path: '/audit', icon: Activity },
+  { name: 'Settings', path: '/settings', icon: SettingsIcon },
 ];
 
 export default function MerchantSidebar({ mobile = false, onClose }) {
@@ -69,102 +48,86 @@ export default function MerchantSidebar({ mobile = false, onClose }) {
     <aside
       className={`${
         mobile
-          ? 'w-full h-full flex flex-col justify-between p-4 bg-[#EAEDE7]'
-          : 'w-64 bg-[#EAEDE7] border-r border-[#DEE3DC] flex flex-col justify-between p-4 shrink-0 min-h-[calc(100vh-57px)] hidden md:flex sticky top-[57px]'
+          ? 'w-full h-full flex flex-col justify-between p-4 bg-white'
+          : 'w-60 bg-white border-r border-[#E5E5E5] flex flex-col justify-between p-3.5 shrink-0 min-h-[calc(100vh-57px)] hidden md:flex sticky top-[57px]'
       }`}
     >
-      <div className="space-y-6">
-        {/* Compact MerchantPilot Wordmark & Store Switcher */}
-        <div className="flex items-center justify-between pb-3 border-b border-[#DEE3DC]/80">
-          <NavLink to="/" onClick={onClose} className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-[#234E42] text-white flex items-center justify-center font-bold text-sm tracking-tight shadow-xs">
+      <div className="space-y-4">
+        {/* MerchantPilot Brand & Store Info */}
+        <div className="flex items-center justify-between pb-3 border-b border-[#E5E5E5]">
+          <NavLink to="/" onClick={onClose} className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#C65D3B] text-white flex items-center justify-center font-bold text-sm shadow-xs">
               M
             </div>
             <div>
-              <span className="font-semibold text-sm tracking-tight text-[#202923] block leading-none">
+              <span className="font-bold text-sm tracking-tight text-[#222222] block leading-none">
                 MerchantPilot
               </span>
-              <span className="text-[11px] text-[#6B746E] block mt-0.5 font-medium truncate max-w-[120px]">
-                {user?.store_name || user?.name || 'Apex Electronics'}
+              <span className="text-[11px] text-[#71717A] block mt-0.5 truncate max-w-[130px]">
+                {user?.store_name || user?.name || 'Smart Accessories'}
               </span>
             </div>
           </NavLink>
-          <span className="text-[10px] font-mono font-medium text-[#234E42] bg-[#B8D4C4]/40 px-1.5 py-0.5 rounded border border-[#B8D4C4]">
-            {user?.merchant_id || 'm_1001'}
-          </span>
         </div>
 
-        {/* Structured Navigation Groups */}
-        <nav className="space-y-5">
-          {NAV_GROUPS.map((group) => (
-            <div key={group.title} className="space-y-1">
-              <div className="px-2 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#6B746E]">
-                {group.title}
-              </div>
-              <div className="space-y-0.5">
-                {group.items.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <NavLink
-                      key={item.path}
-                      to={item.path}
-                      end={item.path === '/'}
-                      onClick={onClose}
-                      className={({ isActive }) =>
-                        `flex items-center justify-between px-2.5 py-1.5 rounded-md text-[13px] font-medium transition-colors ${
-                          isActive
-                            ? 'bg-white text-[#234E42] font-semibold shadow-xs border border-[#DEE3DC]'
-                            : 'text-[#6B746E] hover:text-[#202923] hover:bg-[#E2E6DF]'
-                        }`
-                      }
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Icon className="w-4 h-4 shrink-0 text-[#234E42]" />
-                        <span>{item.name}</span>
-                      </div>
-                    </NavLink>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
+        {/* Simplified Primary Navigation */}
+        <nav className="space-y-0.5">
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.name}
+                to={item.path}
+                onClick={onClose}
+                end={item.path === '/'}
+                className={({ isActive }) =>
+                  `flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                    isActive
+                      ? 'bg-[#FAF5F2] text-[#C65D3B] font-semibold border border-[#F0D5CB]/60 shadow-xs'
+                      : item.highlight
+                      ? 'text-[#C65D3B] hover:bg-[#FAF5F2] hover:text-[#b04f30]'
+                      : 'text-[#71717A] hover:text-[#222222] hover:bg-[#F7F7F5]'
+                  }`
+                }
+              >
+                <Icon
+                  className={`w-4 h-4 shrink-0 ${
+                    item.highlight ? 'text-[#C65D3B]' : ''
+                  }`}
+                />
+                <span className="truncate">{item.name}</span>
+                {item.highlight && (
+                  <span className="ml-auto text-[10px] bg-[#C65D3B] text-white px-1.5 py-0.2 rounded font-semibold uppercase tracking-wider">
+                    POS
+                  </span>
+                )}
+              </NavLink>
+            );
+          })}
         </nav>
       </div>
 
-      {/* Footer Section: Customer Demo Store Link & Profile */}
-      <div className="pt-4 border-t border-[#DEE3DC] space-y-3">
-        {/* Customer Demo Store Link */}
+      {/* Footer Navigation */}
+      <div className="pt-3 border-t border-[#E5E5E5] space-y-2">
         <NavLink
           to="/store"
           onClick={onClose}
-          className="flex items-center justify-between p-2 rounded-lg bg-white border border-[#DEE3DC] text-xs text-[#202923] hover:border-[#234E42] transition-colors shadow-xs group"
+          className="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-[#222222] bg-[#F7F7F5] hover:bg-[#EFEFEF] border border-[#E5E5E5] transition"
         >
           <div className="flex items-center gap-2">
-            <Store className="w-4 h-4 text-[#234E42]" />
-            <div>
-              <span className="font-medium text-xs block leading-tight">Customer Demo Store</span>
-              <span className="text-[10px] text-[#6B746E] block">Secondary storefront demo</span>
-            </div>
+            <Store className="w-3.5 h-3.5 text-[#C65D3B]" />
+            <span>Customer Store</span>
           </div>
-          <ArrowUpRight className="w-3.5 h-3.5 text-[#6B746E] group-hover:text-[#234E42] transition-colors" />
+          <span className="text-[10px] text-[#71717A]">Open ↗</span>
         </NavLink>
 
-        {/* User Account / Logout */}
-        <div className="flex items-center justify-between px-1 text-xs">
-          <div className="truncate mr-2">
-            <span className="block font-medium text-[#202923] truncate text-[12px]">
-              {user?.email || 'merchant@merchantpilot.ai'}
-            </span>
-            <span className="block text-[11px] text-[#6B746E]">Merchant Admin</span>
-          </div>
-          <button
-            onClick={handleLogout}
-            title="Sign out"
-            className="p-1.5 rounded hover:bg-[#E2E6DF] text-[#6B746E] hover:text-[#B94A48] transition-colors"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-[#71717A] hover:text-[#C24141] hover:bg-[#FDF2F2] transition"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          <span>Sign out</span>
+        </button>
       </div>
     </aside>
   );

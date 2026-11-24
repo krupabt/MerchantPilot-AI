@@ -42,14 +42,14 @@ export default function CustomerOrders() {
   if (!isAuthenticated) {
     return (
       <div className="max-w-md mx-auto py-16 text-center space-y-4 surface-card p-6">
-        <Package className="w-12 h-12 text-[#8C958E] mx-auto" />
-        <h2 className="text-lg font-semibold text-[#202923]">Sign In to View Orders</h2>
-        <p className="text-xs text-[#6B746E]">
+        <Package className="w-12 h-12 text-[#71717A] mx-auto" />
+        <h2 className="text-lg font-semibold text-[#222222]">Sign In to View Orders</h2>
+        <p className="text-xs text-[#71717A]">
           You must be logged in to view your past purchases and shipment tracking updates.
         </p>
         <Link
           to="/login"
-          className="inline-block px-4 py-2 rounded-lg bg-[#234E42] hover:bg-[#1c3f35] text-white font-medium text-xs transition shadow-xs"
+          className="inline-block px-4 py-2 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition shadow-xs"
         >
           Sign In
         </Link>
@@ -60,42 +60,42 @@ export default function CustomerOrders() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-16">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#DEE3DC] pb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E5E5E5] pb-3">
         <div>
-          <span className="text-[10px] font-mono uppercase bg-[#EAEDE7] border border-[#DEE3DC] text-[#234E42] px-2 py-0.5 rounded font-medium">
+          <span className="text-[10px] font-mono uppercase bg-[#FAF5F2] border border-[#E5E5E5] text-[#C65D3B] px-2 py-0.5 rounded font-medium">
             Fulfillment Ledger
           </span>
-          <h1 className="text-xl font-semibold text-[#202923] tracking-tight mt-1">My Orders</h1>
-          <p className="text-xs text-[#6B746E]">
+          <h1 className="text-xl font-semibold text-[#222222] tracking-tight mt-1">My Orders</h1>
+          <p className="text-xs text-[#71717A]">
             Track delivery progress and review receipts for your past purchases.
           </p>
         </div>
 
         <button
           onClick={fetchOrders}
-          className="px-3 py-1.5 rounded-lg bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs font-medium flex items-center gap-1.5 self-start sm:self-auto transition"
+          className="px-3 py-1.5 rounded-lg bg-white hover:bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] text-xs font-medium flex items-center gap-1.5 self-start sm:self-auto transition"
         >
-          <RefreshCw className="w-3.5 h-3.5 text-[#6B746E]" />
+          <RefreshCw className="w-3.5 h-3.5 text-[#71717A]" />
           <span>Refresh</span>
         </button>
       </div>
 
       {loading ? (
-        <div className="p-12 text-center text-xs text-[#6B746E] surface-card animate-pulse">
+        <div className="p-12 text-center text-xs text-[#71717A] surface-card animate-pulse">
           Loading your order history...
         </div>
       ) : orders.length === 0 ? (
         <div className="text-center py-16 surface-card p-8 space-y-3">
-          <Receipt className="w-12 h-12 text-[#8C958E] mx-auto" />
+          <Receipt className="w-12 h-12 text-[#71717A] mx-auto" />
           <div className="space-y-1">
-            <h3 className="text-sm font-semibold text-[#202923]">No orders placed yet</h3>
-            <p className="text-xs text-[#6B746E] max-w-sm mx-auto">
+            <h3 className="text-sm font-semibold text-[#222222]">No orders placed yet</h3>
+            <p className="text-xs text-[#71717A] max-w-sm mx-auto">
               Once you complete a purchase, your full itemized receipt and delivery tracking will appear here.
             </p>
           </div>
           <Link
             to="/shop"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#234E42] hover:bg-[#1c3f35] text-white font-medium text-xs transition shadow-xs"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition shadow-xs"
           >
             <Store className="w-3.5 h-3.5" />
             <span>Start Shopping</span>
@@ -115,12 +115,12 @@ export default function CustomerOrders() {
                 className="surface-card p-4 space-y-3 transition"
               >
                 {/* Order Top Bar */}
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#DEE3DC] pb-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E5E5E5] pb-2.5">
                   <div className="flex items-center gap-3">
-                    <span className="text-xs font-mono font-semibold text-[#202923]">
+                    <span className="text-xs font-mono font-semibold text-[#222222]">
                       #{order.id}
                     </span>
-                    <span className="text-[11px] text-[#6B746E]">
+                    <span className="text-[11px] text-[#71717A]">
                       {order.created_at ? new Date(order.created_at).toLocaleDateString('en-IN', {
                         year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
                       }) : ''}
@@ -132,8 +132,8 @@ export default function CustomerOrders() {
                     <span
                       className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold uppercase ${
                         isPaid
-                          ? 'bg-[#EAEDE7] text-[#234E42] border border-[#DEE3DC]'
-                          : 'bg-[#FEF8F1] text-[#B77932] border border-[#DEE3DC]'
+                          ? 'bg-[#FAF5F2] text-[#C65D3B] border border-[#E5E5E5]'
+                          : 'bg-[#FEF8F1] text-[#B77932] border border-[#E5E5E5]'
                       }`}
                     >
                       {order.status}
@@ -143,12 +143,12 @@ export default function CustomerOrders() {
                     <span
                       className={`px-2 py-0.5 rounded text-[10px] font-mono font-medium uppercase ${
                         isDelivered
-                          ? 'bg-[#EAEDE7] text-[#347A52] border border-[#DEE3DC]'
+                          ? 'bg-[#FAF5F2] text-[#347A52] border border-[#E5E5E5]'
                           : isShipped
-                          ? 'bg-[#EAEDE7] text-[#234E42] border border-[#DEE3DC]'
+                          ? 'bg-[#FAF5F2] text-[#C65D3B] border border-[#E5E5E5]'
                           : isProcessing
-                          ? 'bg-[#FEF8F1] text-[#B77932] border border-[#DEE3DC]'
-                          : 'bg-[#F6F5F1] text-[#6B746E] border border-[#DEE3DC]'
+                          ? 'bg-[#FEF8F1] text-[#B77932] border border-[#E5E5E5]'
+                          : 'bg-[#F7F7F5] text-[#71717A] border border-[#E5E5E5]'
                       }`}
                     >
                       {order.fulfillment_status || 'UNFULFILLED'}
@@ -161,10 +161,10 @@ export default function CustomerOrders() {
                   {order.items?.map((item, idx) => (
                     <div key={idx} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
-                        <span className="text-[#6B746E] font-mono">{item.quantity}x</span>
-                        <span className="text-[#202923] font-medium">{item.product_name}</span>
+                        <span className="text-[#71717A] font-mono">{item.quantity}x</span>
+                        <span className="text-[#222222] font-medium">{item.product_name}</span>
                       </div>
-                      <span className="text-[#202923] font-mono">
+                      <span className="text-[#222222] font-mono">
                         ₹{item.total_price?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                       </span>
                     </div>
@@ -172,8 +172,8 @@ export default function CustomerOrders() {
                 </div>
 
                 {/* Footer Breakdown */}
-                <div className="flex items-center justify-between border-t border-[#DEE3DC] pt-2.5 text-xs">
-                  <div className="text-[11px] text-[#8C958E] font-mono">
+                <div className="flex items-center justify-between border-t border-[#E5E5E5] pt-2.5 text-xs">
+                  <div className="text-[11px] text-[#71717A] font-mono">
                     {order.payment?.razorpay_order_id ? (
                       <span>Razorpay: {order.payment.razorpay_order_id}</span>
                     ) : (
@@ -181,8 +181,8 @@ export default function CustomerOrders() {
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[#6B746E]">Total Amount:</span>
-                    <span className="text-sm font-bold text-[#234E42] font-mono">
+                    <span className="text-[#71717A]">Total Amount:</span>
+                    <span className="text-sm font-bold text-[#C65D3B] font-mono">
                       ₹{order.final_amount?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </span>
                   </div>

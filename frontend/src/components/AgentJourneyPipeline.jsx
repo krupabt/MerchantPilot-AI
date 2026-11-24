@@ -25,15 +25,15 @@ export default function AgentJourneyPipeline({ activeStep = 7, isBlocked = false
     <div className="surface-card p-4 mb-5">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-[#234E42] animate-pulse" />
-          <h3 className="text-xs font-semibold text-[#202923] uppercase tracking-wider">
+          <div className="w-2 h-2 rounded-full bg-[#C65D3B] animate-pulse" />
+          <h3 className="text-xs font-semibold text-[#222222] uppercase tracking-wider">
             Autonomous Commerce Pipeline
           </h3>
         </div>
         <span className={`text-[11px] font-mono px-2 py-0.5 rounded font-medium border ${
           isBlocked
-            ? 'bg-[#FDF4F4] text-[#B94A48] border-[#DEE3DC]'
-            : 'bg-[#EAEDE7] text-[#234E42] border-[#DEE3DC]'
+            ? 'bg-[#FDF4F4] text-[#B94A48] border-[#E5E5E5]'
+            : 'bg-[#FAF5F2] text-[#C65D3B] border-[#E5E5E5]'
         }`}>
           {isBlocked ? 'POLICY ENGINE: ACTION BLOCKED' : 'STATUS: EXECUTION VERIFIED'}
         </span>
@@ -50,10 +50,10 @@ export default function AgentJourneyPipeline({ activeStep = 7, isBlocked = false
               key={step.id}
               className={`p-2.5 rounded-lg border flex flex-col justify-between transition-all ${
                 isCurrentBlocked
-                  ? 'bg-[#FDF4F4] border-[#DEE3DC] text-[#B94A48]'
+                  ? 'bg-[#FDF4F4] border-[#E5E5E5] text-[#B94A48]'
                   : isPassed
-                  ? 'bg-[#EAEDE7] border-[#DEE3DC] text-[#234E42]'
-                  : 'bg-[#F6F5F1] border-[#DEE3DC] text-[#8C958E]'
+                  ? 'bg-[#FAF5F2] border-[#E5E5E5] text-[#C65D3B]'
+                  : 'bg-[#F7F7F5] border-[#E5E5E5] text-[#71717A]'
               }`}
             >
               <div className="flex items-center justify-between mb-1.5">

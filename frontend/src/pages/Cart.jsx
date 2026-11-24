@@ -70,25 +70,25 @@ export default function Cart() {
   if (!isAuthenticated) {
     return (
       <div className="max-w-md mx-auto py-16 text-center space-y-5">
-        <div className="w-14 h-14 rounded-xl bg-[#EAEDE7] border border-[#DEE3DC] flex items-center justify-center text-[#234E42] mx-auto shadow-xs">
+        <div className="w-14 h-14 rounded-xl bg-[#FAF5F2] border border-[#E5E5E5] flex items-center justify-center text-[#C65D3B] mx-auto shadow-xs">
           <ShoppingCart className="w-6 h-6" />
         </div>
         <div className="space-y-1.5">
-          <h2 className="text-lg font-semibold text-[#202923]">Sign In to View Your Cart</h2>
-          <p className="text-xs text-[#6B746E] leading-relaxed">
+          <h2 className="text-lg font-semibold text-[#222222]">Sign In to View Your Cart</h2>
+          <p className="text-xs text-[#71717A] leading-relaxed">
             Your shopping cart is securely synchronized to your account in real-time.
           </p>
         </div>
         <div className="flex justify-center gap-2.5">
           <Link
             to="/login"
-            className="px-4 py-2 rounded-lg bg-[#234E42] hover:bg-[#1c3f35] text-white font-medium text-xs transition shadow-xs"
+            className="px-4 py-2 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition shadow-xs"
           >
             Sign In
           </Link>
           <Link
             to="/shop"
-            className="px-4 py-2 rounded-lg bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] font-medium text-xs transition"
+            className="px-4 py-2 rounded-lg bg-white hover:bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] font-medium text-xs transition"
           >
             Browse Hardware
           </Link>
@@ -104,10 +104,10 @@ export default function Cart() {
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-16">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-[#DEE3DC]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-[#E5E5E5]">
         <div>
-          <h1 className="text-xl font-semibold text-[#202923] tracking-tight">Shopping Cart</h1>
-          <p className="text-xs text-[#6B746E] mt-0.5 font-mono">
+          <h1 className="text-xl font-semibold text-[#222222] tracking-tight">Shopping Cart</h1>
+          <p className="text-xs text-[#71717A] mt-0.5 font-mono">
             {totalItemsCount} item{totalItemsCount === 1 ? '' : 's'} in your database cart
           </p>
         </div>
@@ -124,28 +124,28 @@ export default function Cart() {
       </div>
 
       {errorMsg && (
-        <div className="p-3 rounded-lg bg-[#FDF4F4] border border-[#DEE3DC] text-xs text-[#B94A48] flex items-center gap-2">
+        <div className="p-3 rounded-lg bg-[#FDF4F4] border border-[#E5E5E5] text-xs text-[#B94A48] flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           <span>{errorMsg}</span>
         </div>
       )}
 
       {loading && !cart ? (
-        <div className="p-10 text-center text-xs text-[#6B746E] surface-card animate-pulse">
+        <div className="p-10 text-center text-xs text-[#71717A] surface-card animate-pulse">
           Loading your cart items...
         </div>
       ) : items.length === 0 ? (
         <div className="py-16 text-center surface-card p-8 space-y-3">
-          <PackageOpen className="w-12 h-12 text-[#8C958E] mx-auto" />
+          <PackageOpen className="w-12 h-12 text-[#71717A] mx-auto" />
           <div className="space-y-1">
-            <h3 className="text-sm font-semibold text-[#202923]">Your cart is empty</h3>
-            <p className="text-xs text-[#6B746E] max-w-sm mx-auto">
+            <h3 className="text-sm font-semibold text-[#222222]">Your cart is empty</h3>
+            <p className="text-xs text-[#71717A] max-w-sm mx-auto">
               You haven't added any developer hardware yet. Check out our high-performance catalog.
             </p>
           </div>
           <Link
             to="/shop"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#234E42] hover:bg-[#1c3f35] text-white font-medium text-xs transition shadow-xs mt-2"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition shadow-xs mt-2"
           >
             <Store className="w-3.5 h-3.5" />
             Explore Hardware Catalog
@@ -161,39 +161,39 @@ export default function Cart() {
                 className="surface-card p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC] flex items-center justify-center text-xs font-mono font-medium text-[#234E42] shrink-0">
+                  <div className="w-12 h-12 rounded-lg bg-[#F7F7F5] border border-[#E5E5E5] flex items-center justify-center text-xs font-mono font-medium text-[#C65D3B] shrink-0">
                     {item.product_id}
                   </div>
                   <div>
-                    <span className="text-[10px] uppercase font-mono text-[#234E42] bg-[#EAEDE7] border border-[#DEE3DC] px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] uppercase font-mono text-[#C65D3B] bg-[#FAF5F2] border border-[#E5E5E5] px-1.5 py-0.5 rounded">
                       {item.category || 'Hardware'}
                     </span>
-                    <h3 className="text-xs font-semibold text-[#202923] mt-0.5">
+                    <h3 className="text-xs font-semibold text-[#222222] mt-0.5">
                       {item.name}
                     </h3>
-                    <p className="text-[11px] text-[#6B746E]">
+                    <p className="text-[11px] text-[#71717A]">
                       ₹{item.unit_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })} each
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-5 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-[#DEE3DC]">
+                <div className="flex items-center justify-between sm:justify-end gap-5 w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-[#E5E5E5]">
                   {/* Quantity Control */}
-                  <div className="flex items-center border border-[#DEE3DC] rounded-lg bg-[#F6F5F1]">
+                  <div className="flex items-center border border-[#E5E5E5] rounded-lg bg-[#F7F7F5]">
                     <button
                       onClick={() => handleQtyChange(item.item_id, item.quantity, -1)}
                       disabled={updatingId === item.item_id}
-                      className="p-1 text-[#6B746E] hover:text-[#202923] disabled:opacity-50"
+                      className="p-1 text-[#71717A] hover:text-[#222222] disabled:opacity-50"
                     >
                       <Minus className="w-3 h-3" />
                     </button>
-                    <span className="px-2.5 py-0.5 text-xs font-mono font-semibold text-[#202923]">
+                    <span className="px-2.5 py-0.5 text-xs font-mono font-semibold text-[#222222]">
                       {item.quantity}
                     </span>
                     <button
                       onClick={() => handleQtyChange(item.item_id, item.quantity, 1)}
                       disabled={updatingId === item.item_id || (item.available_stock && item.quantity >= item.available_stock)}
-                      className="p-1 text-[#6B746E] hover:text-[#202923] disabled:opacity-50"
+                      className="p-1 text-[#71717A] hover:text-[#222222] disabled:opacity-50"
                     >
                       <Plus className="w-3 h-3" />
                     </button>
@@ -201,7 +201,7 @@ export default function Cart() {
 
                   {/* Total & Remove */}
                   <div className="text-right">
-                    <p className="text-xs font-semibold text-[#202923]">
+                    <p className="text-xs font-semibold text-[#222222]">
                       ₹{(item.total_price || (item.unit_price * item.quantity)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </p>
                     <button
@@ -219,34 +219,34 @@ export default function Cart() {
 
           {/* Order Summary & Checkout Card */}
           <div className="surface-card p-5 space-y-5">
-            <h3 className="text-xs font-semibold uppercase font-mono text-[#202923] tracking-wider pb-2 border-b border-[#DEE3DC]">
+            <h3 className="text-xs font-semibold uppercase font-mono text-[#222222] tracking-wider pb-2 border-b border-[#E5E5E5]">
               Order Summary
             </h3>
 
             <div className="space-y-2.5 text-xs">
-              <div className="flex justify-between text-[#6B746E]">
+              <div className="flex justify-between text-[#71717A]">
                 <span>Items Subtotal ({totalItemsCount} units)</span>
-                <span className="font-mono text-[#202923]">
+                <span className="font-mono text-[#222222]">
                   ₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                 </span>
               </div>
-              <div className="flex justify-between text-[#6B746E]">
+              <div className="flex justify-between text-[#71717A]">
                 <span>Estimated Shipping</span>
                 <span className="font-mono text-[#347A52]">FREE</span>
               </div>
-              <div className="flex justify-between text-[#6B746E]">
+              <div className="flex justify-between text-[#71717A]">
                 <span>Taxes & Duties</span>
-                <span className="font-mono text-[#202923]">Included</span>
+                <span className="font-mono text-[#222222]">Included</span>
               </div>
-              <div className="pt-2.5 border-t border-[#DEE3DC] flex justify-between items-baseline">
-                <span className="text-xs font-semibold text-[#202923]">Total Amount</span>
-                <span className="text-lg font-bold text-[#234E42]">
+              <div className="pt-2.5 border-t border-[#E5E5E5] flex justify-between items-baseline">
+                <span className="text-xs font-semibold text-[#222222]">Total Amount</span>
+                <span className="text-lg font-bold text-[#C65D3B]">
                   ₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                 </span>
               </div>
             </div>
 
-            <div className="p-3 rounded-lg bg-[#EAEDE7]/60 border border-[#DEE3DC] text-[11px] text-[#6B746E] space-y-1">
+            <div className="p-3 rounded-lg bg-[#FAF5F2]/60 border border-[#E5E5E5] text-[11px] text-[#71717A] space-y-1">
               <div className="flex items-center gap-1.5 text-[#347A52] font-semibold">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>Deterministic Policy Protected</span>
@@ -256,7 +256,7 @@ export default function Cart() {
 
             <button
               onClick={() => navigate('/checkout')}
-              className="w-full py-2.5 rounded-lg bg-[#234E42] hover:bg-[#1c3f35] text-white font-medium text-xs transition shadow-xs flex items-center justify-center gap-2"
+              className="w-full py-2.5 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition shadow-xs flex items-center justify-center gap-2"
             >
               <span>Proceed to Checkout</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -264,7 +264,7 @@ export default function Cart() {
 
             <Link
               to="/shop"
-              className="block text-center text-xs text-[#6B746E] hover:text-[#234E42] transition"
+              className="block text-center text-xs text-[#71717A] hover:text-[#C65D3B] transition"
             >
               ← Continue Shopping
             </Link>

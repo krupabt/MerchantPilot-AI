@@ -134,12 +134,12 @@ export default function MerchantAIAssistant() {
   return (
     <div className="space-y-4 max-w-7xl mx-auto pb-8">
       {/* Page Title & Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#DEE3DC]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E5E5E5]">
         <div>
-          <h1 className="text-2xl sm:text-[28px] font-bold text-[#202923] tracking-tight">
+          <h1 className="text-2xl sm:text-[28px] font-bold text-[#222222] tracking-tight">
             Business Copilot
           </h1>
-          <p className="text-sm text-[#6B746E] mt-0.5">
+          <p className="text-sm text-[#71717A] mt-0.5">
             Conversational business analysis grounded in live sales and inventory records.
           </p>
         </div>
@@ -147,9 +147,9 @@ export default function MerchantAIAssistant() {
         <div className="flex items-center gap-2">
           <button
             onClick={handleNewConversation}
-            className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs"
+            className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs"
           >
-            <Plus className="w-3.5 h-3.5 text-[#6B746E]" />
+            <Plus className="w-3.5 h-3.5 text-[#71717A]" />
             <span>New conversation</span>
           </button>
         </div>
@@ -160,7 +160,7 @@ export default function MerchantAIAssistant() {
         {/* Left Column: Topics & Analysis Quick Launch */}
         <div className="hidden lg:flex flex-col space-y-4 surface-card p-4 h-full">
           <div>
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#6B746E] mb-2">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#71717A] mb-2">
               Analysis topics
             </h2>
             <div className="space-y-1">
@@ -169,21 +169,21 @@ export default function MerchantAIAssistant() {
                   key={idx}
                   onClick={() => handleSendQuery(t.query)}
                   disabled={loading}
-                  className="w-full text-left px-2.5 py-2 rounded-md text-xs font-medium text-[#202923] hover:bg-[#F6F5F1] border border-transparent hover:border-[#DEE3DC] transition-colors flex items-center justify-between group"
+                  className="w-full text-left px-2.5 py-2 rounded-md text-xs font-medium text-[#222222] hover:bg-[#F7F7F5] border border-transparent hover:border-[#E5E5E5] transition-colors flex items-center justify-between group"
                 >
                   <span className="truncate">{t.label}</span>
-                  <ArrowRight className="w-3 h-3 text-[#6B746E] opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <ArrowRight className="w-3 h-3 text-[#71717A] opacity-0 group-hover:opacity-100 transition-opacity" />
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="pt-4 border-t border-[#DEE3DC] space-y-2 mt-auto">
-            <span className="text-[11px] font-semibold text-[#6B746E] uppercase tracking-wider block">
+          <div className="pt-4 border-t border-[#E5E5E5] space-y-2 mt-auto">
+            <span className="text-[11px] font-semibold text-[#71717A] uppercase tracking-wider block">
               Data grounding
             </span>
-            <div className="p-2.5 rounded-md bg-[#F6F5F1] border border-[#DEE3DC] text-[11px] text-[#6B746E] space-y-1">
-              <div className="flex items-center gap-1.5 text-[#234E42] font-medium">
+            <div className="p-2.5 rounded-md bg-[#F7F7F5] border border-[#E5E5E5] text-[11px] text-[#71717A] space-y-1">
+              <div className="flex items-center gap-1.5 text-[#C65D3B] font-medium">
                 <Database className="w-3.5 h-3.5" />
                 <span>PostgreSQL Grounded</span>
               </div>
@@ -209,7 +209,7 @@ export default function MerchantAIAssistant() {
                   {/* Avatar */}
                   <div
                     className={`w-7 h-7 rounded-md shrink-0 flex items-center justify-center font-semibold text-xs text-white ${
-                      isUser ? 'bg-[#202923]' : 'bg-[#234E42]'
+                      isUser ? 'bg-[#222222]' : 'bg-[#C65D3B]'
                     }`}
                   >
                     {isUser ? 'You' : 'M'}
@@ -219,8 +219,8 @@ export default function MerchantAIAssistant() {
                   <div
                     className={`max-w-[85%] rounded-lg p-3.5 text-xs space-y-3 leading-relaxed ${
                       isUser
-                        ? 'bg-[#234E42] text-white shadow-xs'
-                        : 'bg-[#F6F5F1] text-[#202923] border border-[#DEE3DC]'
+                        ? 'bg-[#C65D3B] text-white shadow-xs'
+                        : 'bg-[#F7F7F5] text-[#222222] border border-[#E5E5E5]'
                     }`}
                   >
                     {/* Message Text */}
@@ -237,25 +237,25 @@ export default function MerchantAIAssistant() {
                       Array.isArray(msg.structured_table.headers) &&
                       Array.isArray(msg.structured_table.rows) &&
                       msg.structured_table.rows.length > 0 && (
-                        <div className="rounded-md bg-white border border-[#DEE3DC] p-3 text-xs space-y-2 mt-2 overflow-x-auto shadow-xs">
+                        <div className="rounded-md bg-white border border-[#E5E5E5] p-3 text-xs space-y-2 mt-2 overflow-x-auto shadow-xs">
                           {msg.structured_table.title && (
-                            <span className="font-semibold text-[#202923] text-xs block">
+                            <span className="font-semibold text-[#222222] text-xs block">
                               {msg.structured_table.title}
                             </span>
                           )}
                           <table className="w-full text-left text-xs">
-                            <thead className="bg-[#F6F5F1] text-[#6B746E] font-medium border-b border-[#DEE3DC]">
+                            <thead className="bg-[#F7F7F5] text-[#71717A] font-medium border-b border-[#E5E5E5]">
                               <tr>
                                 {msg.structured_table.headers.map((h, i) => (
                                   <th key={i} className="py-2 px-2.5 font-medium">{h}</th>
                                 ))}
                               </tr>
                             </thead>
-                            <tbody className="divide-y divide-[#DEE3DC]">
+                            <tbody className="divide-y divide-[#E5E5E5]">
                               {msg.structured_table.rows.map((row, rIdx) => (
-                                <tr key={rIdx} className="hover:bg-[#F6F5F1]/60">
+                                <tr key={rIdx} className="hover:bg-[#F7F7F5]/60">
                                   {Object.values(row).map((val, cIdx) => (
-                                    <td key={cIdx} className="py-2 px-2.5 text-[#202923] font-mono text-[11px]">
+                                    <td key={cIdx} className="py-2 px-2.5 text-[#222222] font-mono text-[11px]">
                                       {typeof val === 'number' ? val.toLocaleString('en-IN') : String(val)}
                                     </td>
                                   ))}
@@ -271,7 +271,7 @@ export default function MerchantAIAssistant() {
                       <div className="pt-1">
                         <Link
                           to="/actions"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#234E42] hover:bg-[#1B3D34] text-white text-xs font-medium transition-colors shadow-xs"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#C65D3B] hover:bg-[#b04f30] text-white text-xs font-medium transition-colors shadow-xs"
                         >
                           <span>Review & Execute in Action Center</span>
                           <ArrowRight className="w-3.5 h-3.5" />
@@ -282,13 +282,13 @@ export default function MerchantAIAssistant() {
                     {/* Actionable Recommendations List */}
                     {Array.isArray(msg.actionable_recommendations) &&
                       msg.actionable_recommendations.length > 0 && (
-                        <div className="pt-2 border-t border-[#DEE3DC] space-y-1">
-                          <span className="text-[11px] font-semibold text-[#234E42] block">
+                        <div className="pt-2 border-t border-[#E5E5E5] space-y-1">
+                          <span className="text-[11px] font-semibold text-[#C65D3B] block">
                             Recommended next steps:
                           </span>
                           <ul className="space-y-1">
                             {msg.actionable_recommendations.map((rec, i) => (
-                              <li key={i} className="text-[12px] text-[#6B746E] flex items-start gap-1.5">
+                              <li key={i} className="text-[12px] text-[#71717A] flex items-start gap-1.5">
                                 <span className="text-[#347A52] font-bold">✓</span>
                                 <span>{rec}</span>
                               </li>
@@ -304,7 +304,7 @@ export default function MerchantAIAssistant() {
             {/* Initial Starter Chips if conversation is empty */}
             {isInitialState && (
               <div className="pt-4 space-y-2">
-                <p className="text-xs font-medium text-[#6B746E]">
+                <p className="text-xs font-medium text-[#71717A]">
                   Suggested questions to get started:
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -312,7 +312,7 @@ export default function MerchantAIAssistant() {
                     <button
                       key={idx}
                       onClick={() => handleSendQuery(q)}
-                      className="px-3 py-1.5 rounded-md bg-white hover:bg-[#EAEDE7] border border-[#DEE3DC] text-xs text-[#202923] font-medium transition-colors shadow-xs text-left"
+                      className="px-3 py-1.5 rounded-md bg-white hover:bg-[#FAF5F2] border border-[#E5E5E5] text-xs text-[#222222] font-medium transition-colors shadow-xs text-left"
                     >
                       {q}
                     </button>
@@ -323,8 +323,8 @@ export default function MerchantAIAssistant() {
 
             {/* Loading Indicator */}
             {loading && (
-              <div className="flex items-center gap-2.5 text-xs text-[#6B746E] pl-10">
-                <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#234E42]" />
+              <div className="flex items-center gap-2.5 text-xs text-[#71717A] pl-10">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#C65D3B]" />
                 <span>Querying live database records and calculating metrics...</span>
               </div>
             )}
@@ -333,7 +333,7 @@ export default function MerchantAIAssistant() {
           </div>
 
           {/* Bottom Message Input Box */}
-          <div className="p-3 sm:p-4 bg-white border-t border-[#DEE3DC]">
+          <div className="p-3 sm:p-4 bg-white border-t border-[#E5E5E5]">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -347,18 +347,18 @@ export default function MerchantAIAssistant() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 disabled={loading}
-                className="flex-1 bg-[#F6F5F1] border border-[#DEE3DC] focus:border-[#234E42] focus:bg-white text-xs rounded-md px-3.5 py-2.5 text-[#202923] focus:outline-none transition-colors"
+                className="flex-1 bg-[#F7F7F5] border border-[#E5E5E5] focus:border-[#C65D3B] focus:bg-white text-xs rounded-md px-3.5 py-2.5 text-[#222222] focus:outline-none transition-colors"
               />
               <button
                 type="submit"
                 disabled={!query.trim() || loading}
-                className="px-4 py-2.5 rounded-md bg-[#234E42] hover:bg-[#1B3D34] disabled:opacity-40 text-white font-medium text-xs flex items-center gap-1.5 transition-colors shadow-xs"
+                className="px-4 py-2.5 rounded-md bg-[#C65D3B] hover:bg-[#b04f30] disabled:opacity-40 text-white font-medium text-xs flex items-center gap-1.5 transition-colors shadow-xs"
               >
                 <span>Send</span>
                 <Send className="w-3.5 h-3.5" />
               </button>
             </form>
-            <p className="text-[11px] text-[#6B746E] mt-1.5">
+            <p className="text-[11px] text-[#71717A] mt-1.5">
               Press Enter to send. Data is retrieved in real-time from verified database transactions.
             </p>
           </div>

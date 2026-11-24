@@ -16,28 +16,28 @@ export default function MarkdownText({ content, className = '' }) {
     return tokens.map((token, i) => {
       if (token.startsWith('**') && token.endsWith('**') && token.length >= 4) {
         return (
-          <strong key={i} className="font-semibold text-[#202923]">
+          <strong key={i} className="font-semibold text-[#222222]">
             {token.slice(2, -2)}
           </strong>
         );
       }
       if (token.startsWith('*') && token.endsWith('*') && token.length >= 2) {
         return (
-          <em key={i} className="italic text-[#6B746E]">
+          <em key={i} className="italic text-[#71717A]">
             {token.slice(1, -1)}
           </em>
         );
       }
       if (token.startsWith('~~') && token.endsWith('~~') && token.length >= 4) {
         return (
-          <del key={i} className="line-through text-[#8C958E]">
+          <del key={i} className="line-through text-[#71717A]">
             {token.slice(2, -2)}
           </del>
         );
       }
       if (token.startsWith('`') && token.endsWith('`') && token.length >= 2) {
         return (
-          <code key={i} className="font-mono bg-[#EAEDE7] px-1.5 py-0.5 rounded text-[11px] text-[#234E42]">
+          <code key={i} className="font-mono bg-[#FAF5F2] px-1.5 py-0.5 rounded text-[11px] text-[#C65D3B]">
             {token.slice(1, -1)}
           </code>
         );
@@ -55,14 +55,14 @@ export default function MarkdownText({ content, className = '' }) {
         }
         if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
           return (
-            <div key={idx} className="flex items-start gap-1.5 pl-1.5 text-xs text-[#6B746E]">
+            <div key={idx} className="flex items-start gap-1.5 pl-1.5 text-xs text-[#71717A]">
               <span className="text-[#347A52] font-bold">•</span>
               <span>{formatInline(trimmed.slice(2))}</span>
             </div>
           );
         }
         return (
-          <p key={idx} className="text-xs text-[#6B746E]">
+          <p key={idx} className="text-xs text-[#71717A]">
             {formatInline(line)}
           </p>
         );

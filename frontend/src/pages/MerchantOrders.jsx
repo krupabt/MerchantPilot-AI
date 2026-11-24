@@ -81,19 +81,19 @@ export default function MerchantOrders() {
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 px-4 py-2.5 rounded-lg bg-white border border-[#DEE3DC] text-[#202923] shadow-modal text-xs flex items-center gap-2 animate-in fade-in">
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-2.5 rounded-lg bg-white border border-[#E5E5E5] text-[#222222] shadow-modal text-xs flex items-center gap-2 animate-in fade-in">
           <Check className="w-4 h-4 text-[#347A52]" />
           <span>{toast}</span>
         </div>
       )}
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#DEE3DC]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E5E5E5]">
         <div>
-          <h1 className="text-2xl sm:text-[28px] font-bold text-[#202923] tracking-tight">
+          <h1 className="text-2xl sm:text-[28px] font-bold text-[#222222] tracking-tight">
             Orders & payments
           </h1>
-          <p className="text-sm text-[#6B746E] mt-0.5">
+          <p className="text-sm text-[#71717A] mt-0.5">
             Manage customer purchases, fulfillment status, and payment settlements.
           </p>
         </div>
@@ -101,9 +101,9 @@ export default function MerchantOrders() {
         <button
           onClick={loadOrders}
           disabled={loading}
-          className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
+          className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
         >
-          <RefreshCw className={`w-3.5 h-3.5 text-[#6B746E] ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-3.5 h-3.5 text-[#71717A] ${loading ? 'animate-spin' : ''}`} />
           <span>Sync orders</span>
         </button>
       </div>
@@ -111,44 +111,44 @@ export default function MerchantOrders() {
       {/* 4 Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div className="surface-card p-4 space-y-1">
-          <span className="text-xs font-medium text-[#6B746E]">Total order volume</span>
-          <p className="text-2xl font-bold text-[#202923] tracking-tight">
+          <span className="text-xs font-medium text-[#71717A]">Total order volume</span>
+          <p className="text-2xl font-bold text-[#222222] tracking-tight">
             ₹{totalVolume.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
           </p>
-          <p className="text-[12px] text-[#6B746E]">{orders.length} total orders</p>
+          <p className="text-[12px] text-[#71717A]">{orders.length} total orders</p>
         </div>
 
         <div className="surface-card p-4 space-y-1">
-          <span className="text-xs font-medium text-[#6B746E]">Pending fulfillment</span>
-          <p className={`text-2xl font-bold tracking-tight ${unfulfilledCount > 0 ? 'text-[#B77932]' : 'text-[#202923]'}`}>
+          <span className="text-xs font-medium text-[#71717A]">Pending fulfillment</span>
+          <p className={`text-2xl font-bold tracking-tight ${unfulfilledCount > 0 ? 'text-[#B77932]' : 'text-[#222222]'}`}>
             {unfulfilledCount} orders
           </p>
-          <p className="text-[12px] text-[#6B746E]">Requires packaging / dispatch</p>
+          <p className="text-[12px] text-[#71717A]">Requires packaging / dispatch</p>
         </div>
 
         <div className="surface-card p-4 space-y-1">
-          <span className="text-xs font-medium text-[#6B746E]">Processing</span>
-          <p className="text-2xl font-bold text-[#202923] tracking-tight">{processingCount} orders</p>
-          <p className="text-[12px] text-[#6B746E]">In warehouse queue</p>
+          <span className="text-xs font-medium text-[#71717A]">Processing</span>
+          <p className="text-2xl font-bold text-[#222222] tracking-tight">{processingCount} orders</p>
+          <p className="text-[12px] text-[#71717A]">In warehouse queue</p>
         </div>
 
         <div className="surface-card p-4 space-y-1">
-          <span className="text-xs font-medium text-[#6B746E]">Delivered</span>
+          <span className="text-xs font-medium text-[#71717A]">Delivered</span>
           <p className="text-2xl font-bold text-[#347A52] tracking-tight">{deliveredCount} orders</p>
-          <p className="text-[12px] text-[#6B746E]">Completed delivery</p>
+          <p className="text-[12px] text-[#71717A]">Completed delivery</p>
         </div>
       </div>
 
       {/* Search and Filters Toolbar */}
       <div className="surface-card p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#8E9891]" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#71717A]" />
           <input
             type="text"
             placeholder="Search by Order ID, customer, payment ref..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs rounded-md pl-9 pr-3.5 py-2 focus:outline-none focus:border-[#234E42] focus:bg-white transition-colors"
+            className="w-full bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] text-xs rounded-md pl-9 pr-3.5 py-2 focus:outline-none focus:border-[#C65D3B] focus:bg-white transition-colors"
           />
         </div>
 
@@ -156,7 +156,7 @@ export default function MerchantOrders() {
           <select
             value={fulfillmentFilter}
             onChange={(e) => setFulfillmentFilter(e.target.value)}
-            className="bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs rounded-md px-2.5 py-1.5 focus:outline-none focus:border-[#234E42]"
+            className="bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] text-xs rounded-md px-2.5 py-1.5 focus:outline-none focus:border-[#C65D3B]"
           >
             <option value="ALL">All fulfillment statuses</option>
             {FULFILLMENT_STATES.map((s) => (
@@ -170,7 +170,7 @@ export default function MerchantOrders() {
       <div className="surface-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#F6F5F1] text-[#6B746E] font-medium border-b border-[#DEE3DC]">
+            <thead className="bg-[#F7F7F5] text-[#71717A] font-medium border-b border-[#E5E5E5]">
               <tr>
                 <th className="py-2.5 px-3.5">Order ID</th>
                 <th className="py-2.5 px-3">Date</th>
@@ -181,10 +181,10 @@ export default function MerchantOrders() {
                 <th className="py-2.5 px-3.5 text-right">Update status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#DEE3DC]">
+            <tbody className="divide-y divide-[#E5E5E5]">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-[#6B746E]">
+                  <td colSpan={7} className="py-8 text-center text-[#71717A]">
                     Loading orders...
                   </td>
                 </tr>
@@ -192,23 +192,23 @@ export default function MerchantOrders() {
                 filtered.map((order) => {
                   const status = order.fulfillment_status || 'UNFULFILLED';
                   return (
-                    <tr key={order.id} className="hover:bg-[#F6F5F1]/60 transition-colors">
-                      <td className="py-2.5 px-3.5 font-mono text-[#234E42] font-medium">
+                    <tr key={order.id} className="hover:bg-[#F7F7F5]/60 transition-colors">
+                      <td className="py-2.5 px-3.5 font-mono text-[#C65D3B] font-medium">
                         {order.id?.slice(0, 16)}...
                       </td>
-                      <td className="py-2.5 px-3 text-[#6B746E]">
+                      <td className="py-2.5 px-3 text-[#71717A]">
                         {order.created_at ? new Date(order.created_at).toLocaleDateString('en-IN') : 'Recent'}
                       </td>
-                      <td className="py-2.5 px-3 text-[#202923] font-medium">
+                      <td className="py-2.5 px-3 text-[#222222] font-medium">
                         {order.customer_name || 'Store Customer'}
                       </td>
-                      <td className="py-2.5 px-3 font-semibold text-[#202923]">
+                      <td className="py-2.5 px-3 font-semibold text-[#222222]">
                         ₹{order.final_amount?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                       </td>
                       <td className="py-2.5 px-3">
                         <span className={`px-2 py-0.5 rounded text-[11px] font-medium ${
                           order.status === 'PAID'
-                            ? 'bg-[#EAF4EE] text-[#347A52] border border-[#B8D4C4]'
+                            ? 'bg-[#FAF5F2] text-[#347A52] border border-[#F0D5CB]'
                             : 'bg-[#FDF4EB] text-[#B77932]'
                         }`}>
                           {order.status}
@@ -217,9 +217,9 @@ export default function MerchantOrders() {
                       <td className="py-2.5 px-3">
                         <span className={`px-2 py-0.5 rounded text-[11px] font-medium ${
                           status === 'DELIVERED'
-                            ? 'bg-[#EAF4EE] text-[#347A52]'
+                            ? 'bg-[#FAF5F2] text-[#347A52]'
                             : status === 'SHIPPED'
-                            ? 'bg-[#F6F5F1] text-[#234E42] border border-[#DEE3DC]'
+                            ? 'bg-[#F7F7F5] text-[#C65D3B] border border-[#E5E5E5]'
                             : status === 'PROCESSING'
                             ? 'bg-[#FDF4EB] text-[#B77932]'
                             : 'bg-[#FBEFEF] text-[#B94A48]'
@@ -232,7 +232,7 @@ export default function MerchantOrders() {
                           value={status}
                           disabled={updatingId === order.id}
                           onChange={(e) => handleUpdateFulfillment(order.id, e.target.value)}
-                          className="bg-white border border-[#DEE3DC] text-[#202923] text-xs rounded px-2 py-1 focus:outline-none focus:border-[#234E42]"
+                          className="bg-white border border-[#E5E5E5] text-[#222222] text-xs rounded px-2 py-1 focus:outline-none focus:border-[#C65D3B]"
                         >
                           {FULFILLMENT_STATES.map((s) => (
                             <option key={s} value={s}>{s}</option>
@@ -244,7 +244,7 @@ export default function MerchantOrders() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-[#6B746E]">
+                  <td colSpan={7} className="py-8 text-center text-[#71717A]">
                     No orders match your criteria.
                   </td>
                 </tr>

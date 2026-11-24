@@ -84,6 +84,8 @@ class SaleService:
 
         total_subtotal = round(total_subtotal, 2)
         total_discount = round(float(request.discount_amount or 0.0), 2)
+        if total_discount == 0.0 and request.discount_percent and request.discount_percent > 0:
+            total_discount = round(total_subtotal * (request.discount_percent / 100.0), 2)
 
         # 2. Check Commercial Policy Ceiling
         policy = db.query(Policy).filter(Policy.merchant_id == merchant_id, Policy.is_active == True).first()
@@ -207,6 +209,13 @@ class SaleService:
         return {
             "success": True,
             "message": "Sale recorded successfully.",
+            "order_id": order.id,
+            "receipt_number": receipt_num,
+            "subtotal": total_subtotal,
+            "discount_amount": total_discount,
+            "final_amount": final_amount,
+            "total_cogs": total_cogs,
+            "gross_profit": gross_profit,
             "receipt": {
                 "order_id": order.id,
                 "receipt_number": receipt_num,

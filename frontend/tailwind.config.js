@@ -7,36 +7,36 @@ export default {
   theme: {
     extend: {
       colors: {
-        // MerchantPilot Clean Commercial Palette (Stripe/Shopify/Linear inspired)
+        // MerchantPilot Clean Off-White & Terracotta Design System
         bg: {
-          main: '#F6F5F1',
+          main: '#F7F7F5',
           surface: '#FFFFFF',
-          sidebar: '#EAEDE7',
-          hover: '#F0F3ED',
+          sidebar: '#FFFFFF',
+          hover: '#F0F0EE',
         },
         brand: {
-          primary: '#234E42',   // Forest green
-          hover: '#1B3D34',     // Dark forest green
-          accent: '#B8D4C4',    // Soft sage accent
-          light: '#EBF4EF',     // Pale sage tinted background
+          primary: '#C65D3B',   // Terracotta accent
+          hover: '#B24F2F',     // Darker terracotta
+          accent: '#EAD6CF',    // Soft terracotta wash
+          light: '#FBF4F1',     // Pale terracotta tinted surface
         },
         content: {
-          primary: '#202923',   // Primary text
-          secondary: '#6B746E', // Muted secondary text
-          muted: '#8E9891',     // Supporting/tertiary text
+          primary: '#222222',   // Dark charcoal primary text
+          secondary: '#71717A', // Neutral slate secondary text
+          muted: '#A1A1AA',     // Supporting/tertiary text
         },
         border: {
-          DEFAULT: '#DEE3DC',   // Crisp clean border
-          subtle: '#E8ECE6',
-          strong: '#C5CDC2',
+          DEFAULT: '#E5E5E5',   // Subtle clean border
+          subtle: '#EFEFEF',
+          strong: '#D4D4D4',
         },
         status: {
-          success: '#347A52',
-          successBg: '#EAF4EE',
-          warning: '#B77932',
-          warningBg: '#FDF4EB',
-          error: '#B94A48',
-          errorBg: '#FBEFEF',
+          success: '#39805A',
+          successBg: '#EEF7F2',
+          warning: '#B7791F',
+          warningBg: '#FEF9EE',
+          error: '#C24141',
+          errorBg: '#FDF2F2',
         }
       },
       fontFamily: {
@@ -55,8 +55,8 @@ export default {
         'xs': '0 1px 2px rgba(0, 0, 0, 0.03)',
         'sm': '0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03)',
         'card': '0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)',
-        'card-hover': '0 4px 12px rgba(35, 78, 66, 0.08), 0 1px 3px rgba(0, 0, 0, 0.03)',
-        'modal': '0 12px 32px -4px rgba(32, 41, 35, 0.15), 0 4px 12px -2px rgba(32, 41, 35, 0.08)',
+        'card-hover': '0 4px 12px rgba(198, 93, 59, 0.08), 0 1px 3px rgba(0, 0, 0, 0.03)',
+        'modal': '0 12px 32px -4px rgba(34, 34, 34, 0.15), 0 4px 12px -2px rgba(34, 34, 34, 0.08)',
       }
     },
   },

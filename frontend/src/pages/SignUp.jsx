@@ -79,11 +79,11 @@ export default function SignUp() {
       <div className="max-w-md w-full space-y-5">
         {/* Header */}
         <div className="text-center space-y-1.5">
-          <div className="inline-flex h-11 w-11 rounded-lg bg-[#234E42] text-white items-center justify-center font-bold text-lg mb-1 shadow-xs">
+          <div className="inline-flex h-11 w-11 rounded-lg bg-[#C65D3B] text-white items-center justify-center font-bold text-lg mb-1 shadow-xs">
             M
           </div>
-          <h2 className="text-xl font-semibold text-[#202923] tracking-tight">Create an Account</h2>
-          <p className="text-xs text-[#6B746E]">
+          <h2 className="text-xl font-semibold text-[#222222] tracking-tight">Create an Account</h2>
+          <p className="text-xs text-[#71717A]">
             Join MerchantPilot AI to access business analytics or customer store
           </p>
         </div>
@@ -91,21 +91,21 @@ export default function SignUp() {
         {/* Card */}
         <div className="surface-card p-6 space-y-4">
           {error && (
-            <div className="p-3 rounded-lg bg-[#FDF4F4] border border-[#DEE3DC] text-xs text-[#B94A48] flex items-start gap-2 animate-in fade-in">
+            <div className="p-3 rounded-lg bg-[#FDF4F4] border border-[#E5E5E5] text-xs text-[#B94A48] flex items-start gap-2 animate-in fade-in">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
           )}
 
           {/* Role Tabs */}
-          <div className="grid grid-cols-2 gap-2 p-1 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC]">
+          <div className="grid grid-cols-2 gap-2 p-1 rounded-lg bg-[#F7F7F5] border border-[#E5E5E5]">
             <button
               type="button"
               onClick={() => setRole('customer')}
               className={`py-1.5 px-3 rounded-md text-xs font-medium flex items-center justify-center gap-1.5 transition ${
                 role === 'customer'
-                  ? 'bg-white text-[#234E42] font-semibold shadow-xs'
-                  : 'text-[#6B746E] hover:text-[#202923]'
+                  ? 'bg-white text-[#C65D3B] font-semibold shadow-xs'
+                  : 'text-[#71717A] hover:text-[#222222]'
               }`}
             >
               <ShoppingCart className="w-3.5 h-3.5" />
@@ -116,8 +116,8 @@ export default function SignUp() {
               onClick={() => setRole('merchant')}
               className={`py-1.5 px-3 rounded-md text-xs font-medium flex items-center justify-center gap-1.5 transition ${
                 role === 'merchant'
-                  ? 'bg-white text-[#234E42] font-semibold shadow-xs'
-                  : 'text-[#6B746E] hover:text-[#202923]'
+                  ? 'bg-white text-[#C65D3B] font-semibold shadow-xs'
+                  : 'text-[#71717A] hover:text-[#222222]'
               }`}
             >
               <Store className="w-3.5 h-3.5" />
@@ -127,30 +127,30 @@ export default function SignUp() {
 
           <form onSubmit={handleSubmit} className="space-y-3.5">
             <div>
-              <label className="block text-xs font-medium text-[#6B746E] mb-1">Full Name</label>
+              <label className="block text-xs font-medium text-[#71717A] mb-1">Full Name</label>
               <div className="relative">
-                <UserIcon className="w-4 h-4 text-[#8C958E] absolute left-3 top-2.5" />
+                <UserIcon className="w-4 h-4 text-[#71717A] absolute left-3 top-2.5" />
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Aarav Sharma"
-                  className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-lg pl-9 pr-3 py-2 text-xs text-[#202923] placeholder-[#8C958E] focus:border-[#234E42] focus:outline-none transition"
+                  className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-lg pl-9 pr-3 py-2 text-xs text-[#222222] placeholder-[#71717A] focus:border-[#C65D3B] focus:outline-none transition"
                   disabled={submitting}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#6B746E] mb-1">Email Address</label>
+              <label className="block text-xs font-medium text-[#71717A] mb-1">Email Address</label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-[#8C958E] absolute left-3 top-2.5" />
+                <Mail className="w-4 h-4 text-[#71717A] absolute left-3 top-2.5" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@company.com"
-                  className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-lg pl-9 pr-3 py-2 text-xs text-[#202923] placeholder-[#8C958E] focus:border-[#234E42] focus:outline-none transition"
+                  className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-lg pl-9 pr-3 py-2 text-xs text-[#222222] placeholder-[#71717A] focus:border-[#C65D3B] focus:outline-none transition"
                   disabled={submitting}
                 />
               </div>
@@ -158,15 +158,15 @@ export default function SignUp() {
 
             {role === 'merchant' && (
               <div>
-                <label className="block text-xs font-medium text-[#6B746E] mb-1">Store / Business Name</label>
+                <label className="block text-xs font-medium text-[#71717A] mb-1">Store / Business Name</label>
                 <div className="relative">
-                  <Store className="w-4 h-4 text-[#8C958E] absolute left-3 top-2.5" />
+                  <Store className="w-4 h-4 text-[#71717A] absolute left-3 top-2.5" />
                   <input
                     type="text"
                     value={storeName}
                     onChange={(e) => setStoreName(e.target.value)}
                     placeholder="e.g. Apex Compute & Hardware"
-                    className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-lg pl-9 pr-3 py-2 text-xs text-[#202923] placeholder-[#8C958E] focus:border-[#234E42] focus:outline-none transition"
+                    className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-lg pl-9 pr-3 py-2 text-xs text-[#222222] placeholder-[#71717A] focus:border-[#C65D3B] focus:outline-none transition"
                     disabled={submitting}
                   />
                 </div>
@@ -174,30 +174,30 @@ export default function SignUp() {
             )}
 
             <div>
-              <label className="block text-xs font-medium text-[#6B746E] mb-1">Password (min. 6 chars)</label>
+              <label className="block text-xs font-medium text-[#71717A] mb-1">Password (min. 6 chars)</label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-[#8C958E] absolute left-3 top-2.5" />
+                <Lock className="w-4 h-4 text-[#71717A] absolute left-3 top-2.5" />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-lg pl-9 pr-3 py-2 text-xs text-[#202923] placeholder-[#8C958E] focus:border-[#234E42] focus:outline-none transition"
+                  className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-lg pl-9 pr-3 py-2 text-xs text-[#222222] placeholder-[#71717A] focus:border-[#C65D3B] focus:outline-none transition"
                   disabled={submitting}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-[#6B746E] mb-1">Confirm Password</label>
+              <label className="block text-xs font-medium text-[#71717A] mb-1">Confirm Password</label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-[#8C958E] absolute left-3 top-2.5" />
+                <Lock className="w-4 h-4 text-[#71717A] absolute left-3 top-2.5" />
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-lg pl-9 pr-3 py-2 text-xs text-[#202923] placeholder-[#8C958E] focus:border-[#234E42] focus:outline-none transition"
+                  className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-lg pl-9 pr-3 py-2 text-xs text-[#222222] placeholder-[#71717A] focus:border-[#C65D3B] focus:outline-none transition"
                   disabled={submitting}
                 />
               </div>
@@ -206,7 +206,7 @@ export default function SignUp() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-2.5 rounded-lg bg-[#234E42] hover:bg-[#1c3f35] text-white font-medium text-xs shadow-xs flex items-center justify-center gap-2 transition disabled:opacity-50"
+              className="w-full py-2.5 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs shadow-xs flex items-center justify-center gap-2 transition disabled:opacity-50"
             >
               {submitting ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -219,9 +219,9 @@ export default function SignUp() {
             </button>
           </form>
 
-          <div className="text-center pt-2 text-xs text-[#6B746E]">
+          <div className="text-center pt-2 text-xs text-[#71717A]">
             Already have an account?{' '}
-            <Link to="/login" className="text-[#234E42] font-semibold hover:underline">
+            <Link to="/login" className="text-[#C65D3B] font-semibold hover:underline">
               Sign In
             </Link>
           </div>

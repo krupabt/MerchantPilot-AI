@@ -29,7 +29,7 @@ import {
 } from 'recharts';
 import { getDashboardStats, getSalesPeriodComparison } from '../services/api';
 
-const PIE_COLORS = ['#234E42', '#347A52', '#B8D4C4', '#6B746E', '#4D6B5E', '#A0AF9F'];
+const PIE_COLORS = ['#C65D3B', '#347A52', '#F0D5CB', '#71717A', '#4D6B5E', '#A0AF9F'];
 
 export default function RevenueAnalytics() {
   const [stats, setStats] = useState(null);
@@ -88,12 +88,12 @@ export default function RevenueAnalytics() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#DEE3DC]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E5E5E5]">
         <div>
-          <h1 className="text-2xl sm:text-[28px] font-bold text-[#202923] tracking-tight">
+          <h1 className="text-2xl sm:text-[28px] font-bold text-[#222222] tracking-tight">
             Sales analytics
           </h1>
-          <p className="text-sm text-[#6B746E] mt-0.5">
+          <p className="text-sm text-[#71717A] mt-0.5">
             Financial reporting, sequential period deltas, and category distribution.
           </p>
         </div>
@@ -102,15 +102,15 @@ export default function RevenueAnalytics() {
           <button
             onClick={fetchAnalytics}
             disabled={loading}
-            className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
+            className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-[#6B746E] ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-[#71717A] ${loading ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
           </button>
           <Link
             to="/copilot"
             state={{ prefilledQuery: 'Compare our sales performance over the last 7 days' }}
-            className="px-3.5 py-1.5 rounded-md bg-[#234E42] hover:bg-[#1B3D34] text-white font-medium text-xs transition-colors shadow-xs flex items-center gap-1.5"
+            className="px-3.5 py-1.5 rounded-md bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition-colors shadow-xs flex items-center gap-1.5"
           >
             <MessageSquare className="w-3.5 h-3.5" />
             <span>Ask Copilot</span>
@@ -121,41 +121,41 @@ export default function RevenueAnalytics() {
       {/* 4 Financial KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="surface-card p-4 space-y-1">
-          <span className="text-xs font-medium text-[#6B746E]">Total settled revenue</span>
-          <p className="text-2xl font-bold text-[#202923] tracking-tight">
+          <span className="text-xs font-medium text-[#71717A]">Total settled revenue</span>
+          <p className="text-2xl font-bold text-[#222222] tracking-tight">
             {loading ? '...' : `₹${totalRevenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
           </p>
-          <p className="text-[12px] text-[#6B746E]">
+          <p className="text-[12px] text-[#71717A]">
             Verified ledger transactions
           </p>
         </div>
 
         <div className="surface-card p-4 space-y-1">
-          <span className="text-xs font-medium text-[#6B746E]">Completed orders</span>
-          <p className="text-2xl font-bold text-[#202923] tracking-tight">
+          <span className="text-xs font-medium text-[#71717A]">Completed orders</span>
+          <p className="text-2xl font-bold text-[#222222] tracking-tight">
             {loading ? '...' : totalOrders}
           </p>
-          <p className="text-[12px] text-[#6B746E]">
+          <p className="text-[12px] text-[#71717A]">
             Store & shopping assistant checkouts
           </p>
         </div>
 
         <div className="surface-card p-4 space-y-1">
-          <span className="text-xs font-medium text-[#6B746E]">Average order value</span>
-          <p className="text-2xl font-bold text-[#202923] tracking-tight">
+          <span className="text-xs font-medium text-[#71717A]">Average order value</span>
+          <p className="text-2xl font-bold text-[#222222] tracking-tight">
             {loading ? '...' : `₹${aov.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
           </p>
-          <p className="text-[12px] text-[#6B746E]">
+          <p className="text-[12px] text-[#71717A]">
             Basket-weighted average
           </p>
         </div>
 
         <div className="surface-card p-4 space-y-1">
-          <span className="text-xs font-medium text-[#6B746E]">Promotional discounts</span>
+          <span className="text-xs font-medium text-[#71717A]">Promotional discounts</span>
           <p className="text-2xl font-bold text-[#347A52] tracking-tight">
             {loading ? '...' : `₹${discountsGranted.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
           </p>
-          <p className="text-[12px] text-[#6B746E]">
+          <p className="text-[12px] text-[#71717A]">
             Policy compliant (≤ 10% ceiling)
           </p>
         </div>
@@ -163,21 +163,21 @@ export default function RevenueAnalytics() {
 
       {/* Period-over-Period Performance Intelligence */}
       <div className="surface-card p-5 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#DEE3DC] pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E5E5E5] pb-3">
           <div>
-            <h2 className="text-base font-semibold text-[#202923]">Period-over-period sales performance</h2>
-            <p className="text-xs text-[#6B746E]">
+            <h2 className="text-base font-semibold text-[#222222]">Period-over-period sales performance</h2>
+            <p className="text-xs text-[#71717A]">
               Current {periodDays} days vs previous {periodDays} days. Empirical statistical deltas from database records.
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-[#F6F5F1] p-1 rounded-md border border-[#DEE3DC]">
+          <div className="flex items-center gap-1.5 bg-[#F7F7F5] p-1 rounded-md border border-[#E5E5E5]">
             <button
               onClick={() => handlePeriodChange(7)}
               className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
                 periodDays === 7
-                  ? 'bg-white text-[#234E42] font-semibold shadow-xs'
-                  : 'text-[#6B746E] hover:text-[#202923]'
+                  ? 'bg-white text-[#C65D3B] font-semibold shadow-xs'
+                  : 'text-[#71717A] hover:text-[#222222]'
               }`}
             >
               7-Day window
@@ -186,8 +186,8 @@ export default function RevenueAnalytics() {
               onClick={() => handlePeriodChange(30)}
               className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
                 periodDays === 30
-                  ? 'bg-white text-[#234E42] font-semibold shadow-xs'
-                  : 'text-[#6B746E] hover:text-[#202923]'
+                  ? 'bg-white text-[#C65D3B] font-semibold shadow-xs'
+                  : 'text-[#71717A] hover:text-[#222222]'
               }`}
             >
               30-Day window
@@ -196,8 +196,8 @@ export default function RevenueAnalytics() {
         </div>
 
         {loadingComparison ? (
-          <div className="py-8 text-center text-xs text-[#6B746E] flex items-center justify-center gap-2">
-            <RefreshCw className="w-4 h-4 animate-spin text-[#234E42]" />
+          <div className="py-8 text-center text-xs text-[#71717A] flex items-center justify-center gap-2">
+            <RefreshCw className="w-4 h-4 animate-spin text-[#C65D3B]" />
             <span>Calculating period deltas...</span>
           </div>
         ) : periodComparison ? (
@@ -205,16 +205,16 @@ export default function RevenueAnalytics() {
             {/* 3 Comparison Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Revenue Growth */}
-              <div className="p-3.5 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC] space-y-1.5">
-                <span className="text-xs font-medium text-[#6B746E]">Revenue shift</span>
+              <div className="p-3.5 rounded-lg bg-[#F7F7F5] border border-[#E5E5E5] space-y-1.5">
+                <span className="text-xs font-medium text-[#71717A]">Revenue shift</span>
                 <div className="flex items-baseline justify-between">
-                  <span className="text-xl font-bold text-[#202923]">
+                  <span className="text-xl font-bold text-[#222222]">
                     ₹{periodComparison.current_period?.revenue?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </span>
                   <span
                     className={`text-xs font-semibold flex items-center gap-0.5 px-2 py-0.5 rounded ${
                       (periodComparison.growth?.revenue_change_abs ?? 0) >= 0
-                        ? 'bg-[#EAF4EE] text-[#347A52]'
+                        ? 'bg-[#FAF5F2] text-[#347A52]'
                         : 'bg-[#FBEFEF] text-[#B94A48]'
                     }`}
                   >
@@ -227,9 +227,9 @@ export default function RevenueAnalytics() {
                     {periodComparison.growth?.revenue_growth_pct}%
                   </span>
                 </div>
-                <div className="text-[11px] text-[#6B746E] flex justify-between border-t border-[#DEE3DC] pt-1">
+                <div className="text-[11px] text-[#71717A] flex justify-between border-t border-[#E5E5E5] pt-1">
                   <span>Prev {periodDays}d: ₹{periodComparison.previous_period?.revenue?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                  <span className="font-medium text-[#202923]">
+                  <span className="font-medium text-[#222222]">
                     {periodComparison.growth?.revenue_change_abs >= 0 ? '+' : ''}
                     ₹{periodComparison.growth?.revenue_change_abs?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </span>
@@ -237,16 +237,16 @@ export default function RevenueAnalytics() {
               </div>
 
               {/* Order Volume Shift */}
-              <div className="p-3.5 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC] space-y-1.5">
-                <span className="text-xs font-medium text-[#6B746E]">Order volume</span>
+              <div className="p-3.5 rounded-lg bg-[#F7F7F5] border border-[#E5E5E5] space-y-1.5">
+                <span className="text-xs font-medium text-[#71717A]">Order volume</span>
                 <div className="flex items-baseline justify-between">
-                  <span className="text-xl font-bold text-[#202923]">
+                  <span className="text-xl font-bold text-[#222222]">
                     {periodComparison.current_period?.orders_count} orders
                   </span>
                   <span
                     className={`text-xs font-semibold flex items-center gap-0.5 px-2 py-0.5 rounded ${
                       (periodComparison.growth?.orders_change_abs ?? 0) >= 0
-                        ? 'bg-[#EAF4EE] text-[#347A52]'
+                        ? 'bg-[#FAF5F2] text-[#347A52]'
                         : 'bg-[#FBEFEF] text-[#B94A48]'
                     }`}
                   >
@@ -254,9 +254,9 @@ export default function RevenueAnalytics() {
                     {periodComparison.growth?.orders_growth_pct}%
                   </span>
                 </div>
-                <div className="text-[11px] text-[#6B746E] flex justify-between border-t border-[#DEE3DC] pt-1">
+                <div className="text-[11px] text-[#71717A] flex justify-between border-t border-[#E5E5E5] pt-1">
                   <span>Prev {periodDays}d: {periodComparison.previous_period?.orders_count} orders</span>
-                  <span className="font-medium text-[#202923]">
+                  <span className="font-medium text-[#222222]">
                     {periodComparison.growth?.orders_change_abs >= 0 ? '+' : ''}
                     {periodComparison.growth?.orders_change_abs} orders
                   </span>
@@ -264,16 +264,16 @@ export default function RevenueAnalytics() {
               </div>
 
               {/* AOV Trajectory */}
-              <div className="p-3.5 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC] space-y-1.5">
-                <span className="text-xs font-medium text-[#6B746E]">Average order depth</span>
+              <div className="p-3.5 rounded-lg bg-[#F7F7F5] border border-[#E5E5E5] space-y-1.5">
+                <span className="text-xs font-medium text-[#71717A]">Average order depth</span>
                 <div className="flex items-baseline justify-between">
-                  <span className="text-xl font-bold text-[#202923]">
+                  <span className="text-xl font-bold text-[#222222]">
                     ₹{periodComparison.current_period?.aov?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </span>
                   <span
                     className={`text-xs font-semibold flex items-center gap-0.5 px-2 py-0.5 rounded ${
                       (periodComparison.growth?.aov_change_abs ?? 0) >= 0
-                        ? 'bg-[#EAF4EE] text-[#347A52]'
+                        ? 'bg-[#FAF5F2] text-[#347A52]'
                         : 'bg-[#FBEFEF] text-[#B94A48]'
                     }`}
                   >
@@ -281,9 +281,9 @@ export default function RevenueAnalytics() {
                     {periodComparison.growth?.aov_growth_pct}%
                   </span>
                 </div>
-                <div className="text-[11px] text-[#6B746E] flex justify-between border-t border-[#DEE3DC] pt-1">
+                <div className="text-[11px] text-[#71717A] flex justify-between border-t border-[#E5E5E5] pt-1">
                   <span>Prev {periodDays}d: ₹{periodComparison.previous_period?.aov?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                  <span className="font-medium text-[#202923]">
+                  <span className="font-medium text-[#222222]">
                     {periodComparison.growth?.aov_change_abs >= 0 ? '+' : ''}
                     ₹{periodComparison.growth?.aov_change_abs?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </span>
@@ -294,21 +294,21 @@ export default function RevenueAnalytics() {
             {/* Product Gainers & Decliners Matrix */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
               {/* Gainers */}
-              <div className="p-3.5 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC] space-y-2">
-                <div className="flex items-center justify-between border-b border-[#DEE3DC] pb-1.5">
+              <div className="p-3.5 rounded-lg bg-[#F7F7F5] border border-[#E5E5E5] space-y-2">
+                <div className="flex items-center justify-between border-b border-[#E5E5E5] pb-1.5">
                   <span className="text-xs font-semibold text-[#347A52] flex items-center gap-1.5">
                     <TrendingUp className="w-3.5 h-3.5" />
                     Top growth drivers (gainers)
                   </span>
-                  <span className="text-[11px] text-[#6B746E]">vs previous period</span>
+                  <span className="text-[11px] text-[#71717A]">vs previous period</span>
                 </div>
-                <div className="divide-y divide-[#DEE3DC]">
+                <div className="divide-y divide-[#E5E5E5]">
                   {(periodComparison.top_gainers || []).length > 0 ? (
                     periodComparison.top_gainers.map((g, i) => (
                       <div key={i} className="py-2 flex items-center justify-between text-xs">
                         <div>
-                          <p className="font-medium text-[#202923]">{g.name}</p>
-                          <p className="text-[11px] text-[#6B746E]">+{g.units_change} units change</p>
+                          <p className="font-medium text-[#222222]">{g.name}</p>
+                          <p className="text-[11px] text-[#71717A]">+{g.units_change} units change</p>
                         </div>
                         <span className="font-semibold text-[#347A52]">
                           +₹{g.sales_change?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
@@ -316,27 +316,27 @@ export default function RevenueAnalytics() {
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-[#6B746E] py-2">No significant gainers in this window.</p>
+                    <p className="text-xs text-[#71717A] py-2">No significant gainers in this window.</p>
                   )}
                 </div>
               </div>
 
               {/* Decliners */}
-              <div className="p-3.5 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC] space-y-2">
-                <div className="flex items-center justify-between border-b border-[#DEE3DC] pb-1.5">
+              <div className="p-3.5 rounded-lg bg-[#F7F7F5] border border-[#E5E5E5] space-y-2">
+                <div className="flex items-center justify-between border-b border-[#E5E5E5] pb-1.5">
                   <span className="text-xs font-semibold text-[#B94A48] flex items-center gap-1.5">
                     <TrendingDown className="w-3.5 h-3.5" />
                     Top declining products (laggards)
                   </span>
-                  <span className="text-[11px] text-[#6B746E]">vs previous period</span>
+                  <span className="text-[11px] text-[#71717A]">vs previous period</span>
                 </div>
-                <div className="divide-y divide-[#DEE3DC]">
+                <div className="divide-y divide-[#E5E5E5]">
                   {(periodComparison.top_decliners || []).length > 0 ? (
                     periodComparison.top_decliners.map((d, i) => (
                       <div key={i} className="py-2 flex items-center justify-between text-xs">
                         <div>
-                          <p className="font-medium text-[#202923]">{d.name}</p>
-                          <p className="text-[11px] text-[#6B746E]">{d.units_change} units change</p>
+                          <p className="font-medium text-[#222222]">{d.name}</p>
+                          <p className="text-[11px] text-[#71717A]">{d.units_change} units change</p>
                         </div>
                         <span className="font-semibold text-[#B94A48]">
                           -₹{Math.abs(d.sales_change || 0)?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
@@ -344,20 +344,20 @@ export default function RevenueAnalytics() {
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-[#6B746E] py-2">No significant decliners in this window.</p>
+                    <p className="text-xs text-[#71717A] py-2">No significant decliners in this window.</p>
                   )}
                 </div>
               </div>
             </div>
 
             {/* Correlation vs Causation Advisory */}
-            <div className="p-3 rounded-lg bg-white border border-[#DEE3DC] text-xs flex items-start gap-2.5">
-              <Info className="w-4 h-4 text-[#234E42] shrink-0 mt-0.5" />
+            <div className="p-3 rounded-lg bg-white border border-[#E5E5E5] text-xs flex items-start gap-2.5">
+              <Info className="w-4 h-4 text-[#C65D3B] shrink-0 mt-0.5" />
               <div className="space-y-0.5">
-                <span className="font-semibold text-[#202923] text-xs block">
+                <span className="font-semibold text-[#222222] text-xs block">
                   Methodology & Causality Advisory
                 </span>
-                <p className="text-[#6B746E] text-[12px] leading-relaxed">
+                <p className="text-[#71717A] text-[12px] leading-relaxed">
                   {periodComparison.causality_note ||
                     'Observed sales deltas represent empirical correlations calculated directly from completed database transactions. External marketing campaigns or inventory stockouts may correlate with these numbers without being the sole proven cause.'}
                 </p>
@@ -369,20 +369,20 @@ export default function RevenueAnalytics() {
 
       {/* 7-Day Revenue Velocity Chart */}
       <div className="surface-card p-5 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#DEE3DC] pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E5E5E5] pb-3">
           <div>
-            <h2 className="text-base font-semibold text-[#202923]">Daily sales trend</h2>
-            <p className="text-xs text-[#6B746E]">Daily completed order revenue across the trailing 7 days.</p>
+            <h2 className="text-base font-semibold text-[#222222]">Daily sales trend</h2>
+            <p className="text-xs text-[#71717A]">Daily completed order revenue across the trailing 7 days.</p>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-[#6B746E]">
-            <Calendar className="w-3.5 h-3.5 text-[#234E42]" />
-            <span className="font-medium text-[#202923]">Trailing 7 days</span>
+          <div className="flex items-center gap-1.5 text-xs text-[#71717A]">
+            <Calendar className="w-3.5 h-3.5 text-[#C65D3B]" />
+            <span className="font-medium text-[#222222]">Trailing 7 days</span>
           </div>
         </div>
 
         <div className="h-64 w-full">
           {loading ? (
-            <div className="h-full flex items-center justify-center text-xs text-[#6B746E]">
+            <div className="h-full flex items-center justify-center text-xs text-[#71717A]">
               Loading chart data...
             </div>
           ) : trendData.length > 0 ? (
@@ -390,14 +390,14 @@ export default function RevenueAnalytics() {
               <AreaChart data={trendData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRevMuted" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#234E42" stopOpacity={0.15} />
-                    <stop offset="95%" stopColor="#234E42" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor="#C65D3B" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#C65D3B" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E8ECE6" vertical={false} />
-                <XAxis dataKey="day" stroke="#6B746E" fontSize={11} tickLine={false} axisLine={{ stroke: '#DEE3DC' }} />
+                <XAxis dataKey="day" stroke="#71717A" fontSize={11} tickLine={false} axisLine={{ stroke: '#E5E5E5' }} />
                 <YAxis
-                  stroke="#6B746E"
+                  stroke="#71717A"
                   fontSize={11}
                   tickLine={false}
                   axisLine={false}
@@ -406,9 +406,9 @@ export default function RevenueAnalytics() {
                 <Tooltip
                   contentStyle={{
                     backgroundColor: '#FFFFFF',
-                    borderColor: '#DEE3DC',
+                    borderColor: '#E5E5E5',
                     borderRadius: '8px',
-                    color: '#202923',
+                    color: '#222222',
                     fontSize: '12px',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.06)'
                   }}
@@ -417,7 +417,7 @@ export default function RevenueAnalytics() {
                 <Area
                   type="monotone"
                   dataKey="revenue"
-                  stroke="#234E42"
+                  stroke="#C65D3B"
                   strokeWidth={2}
                   fillOpacity={1}
                   fill="url(#colorRevMuted)"
@@ -425,7 +425,7 @@ export default function RevenueAnalytics() {
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-full flex items-center justify-center text-xs text-[#6B746E]">
+            <div className="h-full flex items-center justify-center text-xs text-[#71717A]">
               No paid transactions recorded in this period yet.
             </div>
           )}
@@ -436,12 +436,12 @@ export default function RevenueAnalytics() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Category Contribution */}
         <div className="surface-card p-5 space-y-3">
-          <div className="flex items-center justify-between border-b border-[#DEE3DC] pb-2.5">
+          <div className="flex items-center justify-between border-b border-[#E5E5E5] pb-2.5">
             <div>
-              <h2 className="text-base font-semibold text-[#202923]">Category distribution</h2>
-              <p className="text-xs text-[#6B746E]">Revenue distribution across published departments.</p>
+              <h2 className="text-base font-semibold text-[#222222]">Category distribution</h2>
+              <p className="text-xs text-[#71717A]">Revenue distribution across published departments.</p>
             </div>
-            <PieChartIcon className="w-4 h-4 text-[#234E42]" />
+            <PieChartIcon className="w-4 h-4 text-[#C65D3B]" />
           </div>
 
           <div className="h-64 w-full">
@@ -464,9 +464,9 @@ export default function RevenueAnalytics() {
                   <Tooltip
                     contentStyle={{
                       backgroundColor: '#FFFFFF',
-                      borderColor: '#DEE3DC',
+                      borderColor: '#E5E5E5',
                       borderRadius: '8px',
-                      color: '#202923',
+                      color: '#222222',
                       fontSize: '12px'
                     }}
                     formatter={(val) => [`₹${val.toLocaleString('en-IN')}`, 'Revenue']}
@@ -474,12 +474,12 @@ export default function RevenueAnalytics() {
                   <Legend
                     verticalAlign="bottom"
                     iconType="circle"
-                    formatter={(val) => <span className="text-xs text-[#6B746E]">{val}</span>}
+                    formatter={(val) => <span className="text-xs text-[#71717A]">{val}</span>}
                   />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-[#6B746E]">
+              <div className="h-full flex items-center justify-center text-xs text-[#71717A]">
                 Category distribution calculating...
               </div>
             )}
@@ -488,36 +488,36 @@ export default function RevenueAnalytics() {
 
         {/* Best-Selling SKUs */}
         <div className="surface-card p-5 space-y-3">
-          <div className="flex items-center justify-between border-b border-[#DEE3DC] pb-2.5">
+          <div className="flex items-center justify-between border-b border-[#E5E5E5] pb-2.5">
             <div>
-              <h2 className="text-base font-semibold text-[#202923]">Best-selling products</h2>
-              <p className="text-xs text-[#6B746E]">Ranked by total units sold across paid transactions.</p>
+              <h2 className="text-base font-semibold text-[#222222]">Best-selling products</h2>
+              <p className="text-xs text-[#71717A]">Ranked by total units sold across paid transactions.</p>
             </div>
             <TrendingUp className="w-4 h-4 text-[#347A52]" />
           </div>
 
-          <div className="divide-y divide-[#DEE3DC]">
+          <div className="divide-y divide-[#E5E5E5]">
             {topProducts.length > 0 ? (
               topProducts.slice(0, 5).map((p, idx) => (
                 <div key={p.product_id || idx} className="py-2.5 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2.5">
-                    <span className="w-5 h-5 rounded bg-[#F6F5F1] text-[#6B746E] font-medium text-[11px] flex items-center justify-center border border-[#DEE3DC]">
+                    <span className="w-5 h-5 rounded bg-[#F7F7F5] text-[#71717A] font-medium text-[11px] flex items-center justify-center border border-[#E5E5E5]">
                       {idx + 1}
                     </span>
                     <div>
-                      <p className="font-medium text-[#202923]">{p.name}</p>
-                      <p className="text-[11px] text-[#6B746E] font-mono">
+                      <p className="font-medium text-[#222222]">{p.name}</p>
+                      <p className="text-[11px] text-[#71717A] font-mono">
                         {p.category} • {p.units_sold} units sold
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-[#202923]">₹{p.total_revenue?.toLocaleString('en-IN')}</p>
+                    <p className="font-semibold text-[#222222]">₹{p.total_revenue?.toLocaleString('en-IN')}</p>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-xs text-[#6B746E] py-6 text-center">No product sales recorded yet.</p>
+              <p className="text-xs text-[#71717A] py-6 text-center">No product sales recorded yet.</p>
             )}
           </div>
         </div>

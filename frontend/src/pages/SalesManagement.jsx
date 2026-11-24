@@ -1,124 +1,149 @@
 import React, { useState, useEffect } from 'react';
 import {
-  ShoppingCart,
+  Search,
   Plus,
+  Minus,
+  Trash2,
   Receipt,
   Printer,
   CheckCircle2,
   AlertTriangle,
   RefreshCw,
-  Search,
-  Filter,
   CreditCard,
   Banknote,
   Smartphone,
-  Eye,
   X,
-  TrendingUp,
-  Tag
+  Tag,
+  ArrowRight
 } from 'lucide-react';
-import {
-  getMerchantProducts,
-  recordPosSale,
-  getMerchantSales,
-  getSaleReceipt
-} from '../services/api';
+import { getMerchantProducts, recordPosSale, getSaleReceipt } from '../services/api';
+
+function formatINR(val) {
+  if (val === null || val === undefined) return '₹0';
+  const num = Math.round(Number(val));
+  return '₹' + num.toLocaleString('en-IN');
+}
 
 export default function SalesManagement() {
   const [products, setProducts] = useState([]);
-  const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [salesLoading, setSalesLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  // New Sale Form State
-  const [selectedProductId, setSelectedProductId] = useState('');
-  const [quantity, setQuantity] = useState(1);
+  // Search & Filter State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('ALL');
+
+  // POS Current Bill State (Right Column)
+  const [billItems, setBillItems] = useState([]); // [{ product, quantity }]
   const [discountPercent, setDiscountPercent] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState('CASH');
-  const [customerName, setCustomerName] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('CASH'); // CASH, UPI, CARD
+  const [customerName, setCustomerName] = useState('Walk-in Customer');
   const [customerPhone, setCustomerPhone] = useState('');
   const [notes, setNotes] = useState('');
 
   // Receipt Modal State
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
   const [currentReceipt, setCurrentReceipt] = useState(null);
-  const [receiptLoading, setReceiptLoading] = useState(false);
 
-  // Filter State
-  const [channelFilter, setChannelFilter] = useState('ALL');
-  const [searchQuery, setSearchQuery] = useState('');
-
-  // Load Catalog & Sales
-  const loadData = async () => {
+  const loadCatalog = async () => {
     setLoading(true);
     try {
-      const prodRes = await getMerchantProducts({ active_only: true });
-      const prods = prodRes.data.products || prodRes.data || [];
+      const res = await getMerchantProducts({ active_only: true });
+      const prods = res.data.products || res.data || [];
       setProducts(prods);
-      if (prods.length > 0 && !selectedProductId) {
-        setSelectedProductId(prods[0].id);
-      }
     } catch (err) {
-      console.error('Failed to load products:', err);
+      console.error('Failed to load products for POS:', err);
       setError('Unable to load product catalog.');
     } finally {
       setLoading(false);
     }
   };
 
-  const loadSales = async () => {
-    setSalesLoading(true);
-    try {
-      const params = {};
-      if (channelFilter !== 'ALL') params.sales_channel = channelFilter;
-      const res = await getMerchantSales(params);
-      setSales(res.data.sales || []);
-    } catch (err) {
-      console.error('Failed to load sales:', err);
-    } finally {
-      setSalesLoading(false);
-    }
-  };
-
   useEffect(() => {
-    loadData();
+    loadCatalog();
   }, []);
 
-  useEffect(() => {
-    loadSales();
-  }, [channelFilter]);
+  const categories = ['ALL', ...Array.from(new Set(products.map((p) => p.category).filter(Boolean)))];
 
-  // Selected Product Calculations
-  const selectedProduct = products.find((p) => p.id === selectedProductId);
-  const unitPrice = selectedProduct?.price ?? 0;
-  const unitCost = selectedProduct?.cost_price ?? 0;
-  const currentStock = selectedProduct?.stock ?? 0;
+  const filteredProducts = products.filter((p) => {
+    const matchesCat = selectedCategory === 'ALL' || p.category === selectedCategory;
+    const matchesQuery =
+      !searchQuery ||
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.sku && p.sku.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesCat && matchesQuery;
+  });
 
-  const subtotal = unitPrice * Number(quantity || 0);
-  const discountAmount = Math.round(subtotal * (Number(discountPercent || 0) / 100) * 100) / 100;
-  const finalTotal = Math.max(0, subtotal - discountAmount);
-  const totalCogs = unitCost * Number(quantity || 0);
-  const grossProfit = Math.max(0, finalTotal - totalCogs);
-  const grossMarginPct = finalTotal > 0 ? Math.round((grossProfit / finalTotal) * 100 * 10) / 10 : 0;
+  // Bill Management
+  const addToBill = (product) => {
+    if (product.stock <= 0) return;
+    setError(null);
+    setBillItems((prev) => {
+      const existing = prev.find((item) => item.product.id === product.id);
+      if (existing) {
+        if (existing.quantity >= product.stock) {
+          setError(`Cannot add more: only ${product.stock} units of ${product.name} available in stock.`);
+          return prev;
+        }
+        return prev.map((item) =>
+          item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      }
+      return [...prev, { product, quantity: 1 }];
+    });
+  };
 
-  const isStockSufficient = currentStock >= Number(quantity || 0) && Number(quantity || 0) > 0;
-  const isDiscountValid = Number(discountPercent) <= 15 && Number(discountPercent) >= 0;
+  const updateQuantity = (productId, delta) => {
+    setBillItems((prev) =>
+      prev
+        .map((item) => {
+          if (item.product.id === productId) {
+            const newQty = item.quantity + delta;
+            if (newQty <= 0) return null;
+            if (newQty > item.product.stock) {
+              setError(`Maximum available stock for ${item.product.name} is ${item.product.stock}.`);
+              return item;
+            }
+            return { ...item, quantity: newQty };
+          }
+          return item;
+        })
+        .filter(Boolean)
+    );
+  };
 
-  const handleCreateSale = async (e) => {
+  const removeFromBill = (productId) => {
+    setBillItems((prev) => prev.filter((item) => item.product.id !== productId));
+  };
+
+  const clearBill = () => {
+    setBillItems([]);
+    setDiscountPercent(0);
+    setNotes('');
+  };
+
+  // Calculations
+  const subtotal = billItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+  const totalCogs = billItems.reduce(
+    (acc, item) => acc + (item.product.cost_price || 0) * item.quantity,
+    0
+  );
+  const discountAmount = Math.round(subtotal * (Number(discountPercent || 0) / 100));
+  const finalPayable = Math.max(0, subtotal - discountAmount);
+  const grossProfit = Math.max(0, finalPayable - totalCogs);
+  const marginPct = finalPayable > 0 ? Math.round((grossProfit / finalPayable) * 100) : 0;
+
+  const handleCompleteSale = async (e) => {
     e.preventDefault();
-    if (!selectedProduct) {
-      setError('Please select a valid product.');
+    if (billItems.length === 0) {
+      setError('Please add at least one product to the bill.');
       return;
     }
-    if (!isStockSufficient) {
-      setError(`Requested quantity exceeds available stock (${currentStock} units available).`);
-      return;
-    }
-    if (!isDiscountValid) {
-      setError('Discount exceeds merchant policy guardrail (maximum 15%).');
+    if (Number(discountPercent) > 10) {
+      setError('Discount exceeds merchant policy guardrail (maximum 10%).');
       return;
     }
 
@@ -128,36 +153,38 @@ export default function SalesManagement() {
 
     try {
       const payload = {
-        product_id: selectedProduct.id,
-        quantity: Number(quantity),
+        items: billItems.map((item) => ({
+          product_id: item.product.id,
+          quantity: item.quantity,
+          unit_price: item.product.price,
+          discount_amount: 0.0
+        })),
         discount_percent: Number(discountPercent || 0),
+        discount_amount: Number(discountAmount || 0),
         payment_method: paymentMethod,
-        customer_name: customerName.trim() || undefined,
+        customer_name: customerName.trim() || 'Walk-in Customer',
         customer_phone: customerPhone.trim() || undefined,
         notes: notes.trim() || undefined
       };
 
       const res = await recordPosSale(payload);
-      setSuccessMsg(`Sale #${res.data.order_id} recorded successfully! Gross profit: ₹${res.data.gross_profit.toLocaleString('en-IN')}`);
-      
-      // Auto open printable receipt
-      if (res.data.receipt) {
-        setCurrentReceipt(res.data.receipt);
+      const data = res.data;
+
+      setSuccessMsg(`Sale #${data.order_id} confirmed! Final: ${formatINR(data.final_amount)}, Profit: ${formatINR(data.gross_profit)}`);
+
+      // Open printable receipt
+      if (data.receipt) {
+        setCurrentReceipt(data.receipt);
         setReceiptModalOpen(true);
       }
 
-      // Reset form
-      setQuantity(1);
-      setDiscountPercent(0);
-      setCustomerName('');
-      setCustomerPhone('');
-      setNotes('');
+      // Clear bill only after successful confirmation (Task 6 requirement #11)
+      clearBill();
 
-      // Refresh catalog and sales ledger
-      loadData();
-      loadSales();
+      // Refresh product stocks in catalog
+      loadCatalog();
     } catch (err) {
-      console.error('Failed to record sale:', err);
+      console.error('Failed to complete sale:', err);
       const detail = err.response?.data?.detail || err.message || 'Error recording sale.';
       setError(typeof detail === 'string' ? detail : JSON.stringify(detail));
     } finally {
@@ -165,472 +192,437 @@ export default function SalesManagement() {
     }
   };
 
-  const handleViewReceipt = async (orderId) => {
-    setReceiptLoading(true);
-    try {
-      const res = await getSaleReceipt(orderId);
-      setCurrentReceipt(res.data);
-      setReceiptModalOpen(true);
-    } catch (err) {
-      console.error('Failed to fetch receipt:', err);
-      alert('Unable to load receipt for order ' + orderId);
-    } finally {
-      setReceiptLoading(false);
-    }
+  const handlePrintReceipt = () => {
+    window.print();
   };
 
-  const filteredSales = sales.filter((s) => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      s.order_id.toLowerCase().includes(q) ||
-      (s.customer_name && s.customer_name.toLowerCase().includes(q)) ||
-      s.items.some((i) => i.product_name.toLowerCase().includes(q))
-    );
-  });
-
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-16">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#DEE3DC]">
+    <div className="space-y-5 max-w-7xl mx-auto pb-12 font-sans">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#E5E5E5]">
         <div>
-          <h1 className="text-2xl sm:text-[28px] font-bold text-[#202923] tracking-tight">
-            Sales & In-Store POS
+          <h1 className="text-2xl sm:text-[28px] font-bold text-[#222222] tracking-tight">
+            New Sale (POS)
           </h1>
-          <p className="text-sm text-[#6B746E] mt-0.5">
-            Record counter sales, print receipts, and track real-time gross margins.
+          <p className="text-xs sm:text-sm text-[#71717A] mt-0.5">
+            Physical shop billing counter with live inventory deduction and margin calculation.
           </p>
         </div>
 
         <button
-          onClick={() => { loadData(); loadSales(); }}
-          className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs font-medium flex items-center gap-1.5 self-start sm:self-auto transition-colors shadow-xs"
+          onClick={loadCatalog}
+          disabled={loading}
+          className="self-start sm:self-auto px-3 py-1.5 rounded-lg bg-white hover:bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] text-xs font-medium flex items-center gap-1.5 transition shadow-xs"
         >
-          <RefreshCw className={`w-3.5 h-3.5 text-[#6B746E] ${loading || salesLoading ? 'animate-spin' : ''}`} />
-          <span>Refresh Ledger</span>
+          <RefreshCw className={`w-3.5 h-3.5 text-[#71717A] ${loading ? 'animate-spin' : ''}`} />
+          <span>Sync Catalog</span>
         </button>
       </div>
 
       {error && (
-        <div className="p-3.5 rounded-lg bg-[#FBEFEF] border border-[#B94A48]/30 text-xs text-[#B94A48] flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0" />
-            <span>{error}</span>
-          </div>
-          <button onClick={() => setError(null)}><X className="w-4 h-4" /></button>
+        <div className="p-3.5 rounded-lg bg-[#FDF2F2] border border-[#C24141]/30 text-xs text-[#C24141] flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
       {successMsg && (
-        <div className="p-3.5 rounded-lg bg-[#EBF2EE] border border-[#B8D4C4] text-xs text-[#234E42] flex items-center justify-between gap-2">
+        <div className="p-3.5 rounded-lg bg-[#EEF7F2] border border-[#39805A]/30 text-xs text-[#39805A] flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
-            <span className="font-medium">{successMsg}</span>
+            <span>{successMsg}</span>
           </div>
-          <button onClick={() => setSuccessMsg(null)}><X className="w-4 h-4" /></button>
+          {currentReceipt && (
+            <button
+              onClick={() => setReceiptModalOpen(true)}
+              className="text-xs font-semibold underline hover:no-underline"
+            >
+              View Receipt
+            </button>
+          )}
         </div>
       )}
 
-      {/* Main Grid: POS Entry Form + Real-time Profit Preview */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left: POS Form */}
-        <div className="lg:col-span-7 surface-card p-5 space-y-4">
-          <div className="flex items-center justify-between border-b border-[#DEE3DC] pb-3">
-            <div className="flex items-center gap-2">
-              <ShoppingCart className="w-4 h-4 text-[#234E42]" />
-              <h2 className="text-base font-semibold text-[#202923]">Record New In-Store Sale</h2>
-            </div>
-            <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-[#E4ECE7] text-[#234E42]">
-              Channel: POS
-            </span>
-          </div>
-
-          {products.length === 0 && !loading ? (
-            <div className="p-6 text-center text-sm text-[#6B746E] space-y-2">
-              <p>No active products in catalog. Add a product first to start selling.</p>
-            </div>
-          ) : (
-            <form onSubmit={handleCreateSale} className="space-y-4">
-              {/* Product Selection */}
-              <div>
-                <label className="block text-xs font-semibold text-[#202923] mb-1">
-                  Select Product *
-                </label>
-                <select
-                  value={selectedProductId}
-                  onChange={(e) => setSelectedProductId(e.target.value)}
-                  className="w-full text-xs px-3 py-2 rounded-md border border-[#DEE3DC] bg-white focus:outline-none focus:border-[#234E42] text-[#202923]"
-                >
-                  {products.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} — ₹{p.price.toLocaleString('en-IN')} (Stock: {p.stock} units | Cost: ₹{(p.cost_price || 0).toLocaleString('en-IN')})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Quantity & Discount Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-semibold text-[#202923]">Quantity *</label>
-                    <span className="text-[11px] text-[#6B746E]">
-                      Available: <strong className={currentStock < 5 ? 'text-[#B77932]' : 'text-[#234E42]'}>{currentStock}</strong>
-                    </span>
-                  </div>
-                  <input
-                    type="number"
-                    min="1"
-                    max={currentStock || 1}
-                    value={quantity}
-                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value || '1', 10)))}
-                    className="w-full text-xs px-3 py-2 rounded-md border border-[#DEE3DC] bg-white focus:outline-none focus:border-[#234E42] text-[#202923]"
-                  />
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-semibold text-[#202923]">Discount (%)</label>
-                    <span className="text-[11px] text-[#6B746E]">Max Guardrail: 15%</span>
-                  </div>
-                  <input
-                    type="number"
-                    min="0"
-                    max="15"
-                    step="0.5"
-                    value={discountPercent}
-                    onChange={(e) => setDiscountPercent(parseFloat(e.target.value || '0'))}
-                    className="w-full text-xs px-3 py-2 rounded-md border border-[#DEE3DC] bg-white focus:outline-none focus:border-[#234E42] text-[#202923]"
-                  />
-                </div>
-              </div>
-
-              {/* Payment Method Selector */}
-              <div>
-                <label className="block text-xs font-semibold text-[#202923] mb-1.5">
-                  Payment Method *
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {[
-                    { id: 'CASH', label: 'Cash', icon: Banknote },
-                    { id: 'UPI', label: 'UPI / QR', icon: Smartphone },
-                    { id: 'CARD', label: 'Card Swipe', icon: CreditCard },
-                    { id: 'RAZORPAY', label: 'Razorpay', icon: CreditCard }
-                  ].map((m) => {
-                    const Icon = m.icon;
-                    const isSelected = paymentMethod === m.id;
-                    return (
-                      <button
-                        key={m.id}
-                        type="button"
-                        onClick={() => setPaymentMethod(m.id)}
-                        className={`flex items-center justify-center gap-1.5 p-2 rounded-md border text-xs font-medium transition-colors ${
-                          isSelected
-                            ? 'bg-[#234E42] text-white border-[#234E42]'
-                            : 'bg-white text-[#202923] border-[#DEE3DC] hover:bg-[#F6F5F1]'
-                        }`}
-                      >
-                        <Icon className="w-3.5 h-3.5" />
-                        <span>{m.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Optional Customer Info */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                <div>
-                  <label className="block text-xs text-[#6B746E] mb-1">Customer Name (Optional)</label>
-                  <input
-                    type="text"
-                    placeholder="Walk-in Customer"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full text-xs px-3 py-1.5 rounded-md border border-[#DEE3DC] bg-white focus:outline-none focus:border-[#234E42] text-[#202923]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs text-[#6B746E] mb-1">Customer Phone (Optional)</label>
-                  <input
-                    type="text"
-                    placeholder="+91 98765 43210"
-                    value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="w-full text-xs px-3 py-1.5 rounded-md border border-[#DEE3DC] bg-white focus:outline-none focus:border-[#234E42] text-[#202923]"
-                  />
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={submitting || !isStockSufficient || !isDiscountValid || products.length === 0}
-                className="w-full mt-2 py-2.5 px-4 rounded-md bg-[#234E42] hover:bg-[#1B3D34] text-white text-xs font-semibold shadow-xs disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                <span>{submitting ? 'Recording Sale...' : `Complete Sale & Print Receipt (₹${finalTotal.toLocaleString('en-IN')})`}</span>
-              </button>
-            </form>
-          )}
-        </div>
-
-        {/* Right: Live Gross Profit Breakdown Card */}
-        <div className="lg:col-span-5 space-y-4">
-          <div className="surface-card p-5 space-y-3.5 border-l-4 border-l-[#234E42]">
-            <div className="flex items-center justify-between border-b border-[#DEE3DC] pb-2.5">
-              <span className="text-xs font-semibold text-[#202923] uppercase tracking-wider">
-                Live Transaction Economics
-              </span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#E4ECE7] text-[#234E42]">
-                {grossMarginPct}% Margin
-              </span>
+      {/* Two-Column POS Layout (TASK 6) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* LEFT COLUMN: Search, Categories & Product Grid (7 Cols) */}
+        <div className="lg:col-span-7 space-y-4">
+          {/* Search & Category Filter */}
+          <div className="surface-card p-3.5 space-y-3">
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#71717A]" />
+              <input
+                type="text"
+                placeholder="Search products by name or SKU..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-1.5 bg-[#F7F7F5] border border-[#E5E5E5] rounded-lg text-xs text-[#222222] placeholder-[#71717A] focus:outline-none focus:border-[#C65D3B]"
+              />
             </div>
 
-            <div className="space-y-2 text-xs text-[#202923]">
-              <div className="flex justify-between">
-                <span className="text-[#6B746E]">Item:</span>
-                <span className="font-medium text-right max-w-[200px] truncate">{selectedProduct?.name || '—'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#6B746E]">Subtotal ({quantity} × ₹{unitPrice.toLocaleString('en-IN')}):</span>
-                <span className="font-medium">₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-              </div>
-              {discountPercent > 0 && (
-                <div className="flex justify-between text-[#B94A48]">
-                  <span>Discount ({discountPercent}%):</span>
-                  <span>-₹{discountAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                </div>
-              )}
-              <div className="flex justify-between font-bold text-sm pt-1 border-t border-[#DEE3DC]">
-                <span>Customer Pays:</span>
-                <span>₹{finalTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-              </div>
-
-              <div className="pt-2 border-t border-[#DEE3DC] space-y-1.5 text-[11px]">
-                <div className="flex justify-between text-[#6B746E]">
-                  <span>Cost of Goods Sold (COGS):</span>
-                  <span>₹{totalCogs.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                </div>
-                <div className="flex justify-between font-bold text-xs text-[#234E42]">
-                  <span>Gross Profit Pocketed:</span>
-                  <span>₹{grossProfit.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-2.5 rounded-md bg-[#F6F5F1] text-[11px] text-[#6B746E] flex items-center gap-1.5">
-              <TrendingUp className="w-3.5 h-3.5 text-[#234E42] shrink-0" />
-              <span>Exact formula: <code>Gross Profit = Net Revenue – Unit Cost</code> recorded at sale.</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Sales Ledger Table */}
-      <div className="surface-card p-5 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#DEE3DC] pb-3">
-          <div>
-            <h2 className="text-base font-semibold text-[#202923]">Transaction Ledger</h2>
-            <p className="text-xs text-[#6B746E]">Verified records of in-store POS and online customer sales.</p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Channel filter tabs */}
-            <div className="flex items-center gap-1 bg-[#EAEDE7] p-1 rounded-lg">
-              {['ALL', 'POS', 'ONLINE'].map((ch) => (
+            {/* Category Pills */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+              {categories.map((cat) => (
                 <button
-                  key={ch}
-                  onClick={() => setChannelFilter(ch)}
-                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                    channelFilter === ch
-                      ? 'bg-[#234E42] text-white shadow-xs'
-                      : 'text-[#202923] hover:bg-[#DEE3DC]'
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium whitespace-nowrap transition ${
+                    selectedCategory === cat
+                      ? 'bg-[#C65D3B] text-white shadow-xs font-semibold'
+                      : 'bg-[#F7F7F5] text-[#71717A] hover:text-[#222222] hover:bg-[#EFEFEF]'
                   }`}
                 >
-                  {ch}
+                  {cat}
                 </button>
               ))}
             </div>
+          </div>
 
-            {/* Search */}
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 text-[#6B746E] absolute left-2.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search orders..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="text-xs pl-8 pr-3 py-1.5 rounded-md border border-[#DEE3DC] bg-white focus:outline-none focus:border-[#234E42] text-[#202923]"
-              />
-            </div>
+          {/* Product Cards Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {filteredProducts.map((p) => {
+              const inStock = p.stock > 0;
+              const inBill = billItems.find((item) => item.product.id === p.id);
+
+              return (
+                <div
+                  key={p.id}
+                  className={`surface-card p-3 flex flex-col justify-between transition-all ${
+                    inStock ? 'hover:border-[#C65D3B] hover:shadow-card' : 'opacity-60 bg-[#F7F7F5]'
+                  }`}
+                >
+                  <div>
+                    {/* Product Photograph */}
+                    <div className="w-full h-28 bg-[#F7F7F5] rounded-lg overflow-hidden mb-2.5 flex items-center justify-center border border-[#E5E5E5]">
+                      {p.image_url ? (
+                        <img
+                          src={p.image_url}
+                          alt={p.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <span className="text-[10px] text-[#71717A]">No Photo</span>
+                      )}
+                    </div>
+
+                    <p className="font-semibold text-xs text-[#222222] line-clamp-1">{p.name}</p>
+                    <p className="text-[10px] text-[#71717A] mt-0.5">{p.sku}</p>
+                  </div>
+
+                  <div className="mt-3 pt-2 border-t border-[#E5E5E5]">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-bold text-xs text-[#222222]">{formatINR(p.price)}</span>
+                      <span
+                        className={`text-[10px] font-medium px-1.5 py-0.2 rounded ${
+                          p.stock <= (p.low_stock_threshold || 5)
+                            ? 'bg-[#FEF9EE] text-[#B7791F]'
+                            : 'bg-[#EEF7F2] text-[#39805A]'
+                        }`}
+                      >
+                        {p.stock} in stock
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => addToBill(p)}
+                      disabled={!inStock}
+                      className={`w-full py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition ${
+                        inStock
+                          ? inBill
+                            ? 'bg-[#FAF5F2] text-[#C65D3B] border border-[#F0D5CB] hover:bg-[#C65D3B] hover:text-white'
+                            : 'bg-[#C65D3B] text-white hover:bg-[#b04f30] shadow-xs'
+                          : 'bg-[#E5E5E5] text-[#71717A] cursor-not-allowed'
+                      }`}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>{inBill ? `Add (${inBill.quantity})` : 'Add to bill'}</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {salesLoading ? (
-          <div className="py-8 text-center text-xs text-[#6B746E]">Loading transactions...</div>
-        ) : filteredSales.length === 0 ? (
-          <div className="py-8 text-center text-xs text-[#6B746E]">
-            No sales recorded matching current filter.
+        {/* RIGHT COLUMN: Current Bill Register (5 Cols) */}
+        <div className="lg:col-span-5 surface-card p-4 space-y-4 sticky top-[75px]">
+          <div className="flex items-center justify-between border-b border-[#E5E5E5] pb-3">
+            <div>
+              <h2 className="text-sm font-bold text-[#222222]">Current Bill</h2>
+              <p className="text-[11px] text-[#71717A]">
+                {billItems.length} item{billItems.length !== 1 ? 's' : ''} selected
+              </p>
+            </div>
+            {billItems.length > 0 && (
+              <button
+                onClick={clearBill}
+                className="text-xs text-[#C24141] hover:underline font-medium"
+              >
+                Clear all
+              </button>
+            )}
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left">
-              <thead>
-                <tr className="border-b border-[#DEE3DC] text-[#6B746E] font-medium">
-                  <th className="py-2.5 px-3">Order ID</th>
-                  <th className="py-2.5 px-3">Channel</th>
-                  <th className="py-2.5 px-3">Customer</th>
-                  <th className="py-2.5 px-3">Items Sold</th>
-                  <th className="py-2.5 px-3">Payment</th>
-                  <th className="py-2.5 px-3">Revenue</th>
-                  <th className="py-2.5 px-3">Gross Profit</th>
-                  <th className="py-2.5 px-3 text-right">Receipt</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#DEE3DC]/60">
-                {filteredSales.map((sale) => (
-                  <tr key={sale.order_id} className="hover:bg-[#F6F5F1]/70 transition-colors">
-                    <td className="py-2.5 px-3 font-mono text-[#202923] font-medium">
-                      {sale.order_id}
-                    </td>
-                    <td className="py-2.5 px-3">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                        sale.sales_channel === 'POS'
-                          ? 'bg-[#E4ECE7] text-[#234E42]'
-                          : 'bg-[#EAEAF5] text-[#474580]'
-                      }`}>
-                        {sale.sales_channel}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-3 text-[#202923]">
-                      {sale.customer_name || 'Walk-in Customer'}
-                    </td>
-                    <td className="py-2.5 px-3 text-[#6B746E]">
-                      {sale.items.map((i) => `${i.product_name} (×${i.quantity})`).join(', ')}
-                    </td>
-                    <td className="py-2.5 px-3 text-[#202923]">
-                      <span className="font-medium">{sale.payment_method}</span>
-                    </td>
-                    <td className="py-2.5 px-3 font-semibold text-[#202923]">
-                      ₹{sale.final_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                    </td>
-                    <td className="py-2.5 px-3 text-[#234E42] font-semibold">
-                      ₹{sale.gross_profit.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                    </td>
-                    <td className="py-2.5 px-3 text-right">
-                      <button
-                        onClick={() => handleViewReceipt(sale.order_id)}
-                        className="px-2.5 py-1 rounded bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-[11px] font-medium inline-flex items-center gap-1 transition-colors"
-                      >
-                        <Receipt className="w-3 h-3 text-[#234E42]" />
-                        <span>Receipt</span>
-                      </button>
-                    </td>
-                  </tr>
+
+          {/* Selected Items List */}
+          <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+            {billItems.length > 0 ? (
+              billItems.map((item) => (
+                <div
+                  key={item.product.id}
+                  className="p-2.5 rounded-lg bg-[#F7F7F5] border border-[#E5E5E5] flex items-center justify-between gap-2"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold text-[#222222] truncate">
+                      {item.product.name}
+                    </p>
+                    <p className="text-[10px] text-[#71717A]">
+                      {formatINR(item.product.price)} each • Cost: {formatINR(item.product.cost_price || 0)}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={() => updateQuantity(item.product.id, -1)}
+                      className="w-6 h-6 rounded bg-white border border-[#E5E5E5] flex items-center justify-center text-[#222222] hover:bg-[#EFEFEF]"
+                    >
+                      <Minus className="w-3 h-3" />
+                    </button>
+                    <span className="text-xs font-bold w-5 text-center text-[#222222]">
+                      {item.quantity}
+                    </span>
+                    <button
+                      onClick={() => updateQuantity(item.product.id, 1)}
+                      className="w-6 h-6 rounded bg-white border border-[#E5E5E5] flex items-center justify-center text-[#222222] hover:bg-[#EFEFEF]"
+                    >
+                      <Plus className="w-3 h-3" />
+                    </button>
+
+                    <button
+                      onClick={() => removeFromBill(item.product.id)}
+                      className="w-6 h-6 rounded text-[#71717A] hover:text-[#C24141] flex items-center justify-center ml-1"
+                      title="Remove from bill"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="py-8 text-center text-xs text-[#71717A] bg-[#F7F7F5] rounded-lg border border-dashed border-[#E5E5E5]">
+                <Receipt className="w-6 h-6 text-[#71717A] mx-auto mb-1.5 opacity-50" />
+                <p className="font-medium text-[#222222]">Bill is empty</p>
+                <p className="text-[11px] mt-0.5">Click "Add to bill" on any product to start.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Customer Details Form */}
+          <div className="space-y-2 pt-2 border-t border-[#E5E5E5]">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[10px] font-semibold text-[#71717A] uppercase mb-1">
+                  Customer Name
+                </label>
+                <input
+                  type="text"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="Walk-in Customer"
+                  className="w-full px-2.5 py-1.5 bg-[#F7F7F5] border border-[#E5E5E5] rounded-md text-xs text-[#222222]"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-semibold text-[#71717A] uppercase mb-1">
+                  Phone (Optional)
+                </label>
+                <input
+                  type="tel"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  placeholder="9876543210"
+                  className="w-full px-2.5 py-1.5 bg-[#F7F7F5] border border-[#E5E5E5] rounded-md text-xs text-[#222222]"
+                />
+              </div>
+            </div>
+
+            {/* Payment Method Selector */}
+            <div>
+              <label className="block text-[10px] font-semibold text-[#71717A] uppercase mb-1">
+                Payment Method
+              </label>
+              <div className="grid grid-cols-3 gap-1.5">
+                {[
+                  { id: 'CASH', label: 'Cash', icon: Banknote },
+                  { id: 'UPI', label: 'Recorded UPI', icon: Smartphone },
+                  { id: 'CARD', label: 'Recorded Card', icon: CreditCard },
+                ].map((m) => {
+                  const Icon = m.icon;
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => setPaymentMethod(m.id)}
+                      className={`py-1.5 px-2 rounded-md text-[11px] font-medium flex items-center justify-center gap-1 border transition ${
+                        paymentMethod === m.id
+                          ? 'bg-[#FAF5F2] border-[#C65D3B] text-[#C65D3B] font-semibold'
+                          : 'bg-[#F7F7F5] border-[#E5E5E5] text-[#71717A] hover:text-[#222222]'
+                      }`}
+                    >
+                      <Icon className="w-3 h-3" />
+                      <span>{m.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Discount Percentage Control */}
+            <div>
+              <div className="flex items-center justify-between text-[11px] mb-1">
+                <span className="font-semibold text-[#71717A] uppercase text-[10px]">Discount</span>
+                <span className="text-[#C65D3B] font-medium">Policy Cap: 10%</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {[0, 5, 10].map((pct) => (
+                  <button
+                    key={pct}
+                    type="button"
+                    onClick={() => setDiscountPercent(pct)}
+                    className={`flex-1 py-1 rounded text-xs font-semibold border transition ${
+                      Number(discountPercent) === pct
+                        ? 'bg-[#C65D3B] text-white border-[#C65D3B]'
+                        : 'bg-[#F7F7F5] border-[#E5E5E5] text-[#71717A] hover:bg-[#EFEFEF]'
+                    }`}
+                  >
+                    {pct === 0 ? 'None' : `${pct}% off`}
+                  </button>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </div>
           </div>
-        )}
+
+          {/* Financial Breakdown */}
+          <div className="p-3 rounded-lg bg-[#F7F7F5] border border-[#E5E5E5] space-y-1.5 text-xs">
+            <div className="flex justify-between text-[#71717A]">
+              <span>Subtotal</span>
+              <span>{formatINR(subtotal)}</span>
+            </div>
+            {discountAmount > 0 && (
+              <div className="flex justify-between text-[#C65D3B] font-medium">
+                <span>Discount ({discountPercent}%)</span>
+                <span>-{formatINR(discountAmount)}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-[#222222] font-bold text-sm pt-1 border-t border-[#E5E5E5]">
+              <span>Final Payable</span>
+              <span className="text-[#C65D3B]">{formatINR(finalPayable)}</span>
+            </div>
+
+            {/* Real Unit Economics Snapshot */}
+            <div className="pt-2 border-t border-[#E5E5E5] flex items-center justify-between text-[11px] text-[#71717A]">
+              <span>Gross Profit (COGS: {formatINR(totalCogs)})</span>
+              <span className="font-semibold text-[#39805A]">
+                {formatINR(grossProfit)} ({marginPct}%)
+              </span>
+            </div>
+          </div>
+
+          {/* Complete Sale Button */}
+          <button
+            onClick={handleCompleteSale}
+            disabled={submitting || billItems.length === 0}
+            className="w-full py-2.5 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {submitting ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <CheckCircle2 className="w-4 h-4" />
+            )}
+            <span>{submitting ? 'Processing Transaction...' : `Complete Sale • ${formatINR(finalPayable)}`}</span>
+          </button>
+        </div>
       </div>
 
-      {/* Printable Receipt Modal */}
+      {/* Printable Receipt Modal (TASK 6 Requirement #9) */}
       {receiptModalOpen && currentReceipt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 space-y-4 border border-[#DEE3DC]">
-            <div className="flex items-center justify-between border-b border-[#DEE3DC] pb-3">
-              <div className="flex items-center gap-2">
-                <Receipt className="w-5 h-5 text-[#234E42]" />
-                <h3 className="text-base font-bold text-[#202923]">Sales Receipt</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-xl shadow-modal max-w-sm w-full p-5 space-y-4 border border-[#E5E5E5] animate-in fade-in">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E5E5E5]">
+              <div className="flex items-center gap-1.5">
+                <Receipt className="w-4 h-4 text-[#C65D3B]" />
+                <h3 className="text-sm font-bold text-[#222222]">Sale Receipt</h3>
               </div>
               <button
                 onClick={() => setReceiptModalOpen(false)}
-                className="text-[#6B746E] hover:text-[#202923]"
+                className="p-1 rounded-md text-[#71717A] hover:bg-[#F7F7F5]"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Receipt Printable Card */}
-            <div id="printable-receipt" className="p-4 bg-[#F9F9F8] rounded-lg border border-[#DEE3DC] font-mono text-xs space-y-3">
-              <div className="text-center space-y-0.5">
-                <p className="font-bold text-sm text-[#202923]">{currentReceipt.store_name}</p>
-                <p className="text-[11px] text-[#6B746E]">Merchant Workspace: {currentReceipt.merchant_id}</p>
-                <p className="text-[11px] text-[#6B746E]">{currentReceipt.created_at}</p>
+            {/* Thermal Style Receipt Content */}
+            <div id="printable-receipt" className="font-mono text-xs space-y-3 bg-[#F7F7F5] p-3.5 rounded-lg border border-[#E5E5E5]">
+              <div className="text-center pb-2 border-b border-dashed border-[#D4D4D4]">
+                <p className="font-bold text-sm text-[#222222]">{currentReceipt.merchant_name || 'Smart Accessories Store'}</p>
+                <p className="text-[10px] text-[#71717A]">Bangalore, Karnataka</p>
+                <p className="text-[10px] text-[#71717A] mt-0.5">Receipt: {currentReceipt.receipt_number}</p>
+                <p className="text-[10px] text-[#71717A]">{currentReceipt.created_at}</p>
               </div>
 
-              <div className="border-t border-dashed border-[#DEE3DC] pt-2 space-y-1">
-                <div className="flex justify-between text-[#6B746E]">
-                  <span>Receipt No:</span>
-                  <span className="font-semibold text-[#202923]">{currentReceipt.order_id}</span>
-                </div>
-                <div className="flex justify-between text-[#6B746E]">
-                  <span>Channel:</span>
-                  <span>{currentReceipt.sales_channel}</span>
-                </div>
-                <div className="flex justify-between text-[#6B746E]">
-                  <span>Customer:</span>
-                  <span>{currentReceipt.customer_name}</span>
-                </div>
+              <div className="text-[11px]">
+                <p><span className="text-[#71717A]">Customer:</span> {currentReceipt.customer_name}</p>
+                <p><span className="text-[#71717A]">Payment:</span> {currentReceipt.payment_method} ({currentReceipt.payment_status})</p>
               </div>
 
-              {/* Items */}
-              <div className="border-t border-dashed border-[#DEE3DC] pt-2 space-y-1.5">
-                {currentReceipt.items.map((it, idx) => (
-                  <div key={idx} className="flex justify-between">
-                    <div>
-                      <p className="font-semibold text-[#202923]">{it.name}</p>
-                      <p className="text-[10px] text-[#6B746E]">Qty: {it.quantity} × ₹{it.unit_price.toLocaleString('en-IN')}</p>
-                    </div>
-                    <span className="font-semibold text-[#202923]">₹{it.total.toLocaleString('en-IN')}</span>
+              <div className="border-t border-b border-dashed border-[#D4D4D4] py-2 space-y-1">
+                {currentReceipt.items?.map((it, i) => (
+                  <div key={i} className="flex justify-between text-[11px]">
+                    <span className="truncate max-w-[170px]">{it.quantity}x {it.product_name}</span>
+                    <span>{formatINR(it.total_price)}</span>
                   </div>
                 ))}
               </div>
 
-              {/* Totals */}
-              <div className="border-t border-dashed border-[#DEE3DC] pt-2 space-y-1">
-                <div className="flex justify-between text-[#6B746E]">
-                  <span>Subtotal:</span>
-                  <span>₹{currentReceipt.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+              <div className="space-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span>{formatINR(currentReceipt.subtotal)}</span>
                 </div>
                 {currentReceipt.discount_amount > 0 && (
-                  <div className="flex justify-between text-[#B94A48]">
-                    <span>Discount:</span>
-                    <span>-₹{currentReceipt.discount_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                  <div className="flex justify-between text-[#C65D3B]">
+                    <span>Discount</span>
+                    <span>-{formatINR(currentReceipt.discount_amount)}</span>
                   </div>
                 )}
-                <div className="flex justify-between font-bold text-sm text-[#202923] pt-1 border-t border-[#DEE3DC]">
-                  <span>Total Paid:</span>
-                  <span>₹{currentReceipt.total_amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                </div>
-                <div className="flex justify-between text-[11px] text-[#234E42]">
-                  <span>Payment Mode:</span>
-                  <span className="font-semibold">{currentReceipt.payment_method}</span>
+                <div className="flex justify-between font-bold text-sm pt-1 border-t border-[#D4D4D4]">
+                  <span>Total Paid</span>
+                  <span>{formatINR(currentReceipt.final_amount)}</span>
                 </div>
               </div>
 
-              <div className="text-center pt-2 border-t border-dashed border-[#DEE3DC] text-[10px] text-[#6B746E]">
-                Thank you for your business!
+              <div className="text-center pt-2 border-t border-dashed border-[#D4D4D4] text-[10px] text-[#71717A]">
+                <p>Thank you for shopping local!</p>
+                <p className="mt-0.5 font-semibold text-[#39805A]">✓ Order Settled & Logged to Ledger</p>
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center justify-end gap-2 pt-2">
+            <div className="flex items-center gap-2">
               <button
-                type="button"
-                onClick={() => setReceiptModalOpen(false)}
-                className="px-3 py-1.5 rounded-md border border-[#DEE3DC] text-xs font-medium text-[#202923] hover:bg-[#F6F5F1]"
-              >
-                Close
-              </button>
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="px-3.5 py-1.5 rounded-md bg-[#234E42] hover:bg-[#1B3D34] text-white text-xs font-medium flex items-center gap-1.5 shadow-xs"
+                onClick={handlePrintReceipt}
+                className="flex-1 py-2 rounded-lg bg-[#222222] hover:bg-black text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs"
               >
                 <Printer className="w-3.5 h-3.5" />
                 <span>Print Receipt</span>
+              </button>
+              <button
+                onClick={() => setReceiptModalOpen(false)}
+                className="px-4 py-2 rounded-lg bg-[#F7F7F5] hover:bg-[#EFEFEF] border border-[#E5E5E5] text-[#222222] text-xs font-semibold"
+              >
+                Done
               </button>
             </div>
           </div>

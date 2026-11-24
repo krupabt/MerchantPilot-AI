@@ -62,19 +62,15 @@ class MerchantService:
         gross_profit = round(total_revenue - total_cogs, 2)
         gross_margin_pct = round((gross_profit / total_revenue * 100), 1) if total_revenue > 0 else 0.0
 
-        # 3. Order counts
-        orders_q = db.query(Order).filter(Order.merchant_id == merchant_id)
-        if start_filter:
-            orders_q = orders_q.filter(Order.created_at >= start_filter)
-        total_orders = orders_q.count()
+        # 3. Order counts & Consistent Metrics
+        # All dashboard metrics are grounded on the exact same confirmed transactions population
+        total_orders = completed_orders
+        aov = round(total_revenue / completed_orders, 2) if completed_orders > 0 else 0.0
 
         pending_q = db.query(Order).filter(Order.merchant_id == merchant_id, Order.status == "PENDING")
         if start_filter:
             pending_q = pending_q.filter(Order.created_at >= start_filter)
         pending_orders = pending_q.count()
-
-        # 4. Average Order Value (AOV)
-        aov = round(total_revenue / completed_orders, 2) if completed_orders > 0 else 0.0
 
         # 4. Inventory counts
         out_of_stock_count = db.query(Product).filter(
