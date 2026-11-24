@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
-  PieChart as PieIcon,
-  Sparkles,
-  TrendingUp,
-  Layers,
-  ArrowRight,
-  ShieldCheck,
-  AlertTriangle,
+  Boxes,
   RefreshCw,
-  Box,
-  Percent
+  AlertTriangle,
+  ArrowRight,
+  TrendingUp,
+  Percent,
+  CheckCircle2,
+  Package
 } from 'lucide-react';
 import { getRevenueInsights } from '../services/api';
 
@@ -38,129 +36,126 @@ export default function MarketBasketAnalysis() {
   const isInsufficient = data?.status === 'INSUFFICIENT_DATA' || (data?.total_orders || 0) < 5;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-16">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2A3441] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#DEE3DC]">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono uppercase bg-[#F5A524]/10 border border-[#F5A524]/30 text-[#F5A524] px-2 py-0.5 rounded">
-              Statistical Rule Mining
-            </span>
-            <span className="text-xs text-[#94A3B8] font-mono">Apriori Lift & Affinity Engine</span>
-          </div>
-          <h1 className="text-2xl font-bold text-[#F8FAFC] tracking-tight">Market Basket Analysis</h1>
-          <p className="text-xs text-[#94A3B8]">
-            Mine completed multi-item transactions for statistical support, confidence, and lift to build profitable commercial bundles.
+          <h1 className="text-2xl sm:text-[28px] font-bold text-[#202923] tracking-tight">
+            Product intelligence
+          </h1>
+          <p className="text-sm text-[#6B746E] mt-0.5">
+            Frequently bought together patterns, Apriori association rules, and compliant bundling opportunities.
           </p>
         </div>
 
         <button
           onClick={fetchInsights}
-          className="px-3.5 py-2 rounded-xl bg-[#1C222B] hover:bg-[#242D38] border border-[#2A3441] text-[#94A3B8] hover:text-[#F8FAFC] text-xs font-medium flex items-center gap-2 self-start sm:self-auto transition"
+          disabled={loading}
+          className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
         >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Re-Mine Baskets</span>
+          <RefreshCw className={`w-3.5 h-3.5 text-[#6B746E] ${loading ? 'animate-spin' : ''}`} />
+          <span>Re-analyze baskets</span>
         </button>
       </div>
 
-      {/* Metrics Row */}
+      {/* 4 Summary Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="surface-card p-4">
-          <span className="text-[10px] uppercase font-mono text-[#94A3B8]">Mined Transactions</span>
-          <p className="text-2xl font-black text-[#F8FAFC] mt-1">{data?.total_orders || 0}</p>
-          <span className="text-[11px] text-[#94A3B8] mt-1 block">Completed purchase baskets</span>
+        <div className="surface-card p-4 space-y-1">
+          <span className="text-xs font-medium text-[#6B746E]">Analyzed orders</span>
+          <p className="text-2xl font-bold text-[#202923] tracking-tight">{data?.total_orders || 0}</p>
+          <p className="text-[12px] text-[#6B746E]">Completed checkout baskets</p>
         </div>
 
-        <div className="surface-card p-4">
-          <span className="text-[10px] uppercase font-mono text-[#F5A524]">Association Rules Found</span>
-          <p className="text-2xl font-black text-[#F5A524] mt-1">{rules.length}</p>
-          <span className="text-[11px] text-[#94A3B8] mt-1 block">Support &gt; 10%, Confidence &gt; 30%</span>
+        <div className="surface-card p-4 space-y-1">
+          <span className="text-xs font-medium text-[#6B746E]">Association rules found</span>
+          <p className="text-2xl font-bold text-[#234E42] tracking-tight">{rules.length}</p>
+          <p className="text-[12px] text-[#6B746E]">Support &gt; 10%, Confidence &gt; 30%</p>
         </div>
 
-        <div className="surface-card p-4">
-          <span className="text-[10px] uppercase font-mono text-[#10B981]">Total Revenue Analyzed</span>
-          <p className="text-2xl font-black text-[#10B981] mt-1">
+        <div className="surface-card p-4 space-y-1">
+          <span className="text-xs font-medium text-[#6B746E]">Analyzed revenue</span>
+          <p className="text-2xl font-bold text-[#202923] tracking-tight">
             ₹{((data?.total_revenue || 0) / 100000).toFixed(2)}L
           </p>
-          <span className="text-[11px] text-[#94A3B8] mt-1 block">Verified settlements</span>
+          <p className="text-[12px] text-[#6B746E]">Verified purchase records</p>
         </div>
 
-        <div className="surface-card p-4">
-          <span className="text-[10px] uppercase font-mono text-[#38BDF8]">Policy Discount Boundary</span>
-          <p className="text-2xl font-black text-[#38BDF8] mt-1">≤ 10.0%</p>
-          <span className="text-[11px] text-[#94A3B8] mt-1 block">Strict merchant margin cap</span>
+        <div className="surface-card p-4 space-y-1">
+          <span className="text-xs font-medium text-[#6B746E]">Discount ceiling</span>
+          <p className="text-2xl font-bold text-[#347A52] tracking-tight">≤ 10.0%</p>
+          <p className="text-[12px] text-[#6B746E]">Commercial margin guardrail</p>
         </div>
       </div>
 
       {loading ? (
-        <div className="p-16 text-center text-xs text-[#94A3B8] rounded-2xl bg-[#1C222B] border border-[#2A3441] animate-pulse">
-          Mining statistical association rules from database transaction logs...
+        <div className="p-12 text-center text-xs text-[#6B746E] surface-card animate-pulse">
+          Analyzing transaction records for frequent itemsets...
         </div>
       ) : isInsufficient ? (
-        <div className="p-8 rounded-2xl bg-[#151A21] border border-[#2A3441] text-center space-y-3">
-          <AlertTriangle className="w-10 h-10 text-[#F59E0B] mx-auto" />
-          <h3 className="text-base font-bold text-[#F8FAFC]">Sparse Transaction History</h3>
-          <p className="text-xs text-[#94A3B8] max-w-md mx-auto">
-            Statistical Apriori basket mining requires multi-item completed orders to compute genuine Lift without synthetic bias. As more customer orders settle, high-confidence association rules will populate automatically.
+        <div className="p-8 surface-card text-center space-y-2">
+          <AlertTriangle className="w-8 h-8 text-[#B77932] mx-auto opacity-80" />
+          <h3 className="text-base font-semibold text-[#202923]">Insufficient transaction history</h3>
+          <p className="text-xs text-[#6B746E] max-w-md mx-auto">
+            Market basket analysis requires multi-item completed orders to compute genuine Lift without synthetic bias. As customer orders settle, high-confidence association rules will populate automatically.
           </p>
         </div>
       ) : (
         <div className="space-y-6">
           {/* Association Rules Table */}
           <div className="surface-card overflow-hidden">
-            <div className="p-4 border-b border-[#2A3441] flex items-center justify-between">
+            <div className="p-4 border-b border-[#DEE3DC] flex items-center justify-between">
               <div>
-                <h3 className="text-xs font-bold uppercase font-mono text-[#F8FAFC]">
-                  Discovered Product Association Rules
-                </h3>
-                <span className="text-[11px] text-[#94A3B8]">Mined with minimum support threshold</span>
+                <h2 className="text-sm font-semibold text-[#202923]">
+                  Frequently bought together rules
+                </h2>
+                <p className="text-xs text-[#6B746E]">Mined from customer checkout baskets with statistically verified lift.</p>
               </div>
-              <span className="text-[10px] font-mono text-[#10B981] bg-[#10B981]/10 px-2 py-0.5 rounded">
+              <span className="text-[11px] font-medium text-[#347A52] bg-[#EAF4EE] px-2 py-0.5 rounded border border-[#B8D4C4]">
                 Verified SQL Baskets
               </span>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#151A21] border-b border-[#2A3441] text-[#94A3B8] uppercase font-mono text-[10px]">
+                <thead className="bg-[#F6F5F1] text-[#6B746E] font-medium border-b border-[#DEE3DC]">
                   <tr>
-                    <th className="p-4">Antecedent (When bought)</th>
-                    <th className="p-4">Consequent (Likely to also buy)</th>
-                    <th className="p-4">Support</th>
-                    <th className="p-4">Confidence</th>
-                    <th className="p-4">Lift Metric</th>
-                    <th className="p-4">Commercial Strategy</th>
+                    <th className="py-2.5 px-3.5">Initial item (Antecedent)</th>
+                    <th className="py-2.5 px-3">Also purchased (Consequent)</th>
+                    <th className="py-2.5 px-3">Support</th>
+                    <th className="py-2.5 px-3">Confidence</th>
+                    <th className="py-2.5 px-3">Lift metric</th>
+                    <th className="py-2.5 px-3.5">Commercial recommendation</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#2A3441]">
+                <tbody className="divide-y divide-[#DEE3DC]">
                   {rules.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="p-8 text-center text-[#94A3B8]">
-                        No cross-category pairings exceeded minimum threshold yet.
+                      <td colSpan="6" className="py-6 text-center text-[#6B746E]">
+                        No cross-category pairings exceeded the minimum threshold yet.
                       </td>
                     </tr>
                   ) : (
                     rules.map((rule, idx) => (
-                      <tr key={idx} className="hover:bg-[#151A21]/50 transition">
-                        <td className="p-4 font-semibold text-[#F8FAFC]">
+                      <tr key={idx} className="hover:bg-[#F6F5F1]/60 transition-colors">
+                        <td className="py-2.5 px-3.5 font-medium text-[#202923]">
                           {rule.antecedent_name || rule.antecedent}
                         </td>
-                        <td className="p-4 font-semibold text-[#F5A524]">
+                        <td className="py-2.5 px-3 font-medium text-[#234E42]">
                           {rule.consequent_name || rule.consequent}
                         </td>
-                        <td className="p-4 font-mono text-[#94A3B8]">
+                        <td className="py-2.5 px-3 font-mono text-[#6B746E]">
                           {(rule.support * 100).toFixed(1)}%
                         </td>
-                        <td className="p-4 font-mono text-[#F8FAFC]">
+                        <td className="py-2.5 px-3 font-mono text-[#202923]">
                           {(rule.confidence * 100).toFixed(1)}%
                         </td>
-                        <td className="p-4">
-                          <span className="px-2 py-0.5 rounded font-mono font-bold text-[#10B981] bg-[#10B981]/10 border border-[#10B981]/30">
+                        <td className="py-2.5 px-3">
+                          <span className="px-2 py-0.5 rounded font-mono font-semibold text-[11px] text-[#347A52] bg-[#EAF4EE] border border-[#B8D4C4]">
                             {rule.lift.toFixed(2)}x Lift
                           </span>
                         </td>
-                        <td className="p-4 text-[#94A3B8]">
-                          Recommended for automated bundle discount up to 8%
+                        <td className="py-2.5 px-3.5 text-[#6B746E]">
+                          Recommended for bundle discount up to 8%
                         </td>
                       </tr>
                     ))
@@ -172,25 +167,29 @@ export default function MarketBasketAnalysis() {
 
           {/* Recommended Bundles */}
           {bundles.length > 0 && (
-            <div className="surface-card p-6 space-y-4">
-              <h3 className="text-xs font-bold uppercase font-mono text-[#F8FAFC]">
-                Autonomous High-Affinity Bundle Offers
-              </h3>
+            <div className="surface-card p-5 space-y-3">
+              <div className="border-b border-[#DEE3DC] pb-2.5">
+                <h2 className="text-base font-semibold text-[#202923]">
+                  Recommended bundle opportunities
+                </h2>
+                <p className="text-xs text-[#6B746E]">Compliant with commercial margin ceiling (≤ 10% maximum discount).</p>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {bundles.map((bundle, idx) => (
-                  <div key={idx} className="p-4 rounded-xl bg-[#151A21] border border-[#2A3441] space-y-2">
+                  <div key={idx} className="p-4 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC] space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#F8FAFC]">{bundle.name}</span>
-                      <span className="text-[10px] font-mono text-[#10B981] bg-[#10B981]/10 px-2 py-0.5 rounded">
+                      <span className="text-sm font-semibold text-[#202923]">{bundle.name}</span>
+                      <span className="text-[11px] font-semibold text-[#347A52] bg-[#EAF4EE] px-2 py-0.5 rounded border border-[#B8D4C4]">
                         {bundle.discount_percent}% OFF
                       </span>
                     </div>
-                    <p className="text-xs text-[#94A3B8]">
-                      Includes: {bundle.items?.join(' + ')}
+                    <p className="text-xs text-[#6B746E]">
+                      Items: {bundle.items?.join(' + ')}
                     </p>
-                    <div className="flex items-baseline justify-between pt-2 border-t border-[#2A3441]">
-                      <span className="text-[11px] text-[#94A3B8] line-through">₹{bundle.original_price}</span>
-                      <span className="text-sm font-bold text-[#F5A524]">₹{bundle.bundle_price}</span>
+                    <div className="flex items-baseline justify-between pt-2 border-t border-[#DEE3DC]">
+                      <span className="text-xs text-[#6B746E] line-through">₹{bundle.original_price}</span>
+                      <span className="text-base font-bold text-[#234E42]">₹{bundle.bundle_price}</span>
                     </div>
                   </div>
                 ))}

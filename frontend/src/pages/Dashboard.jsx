@@ -1,22 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  TrendingUp,
   DollarSign,
   ShoppingCart,
   Layers,
-  Box,
   AlertTriangle,
   RefreshCw,
   ArrowRight,
-  ShieldCheck,
   CheckCircle2,
   Calendar,
-  Sparkles,
-  Bot,
+  MessageSquare,
   Package,
-  Send,
-  Truck,
+  TrendingUp,
+  Clock,
   ArrowUpRight
 } from 'lucide-react';
 import {
@@ -31,19 +27,10 @@ import {
 import { getDashboardStats } from '../services/api';
 import MerchantActionCenter from '../components/MerchantActionCenter';
 
-const QUICK_COPILOT_QUESTIONS = [
-  'Which products are low in stock?',
-  'What were my best-selling products?',
-  'What products are slow-moving or dead stock?',
-  'What is our total revenue & AOV?',
-  'How many orders are unfulfilled or pending?'
-];
-
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [quickQuery, setQuickQuery] = useState('');
   const navigate = useNavigate();
 
   const fetchStats = async () => {
@@ -54,7 +41,7 @@ export default function Dashboard() {
       setStats(res.data);
     } catch (err) {
       console.error('Failed to load dashboard metrics:', err);
-      setError('Unable to fetch live merchant metrics from backend.');
+      setError('Unable to fetch live merchant metrics from database.');
     } finally {
       setLoading(false);
     }
@@ -70,344 +57,223 @@ export default function Dashboard() {
   const activeProducts = stats?.active_products ?? 0;
   const lowStockCount = stats?.low_stock_count ?? 0;
   const outOfStockCount = stats?.out_of_stock_count ?? 0;
-  const pendingOrders = stats?.pending_orders ?? 0;
+  const attentionCount = lowStockCount + outOfStockCount;
   const trendData = stats?.revenue_trend || [];
   const topProducts = stats?.top_selling_products || [];
   const lowStockItems = stats?.low_stock_products || [];
   const recentOrders = stats?.recent_orders || [];
 
-  const handleLaunchCopilot = (prompt) => {
-    navigate('/copilot', { state: { prefilledQuery: prompt } });
-  };
-
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-16">
-      {/* Top Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2A3441] pb-4">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#DEE3DC]">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono uppercase bg-[#F5A524]/10 border border-[#F5A524]/30 text-[#F5A524] px-2 py-0.5 rounded flex items-center gap-1 font-bold">
-              <Sparkles className="w-3 h-3" />
-              Merchant Executive Pulse
-            </span>
-            <span className="text-xs text-[#94A3B8] font-mono">Tenant ID: m_1001 • PostgreSQL Grounded</span>
-          </div>
-          <h1 className="text-2xl font-bold text-[#F8FAFC] tracking-tight">Executive Business Operations</h1>
-          <p className="text-xs text-[#94A3B8]">
-            Real-time business performance, inventory velocity, revenue analytics, and AI Copilot directives.
+          <h1 className="text-2xl sm:text-[28px] font-bold text-[#202923] tracking-tight">
+            Business overview
+          </h1>
+          <p className="text-sm text-[#6B746E] mt-0.5">
+            Monitor your sales, inventory, and business performance.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex items-center gap-2">
           <button
             onClick={fetchStats}
             disabled={loading}
-            className="px-3.5 py-2 rounded-xl bg-[#1C222B] hover:bg-[#242D38] border border-[#2A3441] text-[#94A3B8] hover:text-[#F8FAFC] text-xs font-medium flex items-center gap-1.5 transition disabled:opacity-50"
+            className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-[#6B746E] ${loading ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
           </button>
           <Link
             to="/copilot"
-            className="px-4 py-2 rounded-xl bg-[#F5A524] hover:bg-[#D97706] text-black font-semibold text-xs transition flex items-center gap-1.5 shadow-amber-glow"
+            className="px-3.5 py-1.5 rounded-md bg-[#234E42] hover:bg-[#1B3D34] text-white font-medium text-xs transition-colors shadow-xs flex items-center gap-1.5"
           >
-            <Bot className="w-4 h-4" />
-            <span>Open AI Copilot</span>
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>Business Copilot</span>
           </Link>
         </div>
       </div>
 
       {error && (
-        <div className="p-3.5 rounded-xl bg-[#EF4444]/10 border border-[#EF4444]/30 text-xs text-[#EF4444] flex items-center gap-2">
+        <div className="p-3.5 rounded-lg bg-[#FBEFEF] border border-[#B94A48]/30 text-xs text-[#B94A48] flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
-      {/* Priority Action Alerts Banner */}
-      {(lowStockCount > 0 || outOfStockCount > 0 || pendingOrders > 0) && (
-        <div className="p-4 rounded-xl bg-[#F5A524]/10 border border-[#F5A524]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-start sm:items-center gap-3">
-            <div className="p-2 rounded-lg bg-[#F5A524]/20 text-[#F5A524]">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-xs font-bold text-[#F8FAFC]">Priority Commercial Directives</h4>
-              <p className="text-xs text-[#94A3B8]">
-                {outOfStockCount > 0 && <span className="text-[#EF4444] font-semibold">{outOfStockCount} SKU(s) out of stock. </span>}
-                {lowStockCount > 0 && <span className="text-[#F5A524]">{lowStockCount} item(s) below reorder threshold. </span>}
-                {pendingOrders > 0 && <span>{pendingOrders} order(s) pending fulfillment.</span>}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/inventory"
-              className="px-3 py-1.5 rounded-lg bg-[#151A21] hover:bg-[#1C222B] border border-[#2A3441] text-xs font-medium text-[#F8FAFC] transition"
-            >
-              Resolve Inventory
-            </Link>
-            <Link
-              to="/orders"
-              className="px-3 py-1.5 rounded-lg bg-[#F5A524] hover:bg-[#D97706] text-black text-xs font-semibold transition"
-            >
-              Fulfill Orders
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {/* 5 Executive KPI Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {/* Total Revenue */}
+      {/* 4 Compact KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Revenue */}
         <div className="surface-card p-4 space-y-1">
-          <div className="flex items-center justify-between text-[#94A3B8] text-xs">
-            <span className="uppercase font-mono text-[10px]">Total Revenue</span>
-            <DollarSign className="w-3.5 h-3.5 text-[#F5A524]" />
+          <div className="flex items-center justify-between text-[#6B746E] text-xs">
+            <span className="font-medium">Revenue</span>
+            <DollarSign className="w-4 h-4 text-[#234E42]" />
           </div>
-          <p className="text-xl font-black text-[#F8FAFC]">
+          <p className="text-2xl font-bold text-[#202923] tracking-tight">
             {loading ? '...' : `₹${totalRevenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
           </p>
-          <span className="text-[10px] text-[#10B981] flex items-center gap-1 font-mono">
-            <TrendingUp className="w-3 h-3" />
-            PostgreSQL Verified
-          </span>
+          <p className="text-[12px] text-[#6B746E]">
+            Settled customer orders
+          </p>
         </div>
 
-        {/* Total Orders */}
+        {/* Orders */}
         <div className="surface-card p-4 space-y-1">
-          <div className="flex items-center justify-between text-[#94A3B8] text-xs">
-            <span className="uppercase font-mono text-[10px]">Total Orders</span>
-            <ShoppingCart className="w-3.5 h-3.5 text-[#F5A524]" />
+          <div className="flex items-center justify-between text-[#6B746E] text-xs">
+            <span className="font-medium">Orders</span>
+            <ShoppingCart className="w-4 h-4 text-[#234E42]" />
           </div>
-          <p className="text-xl font-black text-[#F8FAFC]">{loading ? '...' : totalOrders}</p>
-          <span className="text-[10px] text-[#94A3B8] font-mono">
-            Store & AI Buyer transactions
-          </span>
+          <p className="text-2xl font-bold text-[#202923] tracking-tight">
+            {loading ? '...' : totalOrders}
+          </p>
+          <p className="text-[12px] text-[#6B746E]">
+            Completed transactions
+          </p>
         </div>
 
-        {/* Average Order Value (AOV) */}
+        {/* Average Order Value */}
         <div className="surface-card p-4 space-y-1">
-          <div className="flex items-center justify-between text-[#94A3B8] text-xs">
-            <span className="uppercase font-mono text-[10px]">Avg Order Value</span>
-            <Sparkles className="w-3.5 h-3.5 text-[#F5A524]" />
+          <div className="flex items-center justify-between text-[#6B746E] text-xs">
+            <span className="font-medium">Average order value</span>
+            <TrendingUp className="w-4 h-4 text-[#234E42]" />
           </div>
-          <p className="text-xl font-black text-[#F8FAFC]">
+          <p className="text-2xl font-bold text-[#202923] tracking-tight">
             {loading ? '...' : `₹${aov.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
           </p>
-          <span className="text-[10px] text-[#94A3B8] font-mono">
-            Basket-weighted average
-          </span>
+          <p className="text-[12px] text-[#6B746E]">
+            Revenue per order
+          </p>
         </div>
 
-        {/* Active Products */}
+        {/* Products Requiring Attention */}
         <div className="surface-card p-4 space-y-1">
-          <div className="flex items-center justify-between text-[#94A3B8] text-xs">
-            <span className="uppercase font-mono text-[10px]">Active SKUs</span>
-            <Box className="w-3.5 h-3.5 text-[#F5A524]" />
+          <div className="flex items-center justify-between text-[#6B746E] text-xs">
+            <span className="font-medium">Stock attention</span>
+            <AlertTriangle className={`w-4 h-4 ${attentionCount > 0 ? 'text-[#B77932]' : 'text-[#347A52]'}`} />
           </div>
-          <p className="text-xl font-black text-[#F8FAFC]">{loading ? '...' : activeProducts}</p>
-          <span className="text-[10px] text-[#10B981] font-mono">
-            Published catalog items
-          </span>
-        </div>
-
-        {/* Inventory Stock Alerts */}
-        <div className="surface-card p-4 space-y-1">
-          <div className="flex items-center justify-between text-[#94A3B8] text-xs">
-            <span className="uppercase font-mono text-[10px]">Stock Alerts</span>
-            <Layers className="w-3.5 h-3.5 text-[#EF4444]" />
-          </div>
-          <p className="text-xl font-black text-[#EF4444]">{loading ? '...' : lowStockCount + outOfStockCount}</p>
-          <span className="text-[10px] text-[#94A3B8] font-mono">
-            Requires inventory restock
-          </span>
+          <p className={`text-2xl font-bold tracking-tight ${attentionCount > 0 ? 'text-[#B77932]' : 'text-[#202923]'}`}>
+            {loading ? '...' : attentionCount}
+          </p>
+          <p className="text-[12px] text-[#6B746E]">
+            {outOfStockCount > 0 ? `${outOfStockCount} out of stock, ${lowStockCount} low` : 'All inventory healthy'}
+          </p>
         </div>
       </div>
 
-      {/* AI Copilot Quick Action Bar */}
-      <div className="surface-card p-5 space-y-3 border border-[#F5A524]/20 bg-gradient-to-r from-[#151A21] to-[#1C222B]">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-[#F5A524]/10 border border-[#F5A524]/30 flex items-center justify-center text-[#F5A524]">
-              <Bot className="w-4 h-4" />
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-[#F8FAFC]">AI Business Copilot Quick Dispatch</h3>
-              <p className="text-xs text-[#94A3B8]">Ask a business question in plain English or select an instant prompt below.</p>
-            </div>
-          </div>
-          <Link
-            to="/copilot"
-            className="text-xs text-[#F5A524] hover:text-[#D97706] font-semibold flex items-center gap-1 self-start sm:self-auto"
-          >
-            <span>Open Dedicated Workspace</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-
-        <div className="flex flex-wrap gap-2 pt-1">
-          {QUICK_COPILOT_QUESTIONS.map((q, idx) => (
-            <button
-              key={idx}
-              onClick={() => handleLaunchCopilot(q)}
-              className="px-3 py-1.5 rounded-xl bg-[#151A21] hover:bg-[#242D38] border border-[#2A3441] hover:border-[#F5A524]/50 text-xs text-[#94A3B8] hover:text-[#F8FAFC] transition text-left flex items-center gap-1.5"
-            >
-              <span>{q}</span>
-              <ArrowRight className="w-3 h-3 text-[#64748B]" />
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Proactive Merchant Action Center */}
-      <MerchantActionCenter onActionExecuted={fetchStats} />
-
-      {/* Revenue Trend Area Chart */}
-      <div className="surface-card p-6 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      {/* Revenue Performance Chart */}
+      <div className="surface-card p-5 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#DEE3DC] pb-3">
           <div>
-            <h3 className="text-base font-bold text-[#F8FAFC]">7-Day Revenue Velocity</h3>
-            <p className="text-xs text-[#94A3B8]">
-              Daily completed order revenue aggregated directly from settled database records.
-            </p>
+            <h2 className="text-base font-semibold text-[#202923]">Revenue performance</h2>
+            <p className="text-xs text-[#6B746E]">Daily settled order revenue across the last 7 days.</p>
           </div>
-          <div className="flex items-center gap-2 text-xs font-mono text-[#94A3B8]">
-            <Calendar className="w-3.5 h-3.5 text-[#F5A524]" />
-            <span>Last 7 Days</span>
+          <div className="flex items-center gap-1.5 text-xs text-[#6B746E]">
+            <Calendar className="w-3.5 h-3.5 text-[#234E42]" />
+            <span className="font-medium text-[#202923]">Trailing 7 days</span>
           </div>
         </div>
 
         <div className="h-64 w-full">
           {loading ? (
-            <div className="h-full flex items-center justify-center text-xs text-[#94A3B8]">
-              Loading revenue metrics...
+            <div className="h-full flex items-center justify-center text-xs text-[#6B746E]">
+              Loading chart data...
             </div>
           ) : trendData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trendData}>
+              <AreaChart data={trendData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#F5A524" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#F5A524" stopOpacity={0.0} />
+                  <linearGradient id="forestGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#234E42" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#234E42" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2A3441" />
-                <XAxis dataKey="day" stroke="#94A3B8" fontSize={11} tickLine={false} />
-                <YAxis
-                  stroke="#94A3B8"
+                <CartesianGrid strokeDasharray="3 3" stroke="#E8ECE6" vertical={false} />
+                <XAxis
+                  dataKey="day"
+                  stroke="#6B746E"
                   fontSize={11}
                   tickLine={false}
+                  axisLine={{ stroke: '#DEE3DC' }}
+                />
+                <YAxis
+                  stroke="#6B746E"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
                   tickFormatter={(val) => `₹${(val / 1000).toFixed(0)}k`}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#151A21',
-                    borderColor: '#2A3441',
-                    borderRadius: '0.75rem',
-                    color: '#F8FAFC',
-                    fontSize: '12px'
+                    backgroundColor: '#FFFFFF',
+                    borderColor: '#DEE3DC',
+                    borderRadius: '8px',
+                    color: '#202923',
+                    fontSize: '12px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.06)'
                   }}
                   formatter={(val) => [`₹${val.toLocaleString('en-IN')}`, 'Revenue']}
                 />
                 <Area
                   type="monotone"
                   dataKey="revenue"
-                  stroke="#F5A524"
+                  stroke="#234E42"
                   strokeWidth={2}
                   fillOpacity={1}
-                  fill="url(#revenueGrad)"
+                  fill="url(#forestGrad)"
                 />
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-full flex items-center justify-center text-xs text-[#94A3B8]">
-              No paid orders in the last 7 days yet.
+            <div className="h-full flex items-center justify-center text-xs text-[#6B746E]">
+              No paid orders in this window yet.
             </div>
           )}
         </div>
       </div>
 
-      {/* Two Column Section: Top Products & Inventory Replenishment */}
+      {/* Recommended Actions (Action Center Module) */}
+      <MerchantActionCenter onActionExecuted={fetchStats} />
+
+      {/* Two Column Grid: Products Requiring Attention & Best-Selling Products */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top Selling Products */}
-        <div className="surface-card p-6 space-y-4">
-          <div className="flex items-center justify-between">
+        {/* Products Requiring Attention */}
+        <div className="surface-card p-5 space-y-3">
+          <div className="flex items-center justify-between border-b border-[#DEE3DC] pb-2.5">
             <div>
-              <h3 className="text-base font-bold text-[#F8FAFC]">Top Selling Products</h3>
-              <p className="text-xs text-[#94A3B8]">Ranked by units sold and verified revenue.</p>
-            </div>
-            <Link
-              to="/analytics"
-              className="text-xs text-[#F5A524] hover:text-[#D97706] font-medium flex items-center gap-1"
-            >
-              <span>Full Analytics</span>
-              <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-
-          <div className="divide-y divide-[#2A3441]">
-            {topProducts.length > 0 ? (
-              topProducts.slice(0, 5).map((item, idx) => (
-                <div key={item.product_id || idx} className="py-3 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-3">
-                    <span className="w-5 h-5 rounded-full bg-[#1C222B] border border-[#2A3441] flex items-center justify-center font-mono font-bold text-[10px] text-[#F5A524]">
-                      {idx + 1}
-                    </span>
-                    <div>
-                      <p className="font-semibold text-[#F8FAFC]">{item.name}</p>
-                      <p className="text-[10px] text-[#94A3B8] font-mono">
-                        {item.category} • SKU: {item.product_id}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-[#F8FAFC]">₹{item.total_revenue?.toLocaleString('en-IN')}</p>
-                    <p className="text-[10px] text-[#10B981] font-mono">{item.units_sold} sold</p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-xs text-[#94A3B8] py-4">No sales recorded yet.</p>
-            )}
-          </div>
-        </div>
-
-        {/* Low Stock Replenishment Queue */}
-        <div className="surface-card p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-bold text-[#F8FAFC]">Inventory Attention Queue</h3>
-              <p className="text-xs text-[#94A3B8]">Items requiring replenishment or purchase orders.</p>
+              <h2 className="text-base font-semibold text-[#202923]">Products requiring attention</h2>
+              <p className="text-xs text-[#6B746E]">Items at or below safety reorder thresholds.</p>
             </div>
             <Link
               to="/inventory"
-              className="text-xs text-[#F5A524] hover:text-[#D97706] font-medium flex items-center gap-1"
+              className="text-xs font-medium text-[#234E42] hover:underline flex items-center gap-1"
             >
-              <span>Manage Inventory</span>
+              <span>Manage inventory</span>
               <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
 
-          <div className="divide-y divide-[#2A3441]">
+          <div className="divide-y divide-[#DEE3DC]">
             {lowStockItems.length > 0 ? (
               lowStockItems.slice(0, 5).map((item) => (
-                <div key={item.id} className="py-3 flex items-center justify-between text-xs">
+                <div key={item.id} className="py-2.5 flex items-center justify-between text-xs">
                   <div>
-                    <p className="font-semibold text-[#F8FAFC]">{item.name}</p>
-                    <p className="text-[10px] text-[#94A3B8] font-mono">
+                    <p className="font-medium text-[#202923]">{item.name}</p>
+                    <p className="text-[11px] text-[#6B746E] font-mono">
                       Category: {item.category} • Threshold: {item.low_stock_threshold}
                     </p>
                   </div>
-                  <div className="text-right flex items-center gap-3">
-                    <span className={`font-mono font-bold px-2 py-0.5 rounded text-[10px] ${
-                      item.stock <= 0 ? 'bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/30' : 'bg-[#F59E0B]/10 text-[#F59E0B]'
+                  <div className="text-right flex items-center gap-2.5">
+                    <span className={`px-2 py-0.5 rounded text-[11px] font-medium ${
+                      item.stock <= 0
+                        ? 'bg-[#FBEFEF] text-[#B94A48] border border-[#B94A48]/20'
+                        : 'bg-[#FDF4EB] text-[#B77932] border border-[#B77932]/20'
                     }`}>
-                      {item.stock <= 0 ? 'OUT OF STOCK' : `${item.stock} left`}
+                      {item.stock <= 0 ? 'Out of stock' : `${item.stock} left`}
                     </span>
                     <Link
                       to="/inventory"
-                      className="text-[11px] text-[#F5A524] hover:underline font-medium"
+                      className="text-xs font-medium text-[#234E42] hover:underline"
                     >
                       Restock
                     </Link>
@@ -415,85 +281,119 @@ export default function Dashboard() {
                 </div>
               ))
             ) : (
-              <div className="py-6 text-center space-y-2">
-                <CheckCircle2 className="w-8 h-8 text-[#10B981] mx-auto opacity-70" />
-                <p className="text-xs text-[#10B981] font-semibold">Inventory in Good Standing</p>
-                <p className="text-[11px] text-[#94A3B8]">All active products currently exceed safety thresholds.</p>
+              <div className="py-6 text-center space-y-1">
+                <CheckCircle2 className="w-6 h-6 text-[#347A52] mx-auto opacity-80" />
+                <p className="text-xs font-medium text-[#202923]">Inventory is healthy</p>
+                <p className="text-[11px] text-[#6B746E]">All active products exceed safety thresholds.</p>
               </div>
+            )}
+          </div>
+        </div>
+
+        {/* Best-Selling Products */}
+        <div className="surface-card p-5 space-y-3">
+          <div className="flex items-center justify-between border-b border-[#DEE3DC] pb-2.5">
+            <div>
+              <h2 className="text-base font-semibold text-[#202923]">Best-selling products</h2>
+              <p className="text-xs text-[#6B746E]">Top performers by units sold and revenue.</p>
+            </div>
+            <Link
+              to="/analytics"
+              className="text-xs font-medium text-[#234E42] hover:underline flex items-center gap-1"
+            >
+              <span>View analytics</span>
+              <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+
+          <div className="divide-y divide-[#DEE3DC]">
+            {topProducts.length > 0 ? (
+              topProducts.slice(0, 5).map((p, idx) => (
+                <div key={p.product_id || idx} className="py-2.5 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-5 h-5 rounded bg-[#F6F5F1] text-[#6B746E] font-medium text-[11px] flex items-center justify-center border border-[#DEE3DC]">
+                      {idx + 1}
+                    </span>
+                    <div>
+                      <p className="font-medium text-[#202923]">{p.name}</p>
+                      <p className="text-[11px] text-[#6B746E] font-mono">{p.units_sold} units sold</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-semibold text-[#202923]">
+                      ₹{p.total_revenue?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-xs text-[#6B746E] py-6 text-center">No product sales recorded yet.</p>
             )}
           </div>
         </div>
       </div>
 
-      {/* Recent Customer Transactions */}
-      <div className="surface-card p-6 space-y-4">
-        <div className="flex items-center justify-between">
+      {/* Recent Orders */}
+      <div className="surface-card p-5 space-y-3">
+        <div className="flex items-center justify-between border-b border-[#DEE3DC] pb-2.5">
           <div>
-            <h3 className="text-base font-bold text-[#F8FAFC]">Recent Customer Transactions</h3>
-            <p className="text-xs text-[#94A3B8]">Settled and pending orders from store and AI buyers.</p>
+            <h2 className="text-base font-semibold text-[#202923]">Recent orders</h2>
+            <p className="text-xs text-[#6B746E]">Latest completed customer orders and payments.</p>
           </div>
           <Link
             to="/orders"
-            className="text-xs text-[#F5A524] hover:text-[#D97706] font-medium flex items-center gap-1"
+            className="text-xs font-medium text-[#234E42] hover:underline flex items-center gap-1"
           >
-            <span>View All Orders</span>
+            <span>All orders</span>
             <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#1C222B] text-[#94A3B8] font-mono uppercase text-[10px] border-b border-[#2A3441]">
+            <thead className="bg-[#F6F5F1] text-[#6B746E] font-medium border-b border-[#DEE3DC]">
               <tr>
                 <th className="py-2.5 px-3">Order ID</th>
-                <th className="py-2.5 px-3">Date</th>
                 <th className="py-2.5 px-3">Customer</th>
+                <th className="py-2.5 px-3">Date</th>
                 <th className="py-2.5 px-3">Amount</th>
                 <th className="py-2.5 px-3">Payment</th>
                 <th className="py-2.5 px-3">Fulfillment</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#2A3441]">
+            <tbody className="divide-y divide-[#DEE3DC]">
               {recentOrders.length > 0 ? (
                 recentOrders.slice(0, 5).map((order) => (
-                  <tr key={order.id} className="hover:bg-[#1C222B]/50 transition">
-                    <td className="py-2.5 px-3 font-mono font-bold text-[#F5A524]">
+                  <tr key={order.id} className="hover:bg-[#F6F5F1]/60 transition-colors">
+                    <td className="py-2.5 px-3 font-mono text-[#234E42] font-medium">
                       {order.id?.slice(0, 16)}...
                     </td>
-                    <td className="py-2.5 px-3 text-[#94A3B8]">
-                      {order.created_at ? new Date(order.created_at).toLocaleDateString('en-IN') : 'Recent'}
-                    </td>
-                    <td className="py-2.5 px-3 text-[#F8FAFC]">
+                    <td className="py-2.5 px-3 text-[#202923]">
                       {order.customer_name || 'Store Customer'}
                     </td>
-                    <td className="py-2.5 px-3 font-mono font-bold text-[#F8FAFC]">
-                      ₹{order.final_amount?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    <td className="py-2.5 px-3 text-[#6B746E]">
+                      {order.created_at ? new Date(order.created_at).toLocaleDateString('en-IN') : 'Recent'}
+                    </td>
+                    <td className="py-2.5 px-3 font-semibold text-[#202923]">
+                      ₹{(order.amount ?? order.final_amount ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </td>
                     <td className="py-2.5 px-3">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                      <span className={`px-2 py-0.5 rounded text-[11px] font-medium ${
                         order.status === 'PAID'
-                          ? 'bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20'
-                          : 'bg-[#F5A524]/10 text-[#F5A524]'
+                          ? 'bg-[#EAF4EE] text-[#347A52] border border-[#B8D4C4]'
+                          : 'bg-[#FDF4EB] text-[#B77932]'
                       }`}>
                         {order.status}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
-                        order.fulfillment_status === 'DELIVERED'
-                          ? 'bg-[#10B981]/10 text-[#10B981]'
-                          : order.fulfillment_status === 'SHIPPED'
-                          ? 'bg-[#3B82F6]/10 text-[#3B82F6]'
-                          : 'bg-[#EF4444]/10 text-[#EF4444]'
-                      }`}>
-                        {order.fulfillment_status || 'UNFULFILLED'}
-                      </span>
+                    <td className="py-2.5 px-3 text-[#6B746E]">
+                      {order.fulfillment_status || 'UNFULFILLED'}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-4 text-center text-[#94A3B8]">
+                  <td colSpan={6} className="py-6 text-center text-[#6B746E]">
                     No recent orders found.
                   </td>
                 </tr>

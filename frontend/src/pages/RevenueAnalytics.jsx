@@ -3,29 +3,20 @@ import { Link } from 'react-router-dom';
 import {
   TrendingUp,
   TrendingDown,
-  BarChart3,
   DollarSign,
   ShoppingCart,
   Calendar,
-  Layers,
   RefreshCw,
   ArrowUpRight,
-  Sparkles,
-  Bot,
-  PieChart as PieChartIcon,
-  ShieldCheck,
-  CheckCircle2,
-  Percent,
-  AlertCircle,
-  HelpCircle,
   ArrowDownRight,
-  Info
+  PieChart as PieChartIcon,
+  Percent,
+  Info,
+  MessageSquare
 } from 'lucide-react';
 import {
   AreaChart,
   Area,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -38,7 +29,7 @@ import {
 } from 'recharts';
 import { getDashboardStats, getSalesPeriodComparison } from '../services/api';
 
-const PIE_COLORS = ['#F5A524', '#D97706', '#10B981', '#38BDF8', '#A855F7', '#EC4899'];
+const PIE_COLORS = ['#234E42', '#347A52', '#B8D4C4', '#6B746E', '#4D6B5E', '#A0AF9F'];
 
 export default function RevenueAnalytics() {
   const [stats, setStats] = useState(null);
@@ -95,164 +86,136 @@ export default function RevenueAnalytics() {
   const discountsGranted = revInsights.total_discounts || 0;
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-16">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2A3441] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#DEE3DC]">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono uppercase bg-[#F5A524]/10 border border-[#F5A524]/30 text-[#F5A524] px-2 py-0.5 rounded font-bold">
-              Sales Analytics
-            </span>
-            <span className="text-xs text-[#94A3B8] font-mono">100% Relational Settlement Logs</span>
-          </div>
-          <h1 className="text-2xl font-bold text-[#F8FAFC] tracking-tight">Financial & Revenue Analytics</h1>
-          <p className="text-xs text-[#94A3B8]">
-            Analyze 7-day revenue velocity curves, category contribution breakdowns, average order depth, and SKU performance.
+          <h1 className="text-2xl sm:text-[28px] font-bold text-[#202923] tracking-tight">
+            Sales analytics
+          </h1>
+          <p className="text-sm text-[#6B746E] mt-0.5">
+            Financial reporting, sequential period deltas, and category distribution.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
+        <div className="flex items-center gap-2">
           <button
             onClick={fetchAnalytics}
             disabled={loading}
-            className="px-3.5 py-2 rounded-xl bg-[#1C222B] hover:bg-[#242D38] border border-[#2A3441] text-[#94A3B8] hover:text-[#F8FAFC] text-xs font-medium flex items-center gap-1.5 transition disabled:opacity-50"
+            className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-[#6B746E] ${loading ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
           </button>
           <Link
             to="/copilot"
-            state={{ prefilledQuery: 'What is our total revenue, completed order count, and average order value?' }}
-            className="px-4 py-2 rounded-xl bg-[#F5A524] hover:bg-[#D97706] text-black font-semibold text-xs transition flex items-center gap-1.5 shadow-amber-glow"
+            state={{ prefilledQuery: 'Compare our sales performance over the last 7 days' }}
+            className="px-3.5 py-1.5 rounded-md bg-[#234E42] hover:bg-[#1B3D34] text-white font-medium text-xs transition-colors shadow-xs flex items-center gap-1.5"
           >
-            <Bot className="w-4 h-4" />
+            <MessageSquare className="w-3.5 h-3.5" />
             <span>Ask Copilot</span>
           </Link>
         </div>
       </div>
 
-      {/* 4 Financial KPI Metric Cards */}
+      {/* 4 Financial KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="surface-card p-5 space-y-1">
-          <div className="flex items-center justify-between text-[#94A3B8] text-xs">
-            <span className="uppercase font-mono text-[10px]">Total Settled Revenue</span>
-            <DollarSign className="w-4 h-4 text-[#F5A524]" />
-          </div>
-          <p className="text-2xl font-black text-[#F8FAFC]">
+        <div className="surface-card p-4 space-y-1">
+          <span className="text-xs font-medium text-[#6B746E]">Total settled revenue</span>
+          <p className="text-2xl font-bold text-[#202923] tracking-tight">
             {loading ? '...' : `₹${totalRevenue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
           </p>
-          <span className="text-[11px] text-[#10B981] flex items-center gap-1 font-mono">
-            <TrendingUp className="w-3 h-3" />
-            PostgreSQL Paid Ledgers
-          </span>
+          <p className="text-[12px] text-[#6B746E]">
+            Verified ledger transactions
+          </p>
         </div>
 
-        <div className="surface-card p-5 space-y-1">
-          <div className="flex items-center justify-between text-[#94A3B8] text-xs">
-            <span className="uppercase font-mono text-[10px]">Completed Orders</span>
-            <ShoppingCart className="w-4 h-4 text-[#F5A524]" />
-          </div>
-          <p className="text-2xl font-black text-[#F8FAFC]">
+        <div className="surface-card p-4 space-y-1">
+          <span className="text-xs font-medium text-[#6B746E]">Completed orders</span>
+          <p className="text-2xl font-bold text-[#202923] tracking-tight">
             {loading ? '...' : totalOrders}
           </p>
-          <span className="text-[11px] text-[#94A3B8] font-mono">
-            Paid & verified transactions
-          </span>
+          <p className="text-[12px] text-[#6B746E]">
+            Store & shopping assistant checkouts
+          </p>
         </div>
 
-        <div className="surface-card p-5 space-y-1">
-          <div className="flex items-center justify-between text-[#94A3B8] text-xs">
-            <span className="uppercase font-mono text-[10px]">Average Order Value (AOV)</span>
-            <Sparkles className="w-4 h-4 text-[#F5A524]" />
-          </div>
-          <p className="text-2xl font-black text-[#F8FAFC]">
+        <div className="surface-card p-4 space-y-1">
+          <span className="text-xs font-medium text-[#6B746E]">Average order value</span>
+          <p className="text-2xl font-bold text-[#202923] tracking-tight">
             {loading ? '...' : `₹${aov.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
           </p>
-          <span className="text-[11px] text-[#94A3B8] font-mono">
-            Revenue per transaction
-          </span>
+          <p className="text-[12px] text-[#6B746E]">
+            Basket-weighted average
+          </p>
         </div>
 
-        <div className="surface-card p-5 space-y-1">
-          <div className="flex items-center justify-between text-[#94A3B8] text-xs">
-            <span className="uppercase font-mono text-[10px]">Promotional Discounts</span>
-            <Percent className="w-4 h-4 text-[#10B981]" />
-          </div>
-          <p className="text-2xl font-black text-[#10B981]">
+        <div className="surface-card p-4 space-y-1">
+          <span className="text-xs font-medium text-[#6B746E]">Promotional discounts</span>
+          <p className="text-2xl font-bold text-[#347A52] tracking-tight">
             {loading ? '...' : `₹${discountsGranted.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
           </p>
-          <span className="text-[11px] text-[#10B981] font-mono">
-            Policy Compliant (≤ 10% limit)
-          </span>
+          <p className="text-[12px] text-[#6B746E]">
+            Policy compliant (≤ 10% ceiling)
+          </p>
         </div>
       </div>
 
-      {/* Period-over-Period Sales Performance Intelligence */}
-      <div className="surface-card p-6 space-y-5 border border-[#F5A524]/20">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#2A3441] pb-4">
+      {/* Period-over-Period Performance Intelligence */}
+      <div className="surface-card p-5 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#DEE3DC] pb-3">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-mono uppercase bg-[#F5A524]/10 border border-[#F5A524]/30 text-[#F5A524] px-2 py-0.5 rounded font-bold">
-                Period Comparison Intelligence
-              </span>
-              <span className="text-xs text-[#94A3B8] font-mono">
-                Current {periodDays} Days vs Previous {periodDays} Days
-              </span>
-            </div>
-            <h3 className="text-lg font-bold text-[#F8FAFC]">Sales Velocity & Growth Attribution</h3>
-            <p className="text-xs text-[#94A3B8]">
-              Empirical deltas across sequential calendar windows. Distinguishes statistical correlation from unverified causation.
+            <h2 className="text-base font-semibold text-[#202923]">Period-over-period sales performance</h2>
+            <p className="text-xs text-[#6B746E]">
+              Current {periodDays} days vs previous {periodDays} days. Empirical statistical deltas from database records.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-[#94A3B8] font-mono">Window:</span>
-            <div className="bg-[#151A21] p-1 rounded-xl border border-[#2A3441] flex items-center gap-1">
-              <button
-                onClick={() => handlePeriodChange(7)}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
-                  periodDays === 7
-                    ? 'bg-[#F5A524] text-black shadow'
-                    : 'text-[#94A3B8] hover:text-[#F8FAFC]'
-                }`}
-              >
-                7-Day Window
-              </button>
-              <button
-                onClick={() => handlePeriodChange(30)}
-                className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
-                  periodDays === 30
-                    ? 'bg-[#F5A524] text-black shadow'
-                    : 'text-[#94A3B8] hover:text-[#F8FAFC]'
-                }`}
-              >
-                30-Day Window
-              </button>
-            </div>
+          <div className="flex items-center gap-1.5 bg-[#F6F5F1] p-1 rounded-md border border-[#DEE3DC]">
+            <button
+              onClick={() => handlePeriodChange(7)}
+              className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                periodDays === 7
+                  ? 'bg-white text-[#234E42] font-semibold shadow-xs'
+                  : 'text-[#6B746E] hover:text-[#202923]'
+              }`}
+            >
+              7-Day window
+            </button>
+            <button
+              onClick={() => handlePeriodChange(30)}
+              className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                periodDays === 30
+                  ? 'bg-white text-[#234E42] font-semibold shadow-xs'
+                  : 'text-[#6B746E] hover:text-[#202923]'
+              }`}
+            >
+              30-Day window
+            </button>
           </div>
         </div>
 
         {loadingComparison ? (
-          <div className="py-8 text-center text-xs text-[#94A3B8] flex items-center justify-center gap-2">
-            <RefreshCw className="w-4 h-4 animate-spin text-[#F5A524]" />
-            <span>Computing period deltas...</span>
+          <div className="py-8 text-center text-xs text-[#6B746E] flex items-center justify-center gap-2">
+            <RefreshCw className="w-4 h-4 animate-spin text-[#234E42]" />
+            <span>Calculating period deltas...</span>
           </div>
         ) : periodComparison ? (
           <div className="space-y-4">
-            {/* 3 Comparison KPI Cards */}
+            {/* 3 Comparison Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Revenue Growth Card */}
-              <div className="p-4 rounded-xl bg-[#151A21] border border-[#2A3441] space-y-2">
-                <span className="text-[10px] font-mono uppercase text-[#94A3B8]">Revenue Shift</span>
+              {/* Revenue Growth */}
+              <div className="p-3.5 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC] space-y-1.5">
+                <span className="text-xs font-medium text-[#6B746E]">Revenue shift</span>
                 <div className="flex items-baseline justify-between">
-                  <span className="text-xl font-black text-[#F8FAFC]">
+                  <span className="text-xl font-bold text-[#202923]">
                     ₹{periodComparison.current_period?.revenue?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </span>
                   <span
-                    className={`text-xs font-bold font-mono flex items-center gap-0.5 px-2 py-0.5 rounded ${
+                    className={`text-xs font-semibold flex items-center gap-0.5 px-2 py-0.5 rounded ${
                       (periodComparison.growth?.revenue_change_abs ?? 0) >= 0
-                        ? 'bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20'
-                        : 'bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/20'
+                        ? 'bg-[#EAF4EE] text-[#347A52]'
+                        : 'bg-[#FBEFEF] text-[#B94A48]'
                     }`}
                   >
                     {(periodComparison.growth?.revenue_change_abs ?? 0) >= 0 ? (
@@ -264,9 +227,9 @@ export default function RevenueAnalytics() {
                     {periodComparison.growth?.revenue_growth_pct}%
                   </span>
                 </div>
-                <div className="text-[11px] text-[#94A3B8] flex justify-between border-t border-[#2A3441] pt-1.5 font-mono">
+                <div className="text-[11px] text-[#6B746E] flex justify-between border-t border-[#DEE3DC] pt-1">
                   <span>Prev {periodDays}d: ₹{periodComparison.previous_period?.revenue?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                  <span className="text-[#F8FAFC]">
+                  <span className="font-medium text-[#202923]">
                     {periodComparison.growth?.revenue_change_abs >= 0 ? '+' : ''}
                     ₹{periodComparison.growth?.revenue_change_abs?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </span>
@@ -274,53 +237,53 @@ export default function RevenueAnalytics() {
               </div>
 
               {/* Order Volume Shift */}
-              <div className="p-4 rounded-xl bg-[#151A21] border border-[#2A3441] space-y-2">
-                <span className="text-[10px] font-mono uppercase text-[#94A3B8]">Order Volume Shift</span>
+              <div className="p-3.5 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC] space-y-1.5">
+                <span className="text-xs font-medium text-[#6B746E]">Order volume</span>
                 <div className="flex items-baseline justify-between">
-                  <span className="text-xl font-black text-[#F8FAFC]">
+                  <span className="text-xl font-bold text-[#202923]">
                     {periodComparison.current_period?.orders_count} orders
                   </span>
                   <span
-                    className={`text-xs font-bold font-mono flex items-center gap-0.5 px-2 py-0.5 rounded ${
+                    className={`text-xs font-semibold flex items-center gap-0.5 px-2 py-0.5 rounded ${
                       (periodComparison.growth?.orders_change_abs ?? 0) >= 0
-                        ? 'bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20'
-                        : 'bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/20'
+                        ? 'bg-[#EAF4EE] text-[#347A52]'
+                        : 'bg-[#FBEFEF] text-[#B94A48]'
                     }`}
                   >
                     {periodComparison.growth?.orders_growth_pct > 0 ? '+' : ''}
                     {periodComparison.growth?.orders_growth_pct}%
                   </span>
                 </div>
-                <div className="text-[11px] text-[#94A3B8] flex justify-between border-t border-[#2A3441] pt-1.5 font-mono">
+                <div className="text-[11px] text-[#6B746E] flex justify-between border-t border-[#DEE3DC] pt-1">
                   <span>Prev {periodDays}d: {periodComparison.previous_period?.orders_count} orders</span>
-                  <span className="text-[#F8FAFC]">
+                  <span className="font-medium text-[#202923]">
                     {periodComparison.growth?.orders_change_abs >= 0 ? '+' : ''}
                     {periodComparison.growth?.orders_change_abs} orders
                   </span>
                 </div>
               </div>
 
-              {/* AOV Shift */}
-              <div className="p-4 rounded-xl bg-[#151A21] border border-[#2A3441] space-y-2">
-                <span className="text-[10px] font-mono uppercase text-[#94A3B8]">AOV Trajectory</span>
+              {/* AOV Trajectory */}
+              <div className="p-3.5 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC] space-y-1.5">
+                <span className="text-xs font-medium text-[#6B746E]">Average order depth</span>
                 <div className="flex items-baseline justify-between">
-                  <span className="text-xl font-black text-[#F5A524]">
+                  <span className="text-xl font-bold text-[#202923]">
                     ₹{periodComparison.current_period?.aov?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </span>
                   <span
-                    className={`text-xs font-bold font-mono flex items-center gap-0.5 px-2 py-0.5 rounded ${
+                    className={`text-xs font-semibold flex items-center gap-0.5 px-2 py-0.5 rounded ${
                       (periodComparison.growth?.aov_change_abs ?? 0) >= 0
-                        ? 'bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20'
-                        : 'bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/20'
+                        ? 'bg-[#EAF4EE] text-[#347A52]'
+                        : 'bg-[#FBEFEF] text-[#B94A48]'
                     }`}
                   >
                     {periodComparison.growth?.aov_growth_pct > 0 ? '+' : ''}
                     {periodComparison.growth?.aov_growth_pct}%
                   </span>
                 </div>
-                <div className="text-[11px] text-[#94A3B8] flex justify-between border-t border-[#2A3441] pt-1.5 font-mono">
+                <div className="text-[11px] text-[#6B746E] flex justify-between border-t border-[#DEE3DC] pt-1">
                   <span>Prev {periodDays}d: ₹{periodComparison.previous_period?.aov?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                  <span className="text-[#F8FAFC]">
+                  <span className="font-medium text-[#202923]">
                     {periodComparison.growth?.aov_change_abs >= 0 ? '+' : ''}
                     ₹{periodComparison.growth?.aov_change_abs?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </span>
@@ -330,77 +293,73 @@ export default function RevenueAnalytics() {
 
             {/* Product Gainers & Decliners Matrix */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-              {/* Top Gainers */}
-              <div className="p-4 rounded-xl bg-[#151A21] border border-[#2A3441] space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#10B981] uppercase font-mono flex items-center gap-1.5">
+              {/* Gainers */}
+              <div className="p-3.5 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC] space-y-2">
+                <div className="flex items-center justify-between border-b border-[#DEE3DC] pb-1.5">
+                  <span className="text-xs font-semibold text-[#347A52] flex items-center gap-1.5">
                     <TrendingUp className="w-3.5 h-3.5" />
-                    Top Growth Drivers (Gainers)
+                    Top growth drivers (gainers)
                   </span>
-                  <span className="text-[10px] text-[#94A3B8] font-mono">Current vs Prev</span>
+                  <span className="text-[11px] text-[#6B746E]">vs previous period</span>
                 </div>
-                <div className="divide-y divide-[#2A3441]">
+                <div className="divide-y divide-[#DEE3DC]">
                   {(periodComparison.top_gainers || []).length > 0 ? (
                     periodComparison.top_gainers.map((g, i) => (
                       <div key={i} className="py-2 flex items-center justify-between text-xs">
                         <div>
-                          <p className="font-semibold text-[#F8FAFC]">{g.name}</p>
-                          <p className="text-[10px] text-[#94A3B8] font-mono">+{g.units_change} units change</p>
+                          <p className="font-medium text-[#202923]">{g.name}</p>
+                          <p className="text-[11px] text-[#6B746E]">+{g.units_change} units change</p>
                         </div>
-                        <div className="text-right">
-                          <span className="font-bold text-[#10B981] font-mono block">
-                            +₹{g.sales_change?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                          </span>
-                        </div>
+                        <span className="font-semibold text-[#347A52]">
+                          +₹{g.sales_change?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        </span>
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-[#94A3B8] py-3">No significant gainers detected in this window.</p>
+                    <p className="text-xs text-[#6B746E] py-2">No significant gainers in this window.</p>
                   )}
                 </div>
               </div>
 
-              {/* Top Decliners */}
-              <div className="p-4 rounded-xl bg-[#151A21] border border-[#2A3441] space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-[#EF4444] uppercase font-mono flex items-center gap-1.5">
+              {/* Decliners */}
+              <div className="p-3.5 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC] space-y-2">
+                <div className="flex items-center justify-between border-b border-[#DEE3DC] pb-1.5">
+                  <span className="text-xs font-semibold text-[#B94A48] flex items-center gap-1.5">
                     <TrendingDown className="w-3.5 h-3.5" />
-                    Top Laggards (Decliners)
+                    Top declining products (laggards)
                   </span>
-                  <span className="text-[10px] text-[#94A3B8] font-mono">Current vs Prev</span>
+                  <span className="text-[11px] text-[#6B746E]">vs previous period</span>
                 </div>
-                <div className="divide-y divide-[#2A3441]">
+                <div className="divide-y divide-[#DEE3DC]">
                   {(periodComparison.top_decliners || []).length > 0 ? (
                     periodComparison.top_decliners.map((d, i) => (
                       <div key={i} className="py-2 flex items-center justify-between text-xs">
                         <div>
-                          <p className="font-semibold text-[#F8FAFC]">{d.name}</p>
-                          <p className="text-[10px] text-[#94A3B8] font-mono">{d.units_change} units change</p>
+                          <p className="font-medium text-[#202923]">{d.name}</p>
+                          <p className="text-[11px] text-[#6B746E]">{d.units_change} units change</p>
                         </div>
-                        <div className="text-right">
-                          <span className="font-bold text-[#EF4444] font-mono block">
-                            -₹{Math.abs(d.sales_change || 0)?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                          </span>
-                        </div>
+                        <span className="font-semibold text-[#B94A48]">
+                          -₹{Math.abs(d.sales_change || 0)?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        </span>
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-[#94A3B8] py-3">No significant decliners detected in this window.</p>
+                    <p className="text-xs text-[#6B746E] py-2">No significant decliners in this window.</p>
                   )}
                 </div>
               </div>
             </div>
 
             {/* Correlation vs Causation Advisory */}
-            <div className="p-3.5 rounded-xl bg-[#1C222B] border border-[#F5A524]/30 text-xs flex items-start gap-3">
-              <Info className="w-4 h-4 text-[#F5A524] shrink-0 mt-0.5" />
-              <div className="space-y-1">
-                <span className="font-mono font-bold text-[#F5A524] text-[10px] uppercase block">
+            <div className="p-3 rounded-lg bg-white border border-[#DEE3DC] text-xs flex items-start gap-2.5">
+              <Info className="w-4 h-4 text-[#234E42] shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <span className="font-semibold text-[#202923] text-xs block">
                   Methodology & Causality Advisory
                 </span>
-                <p className="text-[#CBD5E1] text-[11px] leading-relaxed">
+                <p className="text-[#6B746E] text-[12px] leading-relaxed">
                   {periodComparison.causality_note ||
-                    'Observed sales deltas represent empirical correlations calculated directly from completed PostgreSQL transactions. External marketing campaigns, seasonal shifts, or inventory depletion may correlate with these numbers without being the sole proven cause.'}
+                    'Observed sales deltas represent empirical correlations calculated directly from completed database transactions. External marketing campaigns or inventory stockouts may correlate with these numbers without being the sole proven cause.'}
                 </p>
               </div>
             </div>
@@ -408,65 +367,65 @@ export default function RevenueAnalytics() {
         ) : null}
       </div>
 
-      {/* 7-Day Revenue Trend Chart */}
-      <div className="surface-card p-6 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      {/* 7-Day Revenue Velocity Chart */}
+      <div className="surface-card p-5 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#DEE3DC] pb-3">
           <div>
-            <h3 className="text-base font-bold text-[#F8FAFC]">Daily Revenue Velocity Curve</h3>
-            <p className="text-xs text-[#94A3B8]">
-              Daily completed order volume and settled rupee amounts over the past 7 days.
-            </p>
+            <h2 className="text-base font-semibold text-[#202923]">Daily sales trend</h2>
+            <p className="text-xs text-[#6B746E]">Daily completed order revenue across the trailing 7 days.</p>
           </div>
-          <div className="flex items-center gap-2 text-xs font-mono text-[#94A3B8]">
-            <Calendar className="w-3.5 h-3.5 text-[#F5A524]" />
-            <span>7-Day Trailing Window</span>
+          <div className="flex items-center gap-1.5 text-xs text-[#6B746E]">
+            <Calendar className="w-3.5 h-3.5 text-[#234E42]" />
+            <span className="font-medium text-[#202923]">Trailing 7 days</span>
           </div>
         </div>
 
         <div className="h-64 w-full">
           {loading ? (
-            <div className="h-full flex items-center justify-center text-xs text-[#94A3B8]">
-              Loading revenue velocity chart...
+            <div className="h-full flex items-center justify-center text-xs text-[#6B746E]">
+              Loading chart data...
             </div>
           ) : trendData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trendData}>
+              <AreaChart data={trendData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#F5A524" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#F5A524" stopOpacity={0.0} />
+                  <linearGradient id="colorRevMuted" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#234E42" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#234E42" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#2A3441" />
-                <XAxis dataKey="day" stroke="#94A3B8" fontSize={11} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E8ECE6" vertical={false} />
+                <XAxis dataKey="day" stroke="#6B746E" fontSize={11} tickLine={false} axisLine={{ stroke: '#DEE3DC' }} />
                 <YAxis
-                  stroke="#94A3B8"
+                  stroke="#6B746E"
                   fontSize={11}
                   tickLine={false}
+                  axisLine={false}
                   tickFormatter={(val) => `₹${(val / 1000).toFixed(0)}k`}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#151A21',
-                    borderColor: '#2A3441',
-                    borderRadius: '0.75rem',
-                    color: '#F8FAFC',
-                    fontSize: '12px'
+                    backgroundColor: '#FFFFFF',
+                    borderColor: '#DEE3DC',
+                    borderRadius: '8px',
+                    color: '#202923',
+                    fontSize: '12px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.06)'
                   }}
                   formatter={(val) => [`₹${val.toLocaleString('en-IN')}`, 'Settled Revenue']}
                 />
                 <Area
                   type="monotone"
                   dataKey="revenue"
-                  stroke="#F5A524"
+                  stroke="#234E42"
                   strokeWidth={2}
                   fillOpacity={1}
-                  fill="url(#colorRev)"
+                  fill="url(#colorRevMuted)"
                 />
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-full flex items-center justify-center text-xs text-[#94A3B8]">
+            <div className="h-full flex items-center justify-center text-xs text-[#6B746E]">
               No paid transactions recorded in this period yet.
             </div>
           )}
@@ -475,14 +434,14 @@ export default function RevenueAnalytics() {
 
       {/* Two Column Grid: Category Breakdown & Top Products */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Category Revenue Distribution */}
-        <div className="surface-card p-6 space-y-4">
-          <div className="flex items-center justify-between">
+        {/* Category Contribution */}
+        <div className="surface-card p-5 space-y-3">
+          <div className="flex items-center justify-between border-b border-[#DEE3DC] pb-2.5">
             <div>
-              <h3 className="text-base font-bold text-[#F8FAFC]">Category Contribution</h3>
-              <p className="text-xs text-[#94A3B8]">Revenue distribution across published hardware departments.</p>
+              <h2 className="text-base font-semibold text-[#202923]">Category distribution</h2>
+              <p className="text-xs text-[#6B746E]">Revenue distribution across published departments.</p>
             </div>
-            <PieChartIcon className="w-4 h-4 text-[#F5A524]" />
+            <PieChartIcon className="w-4 h-4 text-[#234E42]" />
           </div>
 
           <div className="h-64 w-full">
@@ -495,7 +454,7 @@ export default function RevenueAnalytics() {
                     cy="50%"
                     innerRadius={55}
                     outerRadius={85}
-                    paddingAngle={4}
+                    paddingAngle={3}
                     dataKey="value"
                   >
                     {categoryData.map((entry, index) => (
@@ -504,10 +463,10 @@ export default function RevenueAnalytics() {
                   </Pie>
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#151A21',
-                      borderColor: '#2A3441',
-                      borderRadius: '0.75rem',
-                      color: '#F8FAFC',
+                      backgroundColor: '#FFFFFF',
+                      borderColor: '#DEE3DC',
+                      borderRadius: '8px',
+                      color: '#202923',
                       fontSize: '12px'
                     }}
                     formatter={(val) => [`₹${val.toLocaleString('en-IN')}`, 'Revenue']}
@@ -515,51 +474,50 @@ export default function RevenueAnalytics() {
                   <Legend
                     verticalAlign="bottom"
                     iconType="circle"
-                    formatter={(val) => <span className="text-xs text-[#94A3B8]">{val}</span>}
+                    formatter={(val) => <span className="text-xs text-[#6B746E]">{val}</span>}
                   />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-xs text-[#94A3B8]">
-                Category revenue distribution calculating...
+              <div className="h-full flex items-center justify-center text-xs text-[#6B746E]">
+                Category distribution calculating...
               </div>
             )}
           </div>
         </div>
 
-        {/* Best Selling SKUs */}
-        <div className="surface-card p-6 space-y-4">
-          <div className="flex items-center justify-between">
+        {/* Best-Selling SKUs */}
+        <div className="surface-card p-5 space-y-3">
+          <div className="flex items-center justify-between border-b border-[#DEE3DC] pb-2.5">
             <div>
-              <h3 className="text-base font-bold text-[#F8FAFC]">Best-Selling Hardware SKUs</h3>
-              <p className="text-xs text-[#94A3B8]">Ranked by total units sold across paid transactions.</p>
+              <h2 className="text-base font-semibold text-[#202923]">Best-selling products</h2>
+              <p className="text-xs text-[#6B746E]">Ranked by total units sold across paid transactions.</p>
             </div>
-            <TrendingUp className="w-4 h-4 text-[#10B981]" />
+            <TrendingUp className="w-4 h-4 text-[#347A52]" />
           </div>
 
-          <div className="divide-y divide-[#2A3441]">
+          <div className="divide-y divide-[#DEE3DC]">
             {topProducts.length > 0 ? (
               topProducts.slice(0, 5).map((p, idx) => (
-                <div key={p.product_id || idx} className="py-3 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-lg bg-[#1C222B] border border-[#2A3441] flex items-center justify-center font-mono font-bold text-xs text-[#F5A524]">
+                <div key={p.product_id || idx} className="py-2.5 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-5 h-5 rounded bg-[#F6F5F1] text-[#6B746E] font-medium text-[11px] flex items-center justify-center border border-[#DEE3DC]">
                       {idx + 1}
                     </span>
                     <div>
-                      <p className="font-semibold text-[#F8FAFC]">{p.name}</p>
-                      <p className="text-[10px] text-[#94A3B8] font-mono">
-                        Category: {p.category} • SKU: {p.product_id}
+                      <p className="font-medium text-[#202923]">{p.name}</p>
+                      <p className="text-[11px] text-[#6B746E] font-mono">
+                        {p.category} • {p.units_sold} units sold
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-[#F8FAFC]">₹{p.total_revenue?.toLocaleString('en-IN')}</p>
-                    <p className="text-[10px] text-[#10B981] font-mono">{p.units_sold} units sold</p>
+                    <p className="font-semibold text-[#202923]">₹{p.total_revenue?.toLocaleString('en-IN')}</p>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-xs text-[#94A3B8] py-8 text-center">No settled product sales recorded yet.</p>
+              <p className="text-xs text-[#6B746E] py-6 text-center">No product sales recorded yet.</p>
             )}
           </div>
         </div>

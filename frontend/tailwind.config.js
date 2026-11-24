@@ -7,40 +7,56 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Required Palette
-        surface: {
-          primary: '#0B0F14',    // Primary background
-          secondary: '#151A21',  // Secondary background
-          card: '#1C222B',       // Card background
-          border: '#2A3441',     // Clean subtle border
-          hover: '#242D38',      // Interactive hover
+        // MerchantPilot Clean Commercial Palette (Stripe/Shopify/Linear inspired)
+        bg: {
+          main: '#F6F5F1',
+          surface: '#FFFFFF',
+          sidebar: '#EAEDE7',
+          hover: '#F0F3ED',
         },
-        accent: {
-          amber: '#F5A524',      // Primary warm amber
-          copper: '#D97706',     // Secondary copper
-          amberLight: '#FDE68A',
-          amberDark: '#B45309',
+        brand: {
+          primary: '#234E42',   // Forest green
+          hover: '#1B3D34',     // Dark forest green
+          accent: '#B8D4C4',    // Soft sage accent
+          light: '#EBF4EF',     // Pale sage tinted background
         },
         content: {
-          primary: '#F8FAFC',    // Main text
-          secondary: '#94A3B8',  // Secondary text
-          muted: '#64748B',      // Muted text
+          primary: '#202923',   // Primary text
+          secondary: '#6B746E', // Muted secondary text
+          muted: '#8E9891',     // Supporting/tertiary text
+        },
+        border: {
+          DEFAULT: '#DEE3DC',   // Crisp clean border
+          subtle: '#E8ECE6',
+          strong: '#C5CDC2',
         },
         status: {
-          success: '#10B981',    // Emerald success
-          error: '#EF4444',      // Red error
-          warning: '#F59E0B',    // Amber warning
-          info: '#38BDF8',       // Sky info
+          success: '#347A52',
+          successBg: '#EAF4EE',
+          warning: '#B77932',
+          warningBg: '#FDF4EB',
+          error: '#B94A48',
+          errorBg: '#FBEFEF',
         }
       },
       fontFamily: {
-        sans: ['Inter', 'Plus Jakarta Sans', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+      },
+      borderRadius: {
+        'xs': '4px',
+        'sm': '6px',
+        'DEFAULT': '8px',
+        'md': '8px',
+        'lg': '10px',
+        'xl': '12px',
       },
       boxShadow: {
-        'subtle': '0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.4)',
-        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5)',
-        'amber-glow': '0 0 20px -3px rgba(245, 165, 36, 0.25)',
+        'xs': '0 1px 2px rgba(0, 0, 0, 0.03)',
+        'sm': '0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03)',
+        'card': '0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)',
+        'card-hover': '0 4px 12px rgba(35, 78, 66, 0.08), 0 1px 3px rgba(0, 0, 0, 0.03)',
+        'modal': '0 12px 32px -4px rgba(32, 41, 35, 0.15), 0 4px 12px -2px rgba(32, 41, 35, 0.08)',
       }
     },
   },

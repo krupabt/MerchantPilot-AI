@@ -12,103 +12,95 @@ export default function ApprovalGateModal({
   if (!isOpen || !offer) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-[#111827] border border-gray-700/80 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in">
+      <div className="bg-white border border-[#DEE3DC] rounded-xl max-w-lg w-full p-6 shadow-xl space-y-4">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400">
+            <div className="h-10 w-10 rounded-lg bg-[#EAEDE7] border border-[#DEE3DC] flex items-center justify-center text-[#234E42] shadow-xs">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Merchant Approval Gate</h3>
-              <p className="text-xs text-gray-400">Deterministic Financial Pre-Settlement Check</p>
+              <h3 className="text-base font-semibold text-[#202923]">Merchant Approval Gate</h3>
+              <p className="text-xs text-[#6B746E]">Deterministic Financial Pre-Settlement Check</p>
             </div>
           </div>
           <button
             onClick={onClose}
             disabled={loading}
-            className="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-800 transition"
+            className="text-[#6B746E] hover:text-[#202923] p-1 rounded-lg hover:bg-[#F6F5F1] transition"
           >
             <XCircle className="w-5 h-5" />
           </button>
         </div>
 
         {/* Item Breakdown */}
-        <div className="bg-gray-900/60 rounded-xl p-4 border border-gray-800 space-y-3">
-          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+        <div className="bg-[#F6F5F1] rounded-lg p-3.5 border border-[#DEE3DC] space-y-2.5">
+          <div className="text-xs font-semibold text-[#6B746E] uppercase tracking-wider font-mono">
             Cart Items & AI Bundle Breakdown
           </div>
-          <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+          <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
             {offer.items?.map((item, idx) => (
-              <div key={idx} className="flex items-center justify-between text-sm">
-                <span className="text-gray-200 truncate max-w-[260px]">
+              <div key={idx} className="flex items-center justify-between text-xs">
+                <span className="text-[#202923] truncate max-w-[240px]">
                   {item.quantity}x {item.name || item.product_name}
                 </span>
-                <span className="font-mono text-gray-300">₹{(item.total_price || item.unit_price || 0).toLocaleString('en-IN')}</span>
+                <span className="font-mono text-[#202923] font-medium">₹{(item.total_price || item.unit_price || 0).toLocaleString('en-IN')}</span>
               </div>
             ))}
           </div>
 
-          <div className="border-t border-gray-800 pt-3 space-y-1.5 text-sm">
-            <div className="flex justify-between text-gray-400">
+          <div className="border-t border-[#DEE3DC] pt-2.5 space-y-1 text-xs">
+            <div className="flex justify-between text-[#6B746E]">
               <span>Catalog Subtotal:</span>
-              <span className="font-mono">₹{offer.original_total?.toLocaleString('en-IN')}</span>
+              <span className="font-mono text-[#202923]">₹{offer.original_total?.toLocaleString('en-IN')}</span>
             </div>
-            <div className="flex justify-between text-emerald-400 font-medium">
+            <div className="flex justify-between text-[#347A52] font-medium">
               <span className="flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5" />
-                AI Bounded Discount ({offer.discount_percentage}%):
+                <span>AI Bundle Discount:</span>
               </span>
-              <span className="font-mono">-₹{offer.discount_amount?.toLocaleString('en-IN')}</span>
+              <span className="font-mono">-₹{offer.discount_amount?.toLocaleString('en-IN')} ({offer.discount_percentage || 0}%)</span>
             </div>
-            <div className="flex justify-between text-white font-bold text-base pt-2 border-t border-gray-800">
+            <div className="flex justify-between text-sm font-semibold text-[#202923] pt-1.5 border-t border-[#DEE3DC]">
               <span>Final Payable Amount:</span>
-              <span className="font-mono text-blue-400 text-lg">₹{offer.final_amount?.toLocaleString('en-IN')}</span>
+              <span className="font-mono text-[#234E42]">₹{offer.final_amount?.toLocaleString('en-IN')}</span>
             </div>
           </div>
         </div>
 
         {/* Policy Verification Badge */}
-        <div className="bg-emerald-950/20 border border-emerald-500/30 rounded-xl p-3.5 flex items-start gap-3">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-          <div className="text-xs space-y-1">
-            <div className="font-semibold text-emerald-300">Policy Engine Verification: PASSED</div>
-            <p className="text-gray-300 leading-relaxed">
-              Requested discount of {offer.discount_percentage}% is strictly within the configured merchant ceiling of{' '}
-              {policyEvaluation?.max_discount_percentage || 10.0}%.
-            </p>
-            {policyEvaluation?.approval_token && (
-              <div className="font-mono text-[10px] text-emerald-400/80 pt-1">
-                Token: {policyEvaluation.approval_token}
-              </div>
-            )}
+        <div className="p-3 rounded-lg bg-[#EAEDE7]/60 border border-[#DEE3DC] flex items-center justify-between text-xs">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-[#347A52]" />
+            <span className="text-[#202923] font-medium">Guardrail Policy Evaluated</span>
           </div>
+          <span className="font-mono text-[#347A52] bg-white border border-[#DEE3DC] px-2 py-0.5 rounded text-[11px] font-semibold">
+            PASSED (≤10%)
+          </span>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-3 pt-2">
+        {/* Actions */}
+        <div className="flex items-center justify-end gap-2.5 pt-2">
           <button
-            type="button"
             onClick={onClose}
             disabled={loading}
-            className="flex-1 px-4 py-2.5 rounded-xl border border-gray-700 bg-gray-800/80 text-gray-300 hover:bg-gray-800 hover:text-white font-medium text-sm transition"
+            className="px-3.5 py-2 rounded-lg bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs font-medium transition"
           >
-            Cancel Action
+            Cancel
           </button>
           <button
-            type="button"
             onClick={onApprove}
             disabled={loading}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold text-sm shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition disabled:opacity-50"
+            className="px-4 py-2 rounded-lg bg-[#234E42] hover:bg-[#1c3f35] text-white text-xs font-medium transition shadow-xs flex items-center gap-2 disabled:opacity-50"
           >
             {loading ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span>Registering Order...</span>
             ) : (
               <>
-                <Lock className="w-4 h-4" />
-                <span>Approve & Pay</span>
-                <ArrowRight className="w-4 h-4" />
+                <Lock className="w-3.5 h-3.5" />
+                <span>Authorize & Proceed</span>
+                <ArrowRight className="w-3.5 h-3.5" />
               </>
             )}
           </button>

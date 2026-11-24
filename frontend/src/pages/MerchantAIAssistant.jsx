@@ -1,35 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import {
-  Bot,
   Send,
-  Sparkles,
+  MessageSquare,
+  Plus,
+  RefreshCw,
   TrendingUp,
   AlertTriangle,
-  Layers,
-  Database,
-  CheckCircle2,
-  HelpCircle,
-  BarChart3,
   Package,
+  Layers,
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  Database,
+  HelpCircle,
   Clock,
   ArrowUpRight,
-  Lightbulb,
-  Truck,
-  Zap
+  Sparkles
 } from 'lucide-react';
 import { postMerchantAIAssistant } from '../services/api';
+import MarkdownText from '../components/MarkdownText';
 
-const PRESET_QUERIES = [
-  'Which products are low in stock?',
-  'Compare our sales performance over the last 7 days',
-  'What is our stock runway and replenishment requirements?',
-  'What were my best-selling products?',
+const STARTER_QUESTIONS = [
+  'How did my business perform this month?',
+  'Which products need restocking?',
   'What products are slow-moving or dead stock?',
+  'What products should I bundle together?',
   'What is our total revenue & average order value?',
   'How many orders are unfulfilled or pending?',
-  'What products are frequently bought together?',
-  'Give me proactive action recommendations to protect revenue'
+  'Give me recommended actions to protect revenue'
+];
+
+const TOPIC_PRESETS = [
+  { label: 'Sales performance', query: 'Compare our sales performance over the last 7 days' },
+  { label: 'Stock runway', query: 'What is our stock runway and replenishment requirements?' },
+  { label: 'Low stock alerts', query: 'Which products are low in stock?' },
+  { label: 'Stagnant inventory', query: 'What products are slow-moving or dead stock?' },
+  { label: 'Frequently bought together', query: 'What products are frequently bought together?' },
+  { label: 'Action directives', query: 'Give me proactive action recommendations to protect revenue' },
 ];
 
 export default function MerchantAIAssistant() {
@@ -39,12 +47,21 @@ export default function MerchantAIAssistant() {
   const [messages, setMessages] = useState([
     {
       sender: 'assistant',
-      text: 'Hello! I am your MerchantPilot AI Business Copilot. I analyze your sales, inventory velocity, order fulfillment, and basket affinities by querying your live database records with zero hallucination. Ask a question below or pick a preset.',
+      text: 'Welcome to Business Copilot. I analyze your sales, inventory velocity, orders, and customer affinities by querying your live PostgreSQL database records. Ask a business question below or select a suggested topic.',
       data: null,
       query_type: 'WELCOME',
       actionable_recommendations: []
     }
   ]);
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, loading]);
 
   useEffect(() => {
     if (location.state?.prefilledQuery) {
@@ -56,14 +73,12 @@ export default function MerchantAIAssistant() {
     const q = queryText || query;
     if (!q.trim() || loading) return;
 
-    // Append user question
     const newMessages = [...messages, { sender: 'user', text: q }];
     setMessages(newMessages);
     setQuery('');
     setLoading(true);
 
     try {
-      // Build conversation history for multi-turn understanding
       const historyPayload = messages.slice(-6).map((m) => ({
         sender: m.sender,
         text: m.text
@@ -79,7 +94,7 @@ export default function MerchantAIAssistant() {
         ...newMessages,
         {
           sender: 'assistant',
-          text: answerData.answer || 'Query processed.',
+          text: answerData.answer || 'Query processed successfully.',
           data: answerData.data,
           query_type: answerData.query_type || answerData.intent,
           structured_table: answerData.structured_table,
@@ -102,349 +117,253 @@ export default function MerchantAIAssistant() {
     }
   };
 
+  const handleNewConversation = () => {
+    setMessages([
+      {
+        sender: 'assistant',
+        text: 'Started a new session. Ask a question about your sales trends, inventory runway, dead stock, or recommended actions.',
+        data: null,
+        query_type: 'WELCOME',
+        actionable_recommendations: []
+      }
+    ]);
+  };
+
+  const isInitialState = messages.length <= 1;
+
   return (
-    <div className="space-y-6 max-w-5xl mx-auto pb-16">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2A3441] pb-4">
+    <div className="space-y-4 max-w-7xl mx-auto pb-8">
+      {/* Page Title & Controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#DEE3DC]">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-mono uppercase bg-[#F5A524]/10 border border-[#F5A524]/30 text-[#F5A524] px-2 py-0.5 rounded flex items-center gap-1 font-bold">
-              <Sparkles className="w-3 h-3" />
-              SQL-Grounded Business Copilot
-            </span>
-            <span className="text-xs text-[#94A3B8] font-mono">Zero Hallucination • Relational DB Grounded</span>
-          </div>
-          <h1 className="text-2xl font-bold text-[#F8FAFC] tracking-tight">Merchant AI Business Copilot</h1>
-          <p className="text-xs text-[#94A3B8]">
-            Ask plain English questions to diagnose sales velocity, evaluate reorder alerts, inspect dead stock, and make data-driven decisions.
+          <h1 className="text-2xl sm:text-[28px] font-bold text-[#202923] tracking-tight">
+            Business Copilot
+          </h1>
+          <p className="text-sm text-[#6B746E] mt-0.5">
+            Conversational business analysis grounded in live sales and inventory records.
           </p>
         </div>
-      </div>
 
-      {/* Preset Chips */}
-      <div className="space-y-2">
-        <span className="text-[11px] font-mono text-[#94A3B8] uppercase">Quick Question Presets:</span>
-        <div className="flex flex-wrap gap-2">
-          {PRESET_QUERIES.map((preset) => (
-            <button
-              key={preset}
-              onClick={() => handleSendQuery(preset)}
-              disabled={loading}
-              className="px-3 py-1.5 rounded-xl bg-[#1C222B] hover:bg-[#242D38] border border-[#2A3441] hover:border-[#F5A524]/50 text-xs text-[#94A3B8] hover:text-[#F8FAFC] transition text-left disabled:opacity-50"
-            >
-              {preset}
-            </button>
-          ))}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleNewConversation}
+            className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs"
+          >
+            <Plus className="w-3.5 h-3.5 text-[#6B746E]" />
+            <span>New conversation</span>
+          </button>
         </div>
       </div>
 
-      {/* Chat Messages Container */}
-      <div className="surface-card p-6 min-h-[440px] max-h-[600px] overflow-y-auto space-y-4">
-        {messages.map((msg, idx) => {
-          const isUser = msg.sender === 'user';
-
-          return (
-            <div
-              key={idx}
-              className={`flex items-start gap-3 ${isUser ? 'flex-row-reverse' : ''}`}
-            >
-              <div
-                className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs font-bold ${
-                  isUser
-                    ? 'bg-[#F5A524] text-black font-sans'
-                    : 'bg-[#151A21] border border-[#2A3441] text-[#F5A524]'
-                }`}
-              >
-                {isUser ? 'ME' : <Bot className="w-4 h-4" />}
-              </div>
-
-              <div
-                className={`max-w-2xl rounded-2xl p-4 text-xs space-y-3 ${
-                  isUser
-                    ? 'bg-[#F5A524] text-black font-medium'
-                    : 'bg-[#151A21] border border-[#2A3441] text-[#F8FAFC]'
-                }`}
-              >
-                <p className="leading-relaxed whitespace-pre-line">{msg.text}</p>
-
-                {/* Structured Data Visualization for Low Stock */}
-                {msg.query_type === 'LOW_STOCK_ALERT' && Array.isArray(msg.data) && msg.data.length > 0 && (
-                  <div className="rounded-xl bg-[#1C222B] border border-[#2A3441] p-3 text-xs space-y-2 mt-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-[10px] text-[#F59E0B] uppercase font-bold flex items-center gap-1.5">
-                        <AlertTriangle className="w-3.5 h-3.5" />
-                        Low-Stock Replenishment Queue
-                      </span>
-                      <span className="text-[10px] text-[#94A3B8] font-mono">{msg.data.length} SKU(s) flagged</span>
-                    </div>
-                    <div className="divide-y divide-[#2A3441]">
-                      {msg.data.map((item) => (
-                        <div key={item.id} className="py-2 flex justify-between items-center text-[11px]">
-                          <div>
-                            <span className="font-semibold text-[#F8FAFC]">{item.name}</span>
-                            <span className="text-[#94A3B8] font-mono block text-[10px]">SKU: {item.id} • Category: {item.category}</span>
-                          </div>
-                          <div className="text-right">
-                            <span className={`font-mono font-bold px-2 py-0.5 rounded text-[10px] ${
-                              item.stock <= 0 ? 'bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/30' : 'bg-[#F59E0B]/10 text-[#F59E0B]'
-                            }`}>
-                              {item.status || `${item.stock} left`}
-                            </span>
-                            <span className="text-[#94A3B8] block text-[9px] font-mono mt-0.5">Threshold: {item.threshold || item.low_stock_threshold}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Top Selling Products Visual Card */}
-                {msg.query_type === 'TOP_SELLING_PRODUCTS' && Array.isArray(msg.data) && msg.data.length > 0 && (
-                  <div className="rounded-xl bg-[#1C222B] border border-[#2A3441] p-3 text-xs space-y-2 mt-2">
-                    <span className="font-mono text-[10px] text-[#10B981] uppercase font-bold flex items-center gap-1.5">
-                      <TrendingUp className="w-3.5 h-3.5" />
-                      Top Performing Items by Sales Volume
-                    </span>
-                    <div className="divide-y divide-[#2A3441]">
-                      {msg.data.map((item, i) => (
-                        <div key={item.product_id || i} className="py-2 flex justify-between items-center text-[11px]">
-                          <div className="flex items-center gap-2">
-                            <span className="w-5 h-5 rounded-full bg-[#151A21] border border-[#2A3441] flex items-center justify-center font-mono font-bold text-[10px] text-[#F5A524]">
-                              #{i + 1}
-                            </span>
-                            <div>
-                              <span className="font-semibold text-[#F8FAFC]">{item.name}</span>
-                              <span className="text-[#94A3B8] font-mono block text-[10px]">SKU: {item.product_id}</span>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <span className="font-bold text-[#F8FAFC] block">{item.revenue}</span>
-                            <span className="text-[#10B981] font-mono text-[10px]">{item.units_sold} units sold</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Slow Moving / Dead Stock Visual Card */}
-                {msg.query_type === 'SLOW_MOVING_PRODUCTS' && Array.isArray(msg.data) && msg.data.length > 0 && (
-                  <div className="rounded-xl bg-[#1C222B] border border-[#2A3441] p-3 text-xs space-y-2 mt-2">
-                    <span className="font-mono text-[10px] text-[#EF4444] uppercase font-bold flex items-center gap-1.5">
-                      <Package className="w-3.5 h-3.5" />
-                      Stagnant Inventory & Liquid Capital Risk
-                    </span>
-                    <div className="divide-y divide-[#2A3441]">
-                      {msg.data.map((item, i) => (
-                        <div key={item.id || i} className="py-2 flex justify-between items-center text-[11px]">
-                          <div>
-                            <span className="font-semibold text-[#F8FAFC]">{item.name}</span>
-                            <span className="text-[#94A3B8] font-mono block text-[10px]">Units Sold: {item.units_sold} • Stock: {item.stock}</span>
-                          </div>
-                          <div className="text-right">
-                            <span className="font-bold text-[#EF4444] block font-mono">{item.tied_capital}</span>
-                            <span className="text-[#94A3B8] font-mono text-[9px]">Tied-up Capital</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Structured Data Visualization for Revenue / AOV / Copilot Summary */}
-                {(msg.query_type === 'REVENUE_SUMMARY' || msg.query_type === 'AVERAGE_ORDER_VALUE' || msg.query_type === 'BUSINESS_COPILOT_INSIGHTS') && msg.data && typeof msg.data === 'object' && !Array.isArray(msg.data) && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
-                    {msg.data.total_revenue !== undefined && (
-                      <div className="p-2.5 rounded-lg bg-[#1C222B] border border-[#2A3441]">
-                        <span className="text-[10px] text-[#94A3B8] block font-mono uppercase">Settled Revenue</span>
-                        <span className="text-sm font-bold text-[#F8FAFC]">
-                          ₹{msg.data.total_revenue?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                        </span>
-                      </div>
-                    )}
-                    {(msg.data.total_orders !== undefined || msg.data.completed_orders !== undefined) && (
-                      <div className="p-2.5 rounded-lg bg-[#1C222B] border border-[#2A3441]">
-                        <span className="text-[10px] text-[#94A3B8] block font-mono uppercase">Completed Orders</span>
-                        <span className="text-sm font-bold text-[#F8FAFC]">{msg.data.total_orders ?? msg.data.completed_orders}</span>
-                      </div>
-                    )}
-                    {msg.data.aov !== undefined && (
-                      <div className="p-2.5 rounded-lg bg-[#1C222B] border border-[#2A3441]">
-                        <span className="text-[10px] text-[#94A3B8] block font-mono uppercase">Avg Order Value</span>
-                        <span className="text-sm font-bold text-[#F5A524]">
-                          ₹{msg.data.aov?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                        </span>
-                      </div>
-                    )}
-                    {msg.data.total_discounts_granted !== undefined && (
-                      <div className="p-2.5 rounded-lg bg-[#1C222B] border border-[#2A3441]">
-                        <span className="text-[10px] text-[#94A3B8] block font-mono uppercase">Discounts Granted</span>
-                        <span className="text-sm font-bold text-[#10B981]">
-                          ₹{msg.data.total_discounts_granted?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                        </span>
-                      </div>
-                    )}
-                    {msg.data.active_products !== undefined && (
-                      <div className="p-2.5 rounded-lg bg-[#1C222B] border border-[#2A3441]">
-                        <span className="text-[10px] text-[#94A3B8] block font-mono uppercase">Active SKUs</span>
-                        <span className="text-sm font-bold text-[#F8FAFC]">{msg.data.active_products}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Fulfillment Status Cards */}
-                {msg.query_type === 'FULFILLMENT_STATUS' && msg.data && typeof msg.data === 'object' && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
-                    <div className="p-2.5 rounded-lg bg-[#1C222B] border border-[#2A3441]">
-                      <span className="text-[10px] text-[#EF4444] block font-mono uppercase">Unfulfilled</span>
-                      <span className="text-sm font-bold text-[#EF4444]">{msg.data.unfulfilled || 0}</span>
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-[#1C222B] border border-[#2A3441]">
-                      <span className="text-[10px] text-[#F5A524] block font-mono uppercase">Processing</span>
-                      <span className="text-sm font-bold text-[#F5A524]">{msg.data.processing || 0}</span>
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-[#1C222B] border border-[#2A3441]">
-                      <span className="text-[10px] text-[#3B82F6] block font-mono uppercase">Shipped</span>
-                      <span className="text-sm font-bold text-[#3B82F6]">{msg.data.shipped || 0}</span>
-                    </div>
-                    <div className="p-2.5 rounded-lg bg-[#1C222B] border border-[#2A3441]">
-                      <span className="text-[10px] text-[#10B981] block font-mono uppercase">Delivered</span>
-                      <span className="text-sm font-bold text-[#10B981]">{msg.data.delivered || 0}</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Bundle Recommendations Card */}
-                {msg.query_type === 'BUNDLE_RECOMMENDATIONS' && Array.isArray(msg.data) && msg.data.length > 0 && (
-                  <div className="rounded-xl bg-[#1C222B] border border-[#2A3441] p-3 text-xs space-y-2.5 mt-2">
-                    <span className="font-mono text-[10px] text-[#F5A524] uppercase font-bold flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5" />
-                      Affinity Bundles & Cross-Sell Opportunities
-                    </span>
-                    <div className="space-y-2">
-                      {msg.data.map((b, i) => (
-                        <div key={i} className="p-2.5 rounded-lg bg-[#151A21] border border-[#2A3441] space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-bold text-[#F8FAFC]">{b.bundle_title}</span>
-                            <span className="text-[#10B981] font-mono font-bold">{b.bundle_price}</span>
-                          </div>
-                          <div className="text-[10px] text-[#94A3B8] flex items-center gap-2">
-                            <span>Catalog: {b.original_price}</span>
-                            <span className="text-[#F5A524] font-semibold">{b.discount}</span>
-                          </div>
-                          <p className="text-[10px] text-[#64748B] italic">{b.rationale}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Structured Table for Period Comparison, Runway, Proactive Actions */}
-                {msg.structured_table && Array.isArray(msg.structured_table.headers) && Array.isArray(msg.structured_table.rows) && msg.structured_table.rows.length > 0 && (
-                  <div className="rounded-xl bg-[#1C222B] border border-[#2A3441] p-3 text-xs space-y-2 mt-2 overflow-x-auto">
-                    {msg.structured_table.title && (
-                      <span className="font-mono text-[10px] text-[#F5A524] uppercase font-bold flex items-center gap-1.5">
-                        <BarChart3 className="w-3.5 h-3.5" />
-                        {msg.structured_table.title}
-                      </span>
-                    )}
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-[#151A21] text-[#94A3B8] font-mono uppercase text-[9px] border-b border-[#2A3441]">
-                        <tr>
-                          {msg.structured_table.headers.map((h, i) => (
-                            <th key={i} className="py-1.5 px-2.5">{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-[#2A3441]">
-                        {msg.structured_table.rows.map((row, rIdx) => (
-                          <tr key={rIdx} className="hover:bg-[#151A21]/50">
-                            {Object.values(row).map((val, cIdx) => (
-                              <td key={cIdx} className="py-1.5 px-2.5 text-[11px] font-mono text-[#F8FAFC]">
-                                {typeof val === 'number' ? val.toLocaleString('en-IN') : String(val)}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-
-                {/* Direct Action Center Link if Merchant Actions */}
-                {msg.query_type === 'MERCHANT_ACTIONS' && (
-                  <div className="pt-2">
-                    <Link
-                      to="/actions"
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F5A524] hover:bg-[#D97706] text-black text-xs font-bold transition shadow-amber-glow"
-                    >
-                      <Zap className="w-3.5 h-3.5" />
-                      <span>Review & Execute in Action Center →</span>
-                    </Link>
-                  </div>
-                )}
-
-                {/* Actionable Recommendations Pills */}
-                {Array.isArray(msg.actionable_recommendations) && msg.actionable_recommendations.length > 0 && (
-                  <div className="pt-2 border-t border-[#2A3441] space-y-1.5">
-                    <span className="text-[10px] font-mono text-[#F5A524] uppercase font-bold flex items-center gap-1">
-                      <Lightbulb className="w-3 h-3" />
-                      Copilot Action Directives:
-                    </span>
-                    <ul className="space-y-1">
-                      {msg.actionable_recommendations.map((rec, i) => (
-                        <li key={i} className="text-[11px] text-[#94A3B8] flex items-start gap-1.5">
-                          <span className="text-[#10B981] font-bold">✓</span>
-                          <span>{rec}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-
-        {loading && (
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[#151A21] border border-[#2A3441] flex items-center justify-center text-[#F5A524]">
-              <Bot className="w-4 h-4 animate-bounce" />
-            </div>
-            <div className="bg-[#151A21] border border-[#2A3441] rounded-2xl px-4 py-3 text-xs text-[#94A3B8] flex items-center gap-2">
-              <Database className="w-3.5 h-3.5 text-[#F5A524] animate-spin" />
-              <span>Querying live database records and calculating business metrics...</span>
+      {/* Main Workspace Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 min-h-[640px]">
+        {/* Left Column: Topics & Analysis Quick Launch */}
+        <div className="hidden lg:flex flex-col space-y-4 surface-card p-4 h-full">
+          <div>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-[#6B746E] mb-2">
+              Analysis topics
+            </h2>
+            <div className="space-y-1">
+              {TOPIC_PRESETS.map((t, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleSendQuery(t.query)}
+                  disabled={loading}
+                  className="w-full text-left px-2.5 py-2 rounded-md text-xs font-medium text-[#202923] hover:bg-[#F6F5F1] border border-transparent hover:border-[#DEE3DC] transition-colors flex items-center justify-between group"
+                >
+                  <span className="truncate">{t.label}</span>
+                  <ArrowRight className="w-3 h-3 text-[#6B746E] opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+              ))}
             </div>
           </div>
-        )}
-      </div>
 
-      {/* Input Box */}
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSendQuery();
-        }}
-        className="flex items-center gap-2"
-      >
-        <input
-          type="text"
-          placeholder="Ask a question about sales, inventory velocity, dead stock, or fulfillment (e.g. 'What products are low in stock?')..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          disabled={loading}
-          className="flex-1 bg-[#1C222B] border border-[#2A3441] text-[#F8FAFC] text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-[#F5A524] transition placeholder-[#64748B]"
-        />
-        <button
-          type="submit"
-          disabled={loading || !query.trim()}
-          className="px-5 py-3 rounded-xl bg-[#F5A524] hover:bg-[#D97706] text-black font-semibold text-xs transition flex items-center gap-1.5 shadow-sm disabled:opacity-50"
-        >
-          <Send className="w-3.5 h-3.5" />
-          <span>Ask Copilot</span>
-        </button>
-      </form>
+          <div className="pt-4 border-t border-[#DEE3DC] space-y-2 mt-auto">
+            <span className="text-[11px] font-semibold text-[#6B746E] uppercase tracking-wider block">
+              Data grounding
+            </span>
+            <div className="p-2.5 rounded-md bg-[#F6F5F1] border border-[#DEE3DC] text-[11px] text-[#6B746E] space-y-1">
+              <div className="flex items-center gap-1.5 text-[#234E42] font-medium">
+                <Database className="w-3.5 h-3.5" />
+                <span>PostgreSQL Grounded</span>
+              </div>
+              <p className="leading-relaxed">
+                Calculations query real customer checkout ledgers and inventory counts. Zero hallucinated business metrics.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Right / Center Conversation Area */}
+        <div className="lg:col-span-3 surface-card flex flex-col h-[700px] overflow-hidden">
+          {/* Messages Stream */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
+            {messages.map((msg, index) => {
+              const isUser = msg.sender === 'user';
+
+              return (
+                <div
+                  key={index}
+                  className={`flex items-start gap-3 ${isUser ? 'flex-row-reverse' : ''}`}
+                >
+                  {/* Avatar */}
+                  <div
+                    className={`w-7 h-7 rounded-md shrink-0 flex items-center justify-center font-semibold text-xs text-white ${
+                      isUser ? 'bg-[#202923]' : 'bg-[#234E42]'
+                    }`}
+                  >
+                    {isUser ? 'You' : 'M'}
+                  </div>
+
+                  {/* Message Bubble Content */}
+                  <div
+                    className={`max-w-[85%] rounded-lg p-3.5 text-xs space-y-3 leading-relaxed ${
+                      isUser
+                        ? 'bg-[#234E42] text-white shadow-xs'
+                        : 'bg-[#F6F5F1] text-[#202923] border border-[#DEE3DC]'
+                    }`}
+                  >
+                    {/* Message Text */}
+                    {isUser ? (
+                      <div className="whitespace-pre-line text-[13px]">
+                        {msg.text}
+                      </div>
+                    ) : (
+                      <MarkdownText content={msg.text} />
+                    )}
+
+                    {/* Structured Table (if returned) */}
+                    {msg.structured_table &&
+                      Array.isArray(msg.structured_table.headers) &&
+                      Array.isArray(msg.structured_table.rows) &&
+                      msg.structured_table.rows.length > 0 && (
+                        <div className="rounded-md bg-white border border-[#DEE3DC] p-3 text-xs space-y-2 mt-2 overflow-x-auto shadow-xs">
+                          {msg.structured_table.title && (
+                            <span className="font-semibold text-[#202923] text-xs block">
+                              {msg.structured_table.title}
+                            </span>
+                          )}
+                          <table className="w-full text-left text-xs">
+                            <thead className="bg-[#F6F5F1] text-[#6B746E] font-medium border-b border-[#DEE3DC]">
+                              <tr>
+                                {msg.structured_table.headers.map((h, i) => (
+                                  <th key={i} className="py-2 px-2.5 font-medium">{h}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-[#DEE3DC]">
+                              {msg.structured_table.rows.map((row, rIdx) => (
+                                <tr key={rIdx} className="hover:bg-[#F6F5F1]/60">
+                                  {Object.values(row).map((val, cIdx) => (
+                                    <td key={cIdx} className="py-2 px-2.5 text-[#202923] font-mono text-[11px]">
+                                      {typeof val === 'number' ? val.toLocaleString('en-IN') : String(val)}
+                                    </td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+
+                    {/* Direct Action Link if Action Recommendations */}
+                    {msg.query_type === 'MERCHANT_ACTIONS' && (
+                      <div className="pt-1">
+                        <Link
+                          to="/actions"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#234E42] hover:bg-[#1B3D34] text-white text-xs font-medium transition-colors shadow-xs"
+                        >
+                          <span>Review & Execute in Action Center</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      </div>
+                    )}
+
+                    {/* Actionable Recommendations List */}
+                    {Array.isArray(msg.actionable_recommendations) &&
+                      msg.actionable_recommendations.length > 0 && (
+                        <div className="pt-2 border-t border-[#DEE3DC] space-y-1">
+                          <span className="text-[11px] font-semibold text-[#234E42] block">
+                            Recommended next steps:
+                          </span>
+                          <ul className="space-y-1">
+                            {msg.actionable_recommendations.map((rec, i) => (
+                              <li key={i} className="text-[12px] text-[#6B746E] flex items-start gap-1.5">
+                                <span className="text-[#347A52] font-bold">✓</span>
+                                <span>{rec}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Initial Starter Chips if conversation is empty */}
+            {isInitialState && (
+              <div className="pt-4 space-y-2">
+                <p className="text-xs font-medium text-[#6B746E]">
+                  Suggested questions to get started:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {STARTER_QUESTIONS.map((q, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleSendQuery(q)}
+                      className="px-3 py-1.5 rounded-md bg-white hover:bg-[#EAEDE7] border border-[#DEE3DC] text-xs text-[#202923] font-medium transition-colors shadow-xs text-left"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Loading Indicator */}
+            {loading && (
+              <div className="flex items-center gap-2.5 text-xs text-[#6B746E] pl-10">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin text-[#234E42]" />
+                <span>Querying live database records and calculating metrics...</span>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Bottom Message Input Box */}
+          <div className="p-3 sm:p-4 bg-white border-t border-[#DEE3DC]">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSendQuery();
+              }}
+              className="flex items-center gap-2"
+            >
+              <input
+                type="text"
+                placeholder="Ask a business question (e.g. 'Which products are low in stock?')..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                disabled={loading}
+                className="flex-1 bg-[#F6F5F1] border border-[#DEE3DC] focus:border-[#234E42] focus:bg-white text-xs rounded-md px-3.5 py-2.5 text-[#202923] focus:outline-none transition-colors"
+              />
+              <button
+                type="submit"
+                disabled={!query.trim() || loading}
+                className="px-4 py-2.5 rounded-md bg-[#234E42] hover:bg-[#1B3D34] disabled:opacity-40 text-white font-medium text-xs flex items-center gap-1.5 transition-colors shadow-xs"
+              >
+                <span>Send</span>
+                <Send className="w-3.5 h-3.5" />
+              </button>
+            </form>
+            <p className="text-[11px] text-[#6B746E] mt-1.5">
+              Press Enter to send. Data is retrieved in real-time from verified database transactions.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

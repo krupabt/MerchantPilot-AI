@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
-  FileSearch,
   CheckCircle2,
-  AlertOctagon,
-  Bot,
-  ShieldCheck,
-  CreditCard,
+  AlertTriangle,
   RefreshCw,
   Search,
   Filter,
-  User,
-  ArrowRight
+  ShieldCheck,
+  History
 } from 'lucide-react';
 import { getAuditLogs } from '../services/api';
 
@@ -51,191 +47,122 @@ export default function AuditTrail() {
     );
   });
 
-  const getActorBadge = (actor) => {
-    switch (actor) {
-      case 'AI_BUYER':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">AI Buyer</span>;
-      case 'AI_MERCHANT_AGENT':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">Merchant Agent</span>;
-      case 'POLICY_ENGINE':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Policy Engine</span>;
-      case 'APPROVAL_GATE':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Approval Gate</span>;
-      case 'RAZORPAY_SYSTEM':
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Razorpay</span>;
-      default:
-        return <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800 text-gray-300">{actor}</span>;
-    }
-  };
-
   return (
-    <div className="space-y-6 animate-fadeIn max-w-7xl mx-auto pb-12">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-800 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#DEE3DC]">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30">
-              IMMUTABLE AUDIT TRAIL
-            </span>
-            <span className="text-xs text-gray-400 font-mono">End-to-End Decision Trace</span>
-          </div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">
-            Cryptographic & Commercial Audit Trail
-          </h2>
-          <p className="text-xs text-gray-400 mt-1 max-w-2xl leading-relaxed">
-            Full chronological logging of buyer intents, catalog queries, revenue bundling justifications, policy evaluations, and Razorpay HMAC signature validations.
+          <h1 className="text-2xl sm:text-[28px] font-bold text-[#202923] tracking-tight">
+            Activity log
+          </h1>
+          <p className="text-sm text-[#6B746E] mt-0.5">
+            Immutable audit record of merchant actions, agent interactions, and policy enforcement decisions.
           </p>
         </div>
 
         <button
           onClick={fetchLogs}
-          className="px-3.5 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 border border-gray-700 text-gray-300 text-xs font-medium flex items-center gap-2 self-start transition"
+          disabled={loading}
+          className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
         >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Refresh Logs</span>
+          <RefreshCw className={`w-3.5 h-3.5 text-[#6B746E] ${loading ? 'animate-spin' : ''}`} />
+          <span>Refresh log</span>
         </button>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-[#111827]/80 border border-gray-800 rounded-2xl p-4">
+      {/* Toolbar */}
+      <div className="surface-card p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-gray-500 absolute left-3.5 top-3" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#8E9891]" />
           <input
             type="text"
+            placeholder="Search by action, reason, actor, or session..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search actions, reasons, sessions..."
-            className="w-full pl-9 pr-4 py-2 bg-gray-900/80 border border-gray-800 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-amber-500 transition"
+            className="w-full bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs rounded-md pl-9 pr-3.5 py-2 focus:outline-none focus:border-[#234E42] focus:bg-white transition-colors"
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <button
-            onClick={() => setFilterResult('ALL')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition ${
-              filterResult === 'ALL' ? 'bg-amber-600 text-white' : 'bg-gray-900 text-gray-400 hover:text-white border border-gray-800'
-            }`}
-          >
-            All Events ({logs.length})
-          </button>
-          <button
-            onClick={() => setFilterResult('PASSED')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition ${
-              filterResult === 'PASSED' ? 'bg-emerald-600 text-white' : 'bg-gray-900 text-gray-400 hover:text-white border border-gray-800'
-            }`}
-          >
-            Passed Events
-          </button>
-          <button
-            onClick={() => setFilterResult('VIOLATION')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-medium transition ${
-              filterResult === 'VIOLATION' ? 'bg-red-600 text-white' : 'bg-gray-900 text-gray-400 hover:text-white border border-gray-800'
-            }`}
-          >
-            Policy Violations / Blocked
-          </button>
+        <div className="flex items-center gap-1.5">
+          {['ALL', 'PASSED', 'VIOLATION'].map((status) => (
+            <button
+              key={status}
+              onClick={() => setFilterResult(status)}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                filterResult === status
+                  ? 'bg-[#234E42] text-white shadow-xs'
+                  : 'text-[#6B746E] hover:text-[#202923] hover:bg-[#EAEDE7]'
+              }`}
+            >
+              {status === 'ALL' ? 'All records' : status === 'PASSED' ? 'Passed' : 'Violations'}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Logs Table */}
-      <div className="bg-[#111827]/80 border border-gray-800 rounded-2xl overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <div className="w-8 h-8 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="bg-gray-900/80 border-b border-gray-800 text-gray-400 font-medium">
-                  <th className="py-3 px-4">Timestamp & Event ID</th>
-                  <th className="py-3 px-4">Actor</th>
-                  <th className="py-3 px-4">Action</th>
-                  <th className="py-3 px-4">Reason & Justification</th>
-                  <th className="py-3 px-4">Monetary Impact</th>
-                  <th className="py-3 px-4">Guardrail Status</th>
-                  <th className="py-3 px-4 text-right">Final Outcome</th>
+      <div className="surface-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-[#F6F5F1] text-[#6B746E] font-medium border-b border-[#DEE3DC]">
+              <tr>
+                <th className="py-2.5 px-3.5">Timestamp</th>
+                <th className="py-2.5 px-3">Actor</th>
+                <th className="py-2.5 px-3">Action</th>
+                <th className="py-2.5 px-3">Policy decision</th>
+                <th className="py-2.5 px-3.5">Reason & details</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#DEE3DC]">
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-[#6B746E]">
+                    Loading activity records...
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-800/60 font-mono">
-                {filteredLogs.map((log) => {
-                  const isViol = log.policy_result === 'VIOLATION' || log.decision === 'BLOCKED' || log.final_result === 'BLOCKED';
-
+              ) : filteredLogs.length > 0 ? (
+                filteredLogs.map((log) => {
+                  const isPassed = log.policy_result === 'PASSED';
                   return (
-                    <tr key={log.id} className={`hover:bg-gray-900/40 transition ${isViol ? 'bg-red-950/10' : ''}`}>
-                      <td className="py-3 px-4">
-                        <span className="text-white font-semibold block">{log.id}</span>
-                        <span className="text-[10px] text-gray-500 font-normal">
-                          {new Date(log.created_at).toLocaleTimeString()}
+                    <tr key={log.id} className="hover:bg-[#F6F5F1]/60 transition-colors">
+                      <td className="py-2.5 px-3.5 text-[#6B746E] font-mono whitespace-nowrap">
+                        {log.created_at ? new Date(log.created_at).toLocaleString('en-IN') : 'Recent'}
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span className="font-mono text-[11px] text-[#202923] bg-[#F6F5F1] px-1.5 py-0.5 rounded border border-[#DEE3DC]">
+                          {log.actor}
                         </span>
                       </td>
-
-                      <td className="py-3 px-4 font-sans">
-                        {getActorBadge(log.actor)}
+                      <td className="py-2.5 px-3 font-medium text-[#202923]">
+                        {log.action}
                       </td>
-
-                      <td className="py-3 px-4 font-sans">
-                        <span className="text-gray-200 font-semibold block font-mono text-[11px]">
-                          {log.action}
+                      <td className="py-2.5 px-3">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[11px] font-medium ${
+                            isPassed
+                              ? 'bg-[#EAF4EE] text-[#347A52] border border-[#B8D4C4]'
+                              : 'bg-[#FBEFEF] text-[#B94A48] border border-[#B94A48]/20'
+                          }`}
+                        >
+                          {log.policy_result}
                         </span>
-                        {log.session_id && (
-                          <span className="text-[10px] text-gray-500 block truncate max-w-[120px]">
-                            {log.session_id}
-                          </span>
-                        )}
                       </td>
-
-                      <td className="py-3 px-4 font-sans max-w-[280px]">
-                        <p className="text-gray-300 text-xs leading-relaxed line-clamp-2">
-                          {log.reason || log.intent || 'System action'}
-                        </p>
-                        {log.failure_reason && (
-                          <p className="text-red-400 text-[11px] font-semibold mt-0.5">
-                            Error: {log.failure_reason}
-                          </p>
-                        )}
-                      </td>
-
-                      <td className="py-3 px-4">
-                        {log.amount ? (
-                          <span className="text-white font-bold text-xs">
-                            ₹{log.amount.toLocaleString('en-IN')}
-                          </span>
-                        ) : (
-                          <span className="text-gray-600">-</span>
-                        )}
-                      </td>
-
-                      <td className="py-3 px-4 font-sans">
-                        {log.policy_result === 'PASSED' ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                            PASSED
-                          </span>
-                        ) : log.policy_result === 'VIOLATION' ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-red-500/20 text-red-300 border border-red-500/40">
-                            VIOLATION
-                          </span>
-                        ) : (
-                          <span className="text-gray-500 text-[10px] font-mono">N/A</span>
-                        )}
-                      </td>
-
-                      <td className="py-3 px-4 text-right font-sans">
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono ${
-                          isViol
-                            ? 'bg-red-500/20 text-red-300 border border-red-500/30'
-                            : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                        }`}>
-                          {log.decision || log.final_result || 'COMPLETED'}
-                        </span>
+                      <td className="py-2.5 px-3.5 text-[#6B746E] max-w-md">
+                        {log.reason}
                       </td>
                     </tr>
                   );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+                })
+              ) : (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-[#6B746E]">
+                    No activity logs match your filter.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

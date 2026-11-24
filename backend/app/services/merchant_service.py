@@ -155,6 +155,7 @@ class MerchantService:
                 "customer_name": o.customer_name or "Store Customer",
                 "customer_email": o.customer_email or "",
                 "amount": o.final_amount,
+                "final_amount": o.final_amount,
                 "status": o.status,
                 "fulfillment_status": o.fulfillment_status or "UNFULFILLED",
                 "is_ai_assisted": o.is_ai_assisted,

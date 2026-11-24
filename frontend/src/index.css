@@ -1,63 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg-main: #F6F5F1;
+  --bg-surface: #FFFFFF;
+  --bg-sidebar: #EAEDE7;
+  --brand-primary: #234E42;
+  --brand-hover: #1B3D34;
+  --brand-accent: #B8D4C4;
+  --brand-light: #EBF4EF;
+  --text-primary: #202923;
+  --text-secondary: #6B746E;
+  --text-muted: #8E9891;
+  --border-color: #DEE3DC;
+  --status-success: #347A52;
+  --status-warning: #B77932;
+  --status-error: #B94A48;
+}
+
 @layer base {
+  html {
+    background-color: #F6F5F1;
+    color: #202923;
+  }
+
   body {
-    @apply bg-[#0B0F14] text-[#F8FAFC] antialiased selection:bg-[#F5A524] selection:text-black;
-    font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: #F6F5F1;
+    color: #202923;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    selection-background-color: #B8D4C4;
+    selection-color: #202923;
   }
 
   code, pre, .font-mono {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   }
 }
 
-/* Polished Card & Surface Styling */
+/* Polished Commercial Card & Surface Styling */
 .surface-card {
-  background-color: #1C222B;
-  border: 1px solid #2A3441;
-  border-radius: 0.75rem;
+  background-color: #FFFFFF;
+  border: 1px solid #DEE3DC;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .surface-card-hover {
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .surface-card-hover:hover {
-  border-color: #F5A524;
-  box-shadow: 0 4px 20px -2px rgba(245, 165, 36, 0.12);
-  transform: translateY(-2px);
+  border-color: #B8D4C4;
+  box-shadow: 0 4px 12px rgba(35, 78, 66, 0.08);
 }
 
-/* Custom Scrollbar */
+/* Clean Form Controls */
+input, select, textarea {
+  color: #202923;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #8E9891;
+}
+
+/* Minimal Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0B0F14;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2A3441;
-  border-radius: 9999px;
+  background: #DEE3DC;
+  border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #F5A524;
-}
-
-::-webkit-scrollbar-track {
-  background: #0B0F19;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #1F2937;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #374151;
+  background: #C5CDC2;
 }

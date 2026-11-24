@@ -57,7 +57,7 @@ function MainLayout() {
   const isAuthPage = ['/login', '/signup'].includes(location.pathname);
 
   return (
-    <div className="min-h-screen bg-[#0B0F14] text-[#F8FAFC] flex flex-col font-sans selection:bg-[#F5A524] selection:text-black">
+    <div className="min-h-screen bg-[#F6F5F1] text-[#202923] flex flex-col font-sans">
       {/* Top Header */}
       <Navbar />
 

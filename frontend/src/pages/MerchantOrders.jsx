@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  ShoppingCart,
+  ShoppingBag,
   Search,
   CheckCircle2,
   Clock,
@@ -50,7 +50,7 @@ export default function MerchantOrders() {
       if (selectedOrder && selectedOrder.id === orderId) {
         setSelectedOrder({ ...selectedOrder, fulfillment_status: newStatus });
       }
-      setToast(`Order ${orderId} marked as ${newStatus}`);
+      setToast(`Order updated to ${newStatus}`);
       setTimeout(() => setToast(''), 3000);
     } catch (err) {
       setToast('Failed to update status: ' + (err.response?.data?.detail || err.message));
@@ -60,92 +60,106 @@ export default function MerchantOrders() {
     }
   };
 
+  const totalVolume = orders.reduce((sum, o) => sum + (o.final_amount || 0), 0);
+  const unfulfilledCount = orders.filter(o => !o.fulfillment_status || o.fulfillment_status === 'UNFULFILLED').length;
+  const processingCount = orders.filter(o => o.fulfillment_status === 'PROCESSING').length;
+  const deliveredCount = orders.filter(o => o.fulfillment_status === 'DELIVERED').length;
+
   const filtered = orders.filter(o => {
     const matchesSearch = searchTerm === '' ||
-      o.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (o.id && o.id.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (o.customer_name && o.customer_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (o.customer_email && o.customer_email.toLowerCase().includes(searchTerm.toLowerCase()));
+      (o.razorpay_payment_id && o.razorpay_payment_id.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const matchesFulfillment = fulfillmentFilter === 'ALL' || o.fulfillment_status === fulfillmentFilter;
-    return matchesSearch && matchesFulfillment;
+    const status = o.fulfillment_status || 'UNFULFILLED';
+    const matchesFilter = fulfillmentFilter === 'ALL' || status === fulfillmentFilter;
+
+    return matchesSearch && matchesFilter;
   });
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-16">
-      {/* Toast */}
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+      {/* Toast Notification */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl bg-[#1C222B] border border-[#F5A524] text-[#F8FAFC] shadow-xl text-xs flex items-center gap-2 animate-in fade-in">
-          <Check className="w-4 h-4 text-[#10B981]" />
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-2.5 rounded-lg bg-white border border-[#DEE3DC] text-[#202923] shadow-modal text-xs flex items-center gap-2 animate-in fade-in">
+          <Check className="w-4 h-4 text-[#347A52]" />
           <span>{toast}</span>
         </div>
       )}
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2A3441] pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#DEE3DC]">
         <div>
-          <span className="text-[10px] font-mono uppercase bg-[#F5A524]/10 border border-[#F5A524]/30 text-[#F5A524] px-2 py-0.5 rounded font-bold">
-            Settlement & Logistics
-          </span>
-          <h1 className="text-2xl font-bold text-[#F8FAFC] tracking-tight mt-1">Merchant Orders & Fulfillment</h1>
-          <p className="text-xs text-[#94A3B8]">
-            Manage incoming orders, review payment verifications, and dispatch customer shipments.
+          <h1 className="text-2xl sm:text-[28px] font-bold text-[#202923] tracking-tight">
+            Orders & payments
+          </h1>
+          <p className="text-sm text-[#6B746E] mt-0.5">
+            Manage customer purchases, fulfillment status, and payment settlements.
           </p>
         </div>
 
         <button
           onClick={loadOrders}
-          className="px-3.5 py-2 rounded-xl bg-[#1C222B] hover:bg-[#242D38] border border-[#2A3441] text-[#94A3B8] hover:text-[#F8FAFC] text-xs font-medium flex items-center gap-2 self-start sm:self-auto transition"
+          disabled={loading}
+          className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
         >
-          <RefreshCw className="w-3.5 h-3.5" />
-          <span>Refresh</span>
+          <RefreshCw className={`w-3.5 h-3.5 text-[#6B746E] ${loading ? 'animate-spin' : ''}`} />
+          <span>Sync orders</span>
         </button>
       </div>
 
-      {/* 4 Order Status Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="surface-card p-3.5 space-y-1">
-          <span className="text-[10px] font-mono uppercase text-[#94A3B8] block">Total Volume</span>
-          <span className="text-xl font-bold text-[#F8FAFC]">{orders.length}</span>
-          <span className="text-[10px] text-[#94A3B8] block">Customer transactions</span>
+      {/* 4 Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="surface-card p-4 space-y-1">
+          <span className="text-xs font-medium text-[#6B746E]">Total order volume</span>
+          <p className="text-2xl font-bold text-[#202923] tracking-tight">
+            ₹{totalVolume.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+          </p>
+          <p className="text-[12px] text-[#6B746E]">{orders.length} total orders</p>
         </div>
-        <div className="surface-card p-3.5 space-y-1">
-          <span className="text-[10px] font-mono uppercase text-[#10B981] block">Paid Settlements</span>
-          <span className="text-xl font-bold text-[#10B981]">{orders.filter(o => o.status === 'PAID').length}</span>
-          <span className="text-[10px] text-[#94A3B8] block">Verified payments</span>
+
+        <div className="surface-card p-4 space-y-1">
+          <span className="text-xs font-medium text-[#6B746E]">Pending fulfillment</span>
+          <p className={`text-2xl font-bold tracking-tight ${unfulfilledCount > 0 ? 'text-[#B77932]' : 'text-[#202923]'}`}>
+            {unfulfilledCount} orders
+          </p>
+          <p className="text-[12px] text-[#6B746E]">Requires packaging / dispatch</p>
         </div>
-        <div className="surface-card p-3.5 space-y-1">
-          <span className="text-[10px] font-mono uppercase text-[#EF4444] block">Pending Dispatch</span>
-          <span className="text-xl font-bold text-[#EF4444]">{orders.filter(o => o.fulfillment_status === 'UNFULFILLED' || !o.fulfillment_status).length}</span>
-          <span className="text-[10px] text-[#94A3B8] block">Awaiting packaging</span>
+
+        <div className="surface-card p-4 space-y-1">
+          <span className="text-xs font-medium text-[#6B746E]">Processing</span>
+          <p className="text-2xl font-bold text-[#202923] tracking-tight">{processingCount} orders</p>
+          <p className="text-[12px] text-[#6B746E]">In warehouse queue</p>
         </div>
-        <div className="surface-card p-3.5 space-y-1">
-          <span className="text-[10px] font-mono uppercase text-[#3B82F6] block">Delivered / Shipped</span>
-          <span className="text-xl font-bold text-[#3B82F6]">{orders.filter(o => ['DELIVERED', 'SHIPPED'].includes(o.fulfillment_status)).length}</span>
-          <span className="text-[10px] text-[#94A3B8] block">In transit or complete</span>
+
+        <div className="surface-card p-4 space-y-1">
+          <span className="text-xs font-medium text-[#6B746E]">Delivered</span>
+          <p className="text-2xl font-bold text-[#347A52] tracking-tight">{deliveredCount} orders</p>
+          <p className="text-[12px] text-[#6B746E]">Completed delivery</p>
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="p-4 rounded-xl bg-[#151A21] border border-[#2A3441] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-[#94A3B8] absolute left-3.5 top-1/2 -translate-y-1/2" />
+      {/* Search and Filters Toolbar */}
+      <div className="surface-card p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="relative w-full sm:w-80">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#8E9891]" />
           <input
             type="text"
-            placeholder="Search by Order ID, customer name, or email..."
+            placeholder="Search by Order ID, customer, payment ref..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-[#1C222B] border border-[#2A3441] text-[#F8FAFC] text-xs rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-[#F5A524]"
+            className="w-full bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs rounded-md pl-9 pr-3.5 py-2 focus:outline-none focus:border-[#234E42] focus:bg-white transition-colors"
           />
         </div>
 
-        <div className="flex items-center gap-2 shrink-0 overflow-x-auto pb-1 sm:pb-0">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <select
             value={fulfillmentFilter}
             onChange={(e) => setFulfillmentFilter(e.target.value)}
-            className="bg-[#1C222B] border border-[#2A3441] text-[#F8FAFC] text-xs rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#F5A524]"
+            className="bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs rounded-md px-2.5 py-1.5 focus:outline-none focus:border-[#234E42]"
           >
-            <option value="ALL">All Fulfillments ({orders.length})</option>
-            {FULFILLMENT_STATES.map(s => (
+            <option value="ALL">All fulfillment statuses</option>
+            {FULFILLMENT_STATES.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
           </select>
@@ -156,99 +170,71 @@ export default function MerchantOrders() {
       <div className="surface-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#151A21] border-b border-[#2A3441] text-[#94A3B8] uppercase font-mono text-[10px]">
+            <thead className="bg-[#F6F5F1] text-[#6B746E] font-medium border-b border-[#DEE3DC]">
               <tr>
-                <th className="p-4">Order ID</th>
-                <th className="p-4">Customer Details</th>
-                <th className="p-4">Items</th>
-                <th className="p-4">Total Amount</th>
-                <th className="p-4">Payment</th>
-                <th className="p-4">Fulfillment Status</th>
-                <th className="p-4 text-right">Update Status</th>
+                <th className="py-2.5 px-3.5">Order ID</th>
+                <th className="py-2.5 px-3">Date</th>
+                <th className="py-2.5 px-3">Customer</th>
+                <th className="py-2.5 px-3">Amount</th>
+                <th className="py-2.5 px-3">Payment</th>
+                <th className="py-2.5 px-3">Fulfillment</th>
+                <th className="py-2.5 px-3.5 text-right">Update status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#2A3441]">
+            <tbody className="divide-y divide-[#DEE3DC]">
               {loading ? (
                 <tr>
-                  <td colSpan="7" className="p-8 text-center text-[#94A3B8]">
-                    Loading verified merchant orders...
+                  <td colSpan={7} className="py-8 text-center text-[#6B746E]">
+                    Loading orders...
                   </td>
                 </tr>
-              ) : filtered.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="p-8 text-center text-[#94A3B8]">
-                    No orders matched the selected filter.
-                  </td>
-                </tr>
-              ) : (
+              ) : filtered.length > 0 ? (
                 filtered.map((order) => {
-                  const isPaid = order.status === 'PAID';
-                  const isDelivered = order.fulfillment_status === 'DELIVERED';
-                  const isShipped = order.fulfillment_status === 'SHIPPED';
-                  const isProcessing = order.fulfillment_status === 'PROCESSING';
-
+                  const status = order.fulfillment_status || 'UNFULFILLED';
                   return (
-                    <tr key={order.id} className="hover:bg-[#151A21]/50 transition">
-                      <td className="p-4 font-mono font-bold text-[#F8FAFC]">
-                        #{order.id}
-                        <span className="block text-[10px] text-[#64748B] font-normal">
-                          {order.created_at ? new Date(order.created_at).toLocaleDateString('en-IN', {
-                            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                          }) : ''}
-                        </span>
+                    <tr key={order.id} className="hover:bg-[#F6F5F1]/60 transition-colors">
+                      <td className="py-2.5 px-3.5 font-mono text-[#234E42] font-medium">
+                        {order.id?.slice(0, 16)}...
                       </td>
-
-                      <td className="p-4">
-                        <span className="font-semibold text-[#F8FAFC] block">{order.customer_name || 'Store Customer'}</span>
-                        <span className="text-[11px] text-[#94A3B8] font-mono">{order.customer_email || '—'}</span>
+                      <td className="py-2.5 px-3 text-[#6B746E]">
+                        {order.created_at ? new Date(order.created_at).toLocaleDateString('en-IN') : 'Recent'}
                       </td>
-
-                      <td className="p-4 text-[#94A3B8] font-mono">
-                        {order.items_count || order.items?.length || 1} item(s)
-                        <button
-                          onClick={() => setSelectedOrder(order)}
-                          className="ml-2 text-[#F5A524] hover:underline text-[10px]"
-                        >
-                          View
-                        </button>
+                      <td className="py-2.5 px-3 text-[#202923] font-medium">
+                        {order.customer_name || 'Store Customer'}
                       </td>
-
-                      <td className="p-4 font-mono font-bold text-[#F8FAFC]">
-                        ₹{(order.final_amount || order.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      <td className="py-2.5 px-3 font-semibold text-[#202923]">
+                        ₹{order.final_amount?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                       </td>
-
-                      <td className="p-4">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase font-bold ${
-                          isPaid
-                            ? 'bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20'
-                            : 'bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/20'
+                      <td className="py-2.5 px-3">
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-medium ${
+                          order.status === 'PAID'
+                            ? 'bg-[#EAF4EE] text-[#347A52] border border-[#B8D4C4]'
+                            : 'bg-[#FDF4EB] text-[#B77932]'
                         }`}>
                           {order.status}
                         </span>
                       </td>
-
-                      <td className="p-4">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono uppercase font-bold ${
-                          isDelivered
-                            ? 'bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20'
-                            : isShipped
-                            ? 'bg-[#38BDF8]/10 text-[#38BDF8] border border-[#38BDF8]/20'
-                            : isProcessing
-                            ? 'bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/20'
-                            : 'bg-[#151A21] text-[#94A3B8] border border-[#2A3441]'
+                      <td className="py-2.5 px-3">
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-medium ${
+                          status === 'DELIVERED'
+                            ? 'bg-[#EAF4EE] text-[#347A52]'
+                            : status === 'SHIPPED'
+                            ? 'bg-[#F6F5F1] text-[#234E42] border border-[#DEE3DC]'
+                            : status === 'PROCESSING'
+                            ? 'bg-[#FDF4EB] text-[#B77932]'
+                            : 'bg-[#FBEFEF] text-[#B94A48]'
                         }`}>
-                          {order.fulfillment_status || 'UNFULFILLED'}
+                          {status}
                         </span>
                       </td>
-
-                      <td className="p-4 text-right">
+                      <td className="py-2.5 px-3.5 text-right">
                         <select
-                          value={order.fulfillment_status || 'UNFULFILLED'}
+                          value={status}
                           disabled={updatingId === order.id}
                           onChange={(e) => handleUpdateFulfillment(order.id, e.target.value)}
-                          className="bg-[#1C222B] border border-[#2A3441] text-[#F8FAFC] text-[11px] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#F5A524] transition font-mono"
+                          className="bg-white border border-[#DEE3DC] text-[#202923] text-xs rounded px-2 py-1 focus:outline-none focus:border-[#234E42]"
                         >
-                          {FULFILLMENT_STATES.map(s => (
+                          {FULFILLMENT_STATES.map((s) => (
                             <option key={s} value={s}>{s}</option>
                           ))}
                         </select>
@@ -256,80 +242,17 @@ export default function MerchantOrders() {
                     </tr>
                   );
                 })
+              ) : (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-[#6B746E]">
+                    No orders match your criteria.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
-
-      {/* Order Details Modal */}
-      {selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-[#1C222B] border border-[#2A3441] rounded-2xl max-w-lg w-full shadow-2xl p-6 relative space-y-4">
-            <button
-              onClick={() => setSelectedOrder(null)}
-              className="absolute top-4 right-4 p-1.5 text-[#94A3B8] hover:text-[#F8FAFC] bg-[#151A21] rounded-lg"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="pb-3 border-b border-[#2A3441]">
-              <span className="text-[10px] font-mono text-[#F5A524] uppercase">Order Details</span>
-              <h3 className="text-base font-bold text-[#F8FAFC]">#{selectedOrder.id}</h3>
-              <p className="text-xs text-[#94A3B8]">
-                Customer: {selectedOrder.customer_name} ({selectedOrder.customer_email})
-              </p>
-            </div>
-
-            <div className="space-y-2 text-xs">
-              <span className="text-[11px] font-mono uppercase text-[#94A3B8] block">Purchased Products</span>
-              {selectedOrder.items && selectedOrder.items.length > 0 ? (
-                <div className="divide-y divide-[#2A3441] bg-[#151A21] rounded-xl p-3 border border-[#2A3441]">
-                  {selectedOrder.items.map((item, idx) => (
-                    <div key={idx} className="py-2 flex justify-between items-center">
-                      <div>
-                        <span className="text-[#F8FAFC] font-medium">{item.product_name}</span>
-                        <span className="text-[#94A3B8] block text-[11px]">Qty: {item.quantity}</span>
-                      </div>
-                      <span className="font-mono text-[#F8FAFC]">
-                        ₹{item.total_price?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-3 bg-[#151A21] rounded-xl text-[#94A3B8]">
-                  {selectedOrder.items_count || 1} hardware product(s) in this order package.
-                </div>
-              )}
-            </div>
-
-            <div className="p-3 bg-[#151A21] rounded-xl border border-[#2A3441] text-xs space-y-1.5">
-              <div className="flex justify-between text-[#94A3B8]">
-                <span>Payment Settlement:</span>
-                <span className="text-[#10B981] font-mono font-bold">{selectedOrder.status}</span>
-              </div>
-              <div className="flex justify-between text-[#94A3B8]">
-                <span>Fulfillment State:</span>
-                <span className="text-[#F5A524] font-mono font-bold">{selectedOrder.fulfillment_status || 'UNFULFILLED'}</span>
-              </div>
-              <div className="flex justify-between text-[#94A3B8] pt-1.5 border-t border-[#2A3441]">
-                <span className="font-bold text-[#F8FAFC]">Total Amount:</span>
-                <span className="text-[#F5A524] font-bold font-mono text-sm">
-                  ₹{(selectedOrder.final_amount || selectedOrder.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={() => setSelectedOrder(null)}
-              className="w-full py-2.5 bg-[#151A21] hover:bg-[#242D38] border border-[#2A3441] text-xs font-semibold text-[#F8FAFC] rounded-xl transition"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

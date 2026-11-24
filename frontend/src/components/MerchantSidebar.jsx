@@ -1,108 +1,164 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
-  Box,
-  Layers,
-  ShoppingCart,
+  MessageSquare,
+  CheckSquare,
+  Package,
+  ShoppingBag,
   TrendingUp,
-  Sparkles,
-  PieChart,
-  FileSearch,
-  ShieldCheck,
+  Boxes,
+  Sliders,
+  History,
   Store,
   ArrowUpRight,
-  Zap
+  LogOut,
+  ChevronRight
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
-const merchantNavItems = [
-  { name: 'AI Business Copilot', path: '/copilot', icon: Sparkles, highlight: true },
-  { name: 'Executive Dashboard', path: '/', icon: LayoutDashboard },
-  { name: 'Action Center', path: '/actions', icon: Zap },
-  { name: 'Inventory Intelligence', path: '/inventory', icon: Layers },
-  { name: 'Sales Analytics', path: '/analytics', icon: TrendingUp },
-  { name: 'Product Intelligence', path: '/product-intelligence', icon: PieChart },
-  { name: 'Orders & Payments', path: '/orders', icon: ShoppingCart },
-  { name: 'Commercial Policies', path: '/settings', icon: ShieldCheck },
-  { name: 'Audit Logs', path: '/audit', icon: FileSearch },
+const NAV_GROUPS = [
+  {
+    title: 'WORKSPACE',
+    items: [
+      { name: 'Overview', path: '/', icon: LayoutDashboard },
+      { name: 'Business Copilot', path: '/copilot', icon: MessageSquare },
+      { name: 'Action Center', path: '/actions', icon: CheckSquare },
+    ]
+  },
+  {
+    title: 'BUSINESS',
+    items: [
+      { name: 'Products & Inventory', path: '/inventory', icon: Package },
+      { name: 'Orders & Payments', path: '/orders', icon: ShoppingBag },
+    ]
+  },
+  {
+    title: 'INSIGHTS',
+    items: [
+      { name: 'Sales Analytics', path: '/analytics', icon: TrendingUp },
+      { name: 'Product Intelligence', path: '/product-intelligence', icon: Boxes },
+    ]
+  },
+  {
+    title: 'PREFERENCES',
+    items: [
+      { name: 'Business Settings', path: '/settings', icon: Sliders },
+      { name: 'Activity Log', path: '/audit', icon: History },
+    ]
+  }
 ];
 
-export default function MerchantSidebar() {
+export default function MerchantSidebar({ mobile = false, onClose }) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    if (onClose) onClose();
+    await logout();
+    navigate('/login');
+  };
+
   return (
-    <aside className="w-64 bg-[#151A21] border-r border-[#2A3441] flex flex-col justify-between p-4 shrink-0 min-h-[calc(100vh-64px)] hidden md:flex">
+    <aside
+      className={`${
+        mobile
+          ? 'w-full h-full flex flex-col justify-between p-4 bg-[#EAEDE7]'
+          : 'w-64 bg-[#EAEDE7] border-r border-[#DEE3DC] flex flex-col justify-between p-4 shrink-0 min-h-[calc(100vh-57px)] hidden md:flex sticky top-[57px]'
+      }`}
+    >
       <div className="space-y-6">
-        {/* Merchant Tenant Profile Card */}
-        <div className="p-3.5 rounded-xl bg-[#1C222B] border border-[#2A3441]">
-          <div className="flex items-center justify-between text-[10px] text-[#94A3B8] mb-1 font-mono">
-            <span>MERCHANT TENANT</span>
-            <span className="text-[#10B981] font-bold flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
-              ONLINE
-            </span>
-          </div>
-          <p className="text-xs font-bold text-[#F8FAFC] truncate">Apex Electronics & Compute</p>
-          <div className="flex items-center justify-between mt-1 text-[10px] font-mono">
-            <span className="text-[#F5A524]">ID: m_1001</span>
-            <span className="text-[#94A3B8]">PostgreSQL</span>
-          </div>
+        {/* Compact MerchantPilot Wordmark & Store Switcher */}
+        <div className="flex items-center justify-between pb-3 border-b border-[#DEE3DC]/80">
+          <NavLink to="/" onClick={onClose} className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-lg bg-[#234E42] text-white flex items-center justify-center font-bold text-sm tracking-tight shadow-xs">
+              M
+            </div>
+            <div>
+              <span className="font-semibold text-sm tracking-tight text-[#202923] block leading-none">
+                MerchantPilot
+              </span>
+              <span className="text-[11px] text-[#6B746E] block mt-0.5 font-medium">
+                Apex Electronics
+              </span>
+            </div>
+          </NavLink>
+          <span className="text-[10px] font-mono font-medium text-[#234E42] bg-[#B8D4C4]/40 px-1.5 py-0.5 rounded border border-[#B8D4C4]">
+            m_1001
+          </span>
         </div>
 
-        {/* Sidebar Nav Links */}
-        <nav className="space-y-1">
-          <div className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-[#64748B]">
-            Copilot & Analytics
-          </div>
-
-          {merchantNavItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                end={item.path === '/'}
-                className={({ isActive }) =>
-                  `flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition ${
-                    isActive
-                      ? 'bg-[#F5A524] text-black font-semibold shadow-sm'
-                      : item.highlight
-                      ? 'text-[#F5A524] hover:bg-[#1C222B] border border-[#F5A524]/20'
-                      : 'text-[#94A3B8] hover:text-[#F8FAFC] hover:bg-[#1C222B]'
-                  }`
-                }
-              >
-                <div className="flex items-center gap-2.5">
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span>{item.name}</span>
-                </div>
-                {item.highlight && (
-                  <span className="text-[9px] font-mono uppercase bg-[#151A21] text-[#F5A524] border border-[#F5A524]/30 px-1 py-0.2 rounded font-bold">
-                    AI
-                  </span>
-                )}
-              </NavLink>
-            );
-          })}
+        {/* Structured Navigation Groups */}
+        <nav className="space-y-5">
+          {NAV_GROUPS.map((group) => (
+            <div key={group.title} className="space-y-1">
+              <div className="px-2 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#6B746E]">
+                {group.title}
+              </div>
+              <div className="space-y-0.5">
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      end={item.path === '/'}
+                      onClick={onClose}
+                      className={({ isActive }) =>
+                        `flex items-center justify-between px-2.5 py-1.5 rounded-md text-[13px] font-medium transition-colors ${
+                          isActive
+                            ? 'bg-white text-[#234E42] font-semibold shadow-xs border border-[#DEE3DC]'
+                            : 'text-[#6B746E] hover:text-[#202923] hover:bg-[#E2E6DF]'
+                        }`
+                      }
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Icon className="w-4 h-4 shrink-0 text-[#234E42]" />
+                        <span>{item.name}</span>
+                      </div>
+                    </NavLink>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
       </div>
 
-      {/* Customer Storefront Demo Link */}
-      <div className="pt-4 border-t border-[#2A3441] space-y-2">
-        <div className="px-1 text-[10px] font-mono text-[#64748B] uppercase">
-          Secondary Demo
-        </div>
+      {/* Footer Section: Customer Demo Store Link & Profile */}
+      <div className="pt-4 border-t border-[#DEE3DC] space-y-3">
+        {/* Customer Demo Store Link */}
         <NavLink
           to="/store"
-          className="flex items-center justify-between p-3 rounded-xl bg-[#1C222B] hover:bg-[#242D38] border border-[#2A3441] text-xs text-[#94A3B8] hover:text-[#F8FAFC] transition group"
+          onClick={onClose}
+          className="flex items-center justify-between p-2 rounded-lg bg-white border border-[#DEE3DC] text-xs text-[#202923] hover:border-[#234E42] transition-colors shadow-xs group"
         >
           <div className="flex items-center gap-2">
-            <Store className="w-4 h-4 text-[#F5A524]" />
-            <div className="text-left">
-              <span className="block font-semibold leading-tight text-[#F8FAFC]">Customer Store</span>
-              <span className="block text-[9px] text-[#94A3B8] font-mono">Demo Storefront</span>
+            <Store className="w-4 h-4 text-[#234E42]" />
+            <div>
+              <span className="font-medium text-xs block leading-tight">Customer Demo Store</span>
+              <span className="text-[10px] text-[#6B746E] block">Secondary storefront demo</span>
             </div>
           </div>
-          <ArrowUpRight className="w-3.5 h-3.5 text-[#64748B] group-hover:text-[#F8FAFC] transition-colors" />
+          <ArrowUpRight className="w-3.5 h-3.5 text-[#6B746E] group-hover:text-[#234E42] transition-colors" />
         </NavLink>
+
+        {/* User Account / Logout */}
+        <div className="flex items-center justify-between px-1 text-xs">
+          <div className="truncate mr-2">
+            <span className="block font-medium text-[#202923] truncate text-[12px]">
+              {user?.email || 'merchant@merchantpilot.ai'}
+            </span>
+            <span className="block text-[11px] text-[#6B746E]">Merchant Admin</span>
+          </div>
+          <button
+            onClick={handleLogout}
+            title="Sign out"
+            className="p-1.5 rounded hover:bg-[#E2E6DF] text-[#6B746E] hover:text-[#B94A48] transition-colors"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
     </aside>
   );

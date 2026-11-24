@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CreditCard, CheckCircle2, ShieldCheck, AlertCircle, Sparkles, ExternalLink, Lock, Info } from 'lucide-react';
+import { CreditCard, CheckCircle2, ShieldCheck, AlertCircle, Sparkles, ExternalLink, Lock, Info, X } from 'lucide-react';
 import { verifyRazorpayPayment } from '../services/api';
 
 export default function RazorpayCheckoutModal({
@@ -39,7 +39,6 @@ export default function RazorpayCheckoutModal({
     }
   };
 
-  // Launch official Razorpay Standard Checkout popup (requires real test keys)
   const launchRazorpayCheckout = () => {
     setError(null);
     if (!keysConfigured) {
@@ -62,7 +61,7 @@ export default function RazorpayCheckoutModal({
         email: orderData.customer_email || 'buyer@test.com',
         contact: orderData.customer_phone || '9999999999'
       },
-      theme: { color: '#0284c7' },
+      theme: { color: '#234E42' },
       handler: async function (response) {
         await verifyPaymentOnServer(
           orderData.order_id,
@@ -85,7 +84,6 @@ export default function RazorpayCheckoutModal({
     }
   };
 
-  // Demo/simulated payment — works without real Razorpay keys (for testing/demos)
   const handleDemoPayment = async () => {
     const fakePayId = `pay_test_${Math.random().toString(36).substring(2, 12)}`;
     const fakeSig = `test_sig_${Math.random().toString(36).substring(2, 16)}`;
@@ -98,64 +96,71 @@ export default function RazorpayCheckoutModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-      <div className="bg-[#111827] border border-blue-500/30 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
-
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in">
+      <div className="bg-white border border-[#DEE3DC] rounded-xl max-w-lg w-full p-6 shadow-xl space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-800 pb-4">
+        <div className="flex items-center justify-between border-b border-[#DEE3DC] pb-3">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400">
+            <div className="h-10 w-10 rounded-lg bg-[#EAEDE7] border border-[#DEE3DC] flex items-center justify-center text-[#234E42] shadow-xs">
               <CreditCard className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Razorpay Checkout</h3>
-              <p className="text-xs text-gray-400 font-mono">Order: {orderData.order_id}</p>
+              <h3 className="text-base font-semibold text-[#202923]">Razorpay Checkout</h3>
+              <p className="text-xs text-[#6B746E] font-mono">Order: {orderData.order_id}</p>
             </div>
           </div>
-          <span className={`px-2.5 py-1 rounded-full text-[11px] font-mono font-bold border ${
-            keysConfigured
-              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-              : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30'
-          }`}>
-            {keysConfigured ? 'TEST MODE' : 'DEMO MODE'}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={`px-2 py-0.5 rounded text-[11px] font-mono font-medium border ${
+              keysConfigured
+                ? 'bg-[#EAEDE7] text-[#234E42] border-[#DEE3DC]'
+                : 'bg-[#FEF8F1] text-[#B77932] border-[#DEE3DC]'
+            }`}>
+              {keysConfigured ? 'TEST MODE' : 'DEMO MODE'}
+            </span>
+            <button
+              onClick={onClose}
+              className="text-[#6B746E] hover:text-[#202923] p-1 rounded-lg hover:bg-[#F6F5F1] transition"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Success State */}
         {verificationResult ? (
           <div className="space-y-4 py-2 text-center">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-8 h-8" />
+            <div className="w-14 h-14 rounded-full bg-[#EAEDE7] border border-[#DEE3DC] text-[#347A52] flex items-center justify-center mx-auto shadow-xs">
+              <CheckCircle2 className="w-7 h-7" />
             </div>
             <div>
-              <h4 className="text-xl font-bold text-white">Payment Verified!</h4>
-              <p className="text-xs text-gray-400 mt-1">
+              <h4 className="text-lg font-semibold text-[#202923]">Payment Verified!</h4>
+              <p className="text-xs text-[#6B746E] mt-0.5">
                 {keysConfigured ? 'HMAC-SHA256 signature verified server-side.' : 'Demo payment processed successfully.'}
               </p>
             </div>
-            <div className="bg-gray-900/80 rounded-xl p-4 border border-gray-800 text-left space-y-2 text-xs">
+            <div className="bg-[#F6F5F1] rounded-lg p-3.5 border border-[#DEE3DC] text-left space-y-1.5 text-xs">
               <div className="flex justify-between">
-                <span className="text-gray-400">Status:</span>
-                <span className="text-emerald-400 font-bold font-mono">PAID ✓</span>
+                <span className="text-[#6B746E]">Status:</span>
+                <span className="text-[#347A52] font-semibold font-mono">PAID ✓</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-400">Payment ID:</span>
-                <span className="text-gray-200 font-mono">{verificationResult.razorpay_payment_id}</span>
+                <span className="text-[#6B746E]">Payment ID:</span>
+                <span className="text-[#202923] font-mono">{verificationResult.razorpay_payment_id}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-400">Amount:</span>
-                <span className="text-blue-400 font-bold font-mono">₹{verificationResult.amount_inr?.toLocaleString('en-IN')}</span>
+                <span className="text-[#6B746E]">Amount:</span>
+                <span className="text-[#234E42] font-semibold font-mono">₹{verificationResult.amount_inr?.toLocaleString('en-IN')}</span>
               </div>
               {verificationResult.audit_event_id && (
-                <div className="flex justify-between border-t border-gray-800 pt-2">
-                  <span className="text-gray-400">Audit ID:</span>
-                  <span className="text-gray-300 font-mono">{verificationResult.audit_event_id}</span>
+                <div className="flex justify-between border-t border-[#DEE3DC] pt-1.5">
+                  <span className="text-[#6B746E]">Audit ID:</span>
+                  <span className="text-[#202923] font-mono">{verificationResult.audit_event_id}</span>
                 </div>
               )}
             </div>
             <button
               onClick={onClose}
-              className="w-full px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm transition"
+              className="w-full px-4 py-2 rounded-lg bg-[#234E42] hover:bg-[#1c3f35] text-white font-medium text-xs transition shadow-xs"
             >
               Done
             </button>
@@ -163,82 +168,82 @@ export default function RazorpayCheckoutModal({
         ) : (
           <div className="space-y-4">
             {/* Amount Summary */}
-            <div className="bg-gray-900/70 rounded-xl p-4 border border-gray-800 flex items-center justify-between">
+            <div className="bg-[#F6F5F1] rounded-lg p-3.5 border border-[#DEE3DC] flex items-center justify-between">
               <div>
-                <span className="text-xs text-gray-400 block">Total Payable</span>
-                <span className="text-2xl font-bold text-white font-mono">
+                <span className="text-xs text-[#6B746E] block">Total Payable</span>
+                <span className="text-xl font-bold text-[#202923] font-mono">
                   ₹{orderData.amount_inr?.toLocaleString('en-IN')}
                 </span>
               </div>
               <div className="text-right">
-                <span className="text-xs text-emerald-400 block">Savings: ₹{orderData.discount_amount?.toLocaleString('en-IN')}</span>
-                <span className="text-[11px] text-gray-400 font-mono">INR</span>
+                <span className="text-xs text-[#347A52] block font-medium">Savings: ₹{orderData.discount_amount?.toLocaleString('en-IN')}</span>
+                <span className="text-[11px] text-[#8C958E] font-mono">INR</span>
               </div>
             </div>
 
             {/* Demo mode notice */}
             {isDemoMode && (
-              <div className="bg-yellow-950/30 border border-yellow-500/30 rounded-xl p-3 text-xs text-yellow-300 flex items-start gap-2">
-                <Info className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
+              <div className="bg-[#FEF8F1] border border-[#DEE3DC] rounded-lg p-3 text-xs text-[#B77932] flex items-start gap-2">
+                <Info className="w-4 h-4 text-[#B77932] shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-semibold block">Demo Mode — Razorpay keys not configured</span>
-                  <span className="text-[11px] text-gray-400">
-                    Add real test keys to <code className="text-yellow-300 font-mono">backend/.env</code> to use the live Razorpay popup. Use "Demo Test Payment" below to simulate a successful payment.
+                  <span className="font-semibold block text-[#202923]">Demo Mode — Keys not configured</span>
+                  <span className="text-[11px] text-[#6B746E]">
+                    Simulate a completed payment below or add live test keys to <code className="text-[#202923] font-mono">backend/.env</code>.
                   </span>
                 </div>
               </div>
             )}
 
             {error && (
-              <div className="bg-red-950/30 border border-red-500/40 rounded-xl p-3 text-xs text-red-300 flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+              <div className="bg-[#FDF4F4] border border-[#DEE3DC] rounded-lg p-3 text-xs text-[#B94A48] flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-[#B94A48] shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}
 
-            <div className="space-y-3">
-              {/* Real Razorpay popup — only shown when keys are configured */}
+            <div className="space-y-2.5">
+              {/* Real Razorpay popup */}
               {keysConfigured && (
                 <button
                   type="button"
                   onClick={launchRazorpayCheckout}
                   disabled={verifying}
-                  className="w-full px-4 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold text-sm shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition disabled:opacity-50"
+                  className="w-full px-4 py-2.5 rounded-lg bg-[#234E42] hover:bg-[#1c3f35] text-white font-medium text-xs shadow-xs flex items-center justify-center gap-2 transition disabled:opacity-50"
                 >
-                  <Lock className="w-4 h-4" />
+                  <Lock className="w-3.5 h-3.5" />
                   <span>Pay with Razorpay</span>
-                  <ExternalLink className="w-4 h-4 opacity-70" />
+                  <ExternalLink className="w-3.5 h-3.5 opacity-70" />
                 </button>
               )}
 
-              {/* Demo simulated payment — always available */}
+              {/* Demo simulated payment */}
               <button
                 type="button"
                 onClick={handleDemoPayment}
                 disabled={verifying}
-                className={`w-full px-4 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition disabled:opacity-50 ${
+                className={`w-full px-4 py-2.5 rounded-lg font-medium text-xs flex items-center justify-center gap-2 transition disabled:opacity-50 ${
                   isDemoMode
-                    ? 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white shadow-lg shadow-blue-500/25'
-                    : 'border border-gray-700 bg-gray-900 hover:bg-gray-800 text-blue-300 text-xs'
+                    ? 'bg-[#234E42] hover:bg-[#1c3f35] text-white shadow-xs'
+                    : 'border border-[#DEE3DC] bg-white hover:bg-[#F6F5F1] text-[#234E42]'
                 }`}
               >
                 {verifying ? (
                   <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
-                    <Sparkles className="w-4 h-4 text-blue-400" />
+                    <Sparkles className="w-3.5 h-3.5" />
                     <span>{isDemoMode ? 'Simulate Test Payment' : 'Direct Test Mode (Skip Popup)'}</span>
                   </>
                 )}
               </button>
             </div>
 
-            <div className="pt-1 flex items-center justify-between text-[11px] text-gray-500 border-t border-gray-800">
+            <div className="pt-2 flex items-center justify-between text-[11px] text-[#6B746E] border-t border-[#DEE3DC]">
               <span className="flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
+                <ShieldCheck className="w-3.5 h-3.5 text-[#347A52]" />
                 Server-Side Signature Verification
               </span>
-              <button onClick={onClose} className="hover:text-gray-300 transition">Cancel</button>
+              <button onClick={onClose} className="hover:text-[#202923] transition">Cancel</button>
             </div>
           </div>
         )}
