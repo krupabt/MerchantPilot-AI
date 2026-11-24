@@ -31,13 +31,14 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [dateRange, setDateRange] = useState('all');
   const navigate = useNavigate();
 
-  const fetchStats = async () => {
+  const fetchStats = async (range = dateRange) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await getDashboardStats();
+      const res = await getDashboardStats({ date_range: range });
       setStats(res.data);
     } catch (err) {
       console.error('Failed to load dashboard metrics:', err);
@@ -48,10 +49,13 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    fetchStats();
-  }, []);
+    fetchStats(dateRange);
+  }, [dateRange]);
 
   const totalRevenue = stats?.total_revenue ?? 0;
+  const totalCogs = stats?.total_cogs ?? 0;
+  const grossProfit = stats?.gross_profit ?? 0;
+  const grossMarginPct = stats?.gross_profit_margin_pct ?? 0;
   const totalOrders = stats?.total_orders ?? 0;
   const aov = stats?.average_order_value ?? (totalOrders > 0 ? totalRevenue / totalOrders : 0);
   const activeProducts = stats?.active_products ?? 0;
@@ -66,25 +70,56 @@ export default function Dashboard() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#DEE3DC]">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-2 border-b border-[#DEE3DC]">
         <div>
           <h1 className="text-2xl sm:text-[28px] font-bold text-[#202923] tracking-tight">
             Business overview
           </h1>
           <p className="text-sm text-[#6B746E] mt-0.5">
-            Monitor your sales, inventory, and business performance.
+            Real database analytics, inventory health, and AI copilot actions.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Date Range Selector Pills */}
+          <div className="flex items-center gap-1 bg-[#EAEDE7] p-1 rounded-lg">
+            {[
+              { id: 'today', label: 'Today' },
+              { id: '7d', label: '7 Days' },
+              { id: '30d', label: '30 Days' },
+              { id: 'all', label: 'All Time' },
+            ].map((pill) => (
+              <button
+                key={pill.id}
+                onClick={() => setDateRange(pill.id)}
+                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                  dateRange === pill.id
+                    ? 'bg-[#234E42] text-white shadow-xs'
+                    : 'text-[#202923] hover:bg-[#DEE3DC]'
+                }`}
+              >
+                {pill.label}
+              </button>
+            ))}
+          </div>
+
           <button
-            onClick={fetchStats}
+            onClick={() => fetchStats(dateRange)}
             disabled={loading}
             className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 text-[#6B746E] ${loading ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
           </button>
+
+          <Link
+            to="/sales"
+            className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F6F5F1] border border-[#DEE3DC] text-[#202923] font-medium text-xs transition-colors shadow-xs flex items-center gap-1.5"
+          >
+            <ShoppingCart className="w-3.5 h-3.5 text-[#234E42]" />
+            <span>New Sale</span>
+          </Link>
+
           <Link
             to="/copilot"
             className="px-3.5 py-1.5 rounded-md bg-[#234E42] hover:bg-[#1B3D34] text-white font-medium text-xs transition-colors shadow-xs flex items-center gap-1.5"
@@ -102,12 +137,12 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* 4 Compact KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 5 Compact KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Revenue */}
         <div className="surface-card p-4 space-y-1">
           <div className="flex items-center justify-between text-[#6B746E] text-xs">
-            <span className="font-medium">Revenue</span>
+            <span className="font-medium">Total Revenue</span>
             <DollarSign className="w-4 h-4 text-[#234E42]" />
           </div>
           <p className="text-2xl font-bold text-[#202923] tracking-tight">
@@ -115,6 +150,22 @@ export default function Dashboard() {
           </p>
           <p className="text-[12px] text-[#6B746E]">
             Settled customer orders
+          </p>
+        </div>
+
+        {/* Gross Profit */}
+        <div className="surface-card p-4 space-y-1 border-l-4 border-l-[#234E42]">
+          <div className="flex items-center justify-between text-[#6B746E] text-xs">
+            <span className="font-medium">Gross Profit</span>
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#E4ECE7] text-[#234E42]">
+              {grossMarginPct}% margin
+            </span>
+          </div>
+          <p className="text-2xl font-bold text-[#234E42] tracking-tight">
+            {loading ? '...' : `₹${grossProfit.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
+          </p>
+          <p className="text-[12px] text-[#6B746E]">
+            Revenue minus COGS (₹{totalCogs.toLocaleString('en-IN')})
           </p>
         </div>
 
@@ -160,6 +211,35 @@ export default function Dashboard() {
           </p>
         </div>
       </div>
+
+      {/* Zero Orders Guidance Banner */}
+      {totalOrders === 0 && !loading && (
+        <div className="p-4 rounded-xl bg-[#EBF2EE] border border-[#B8D4C4] text-[#202923] flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="w-5 h-5 text-[#234E42] mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-[#202923]">Ready to record your first transactions</p>
+              <p className="text-xs text-[#6B746E] mt-0.5">
+                Your store currently has 0 recorded orders. Record an in-store counter sale, import past sales via CSV, or test online checkout to populate live analytics and gross profit.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              to="/sales"
+              className="px-3 py-1.5 rounded-md bg-[#234E42] text-white text-xs font-medium hover:bg-[#1B3D34] transition-colors"
+            >
+              Record In-Store Sale
+            </Link>
+            <Link
+              to="/import"
+              className="px-3 py-1.5 rounded-md bg-white border border-[#DEE3DC] text-[#202923] text-xs font-medium hover:bg-[#F6F5F1] transition-colors"
+            >
+              Import CSV
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Revenue Performance Chart */}
       <div className="surface-card p-5 space-y-4">

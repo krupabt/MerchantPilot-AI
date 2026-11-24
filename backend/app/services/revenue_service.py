@@ -11,7 +11,8 @@ class RevenueService:
     def mine_basket_associations(
         db: Session,
         min_support: float = 0.05,
-        min_confidence: float = 0.20
+        min_confidence: float = 0.20,
+        merchant_id: Optional[str] = None
     ) -> List[AssociationRule]:
         """
         Genuine Apriori Association Rule Mining:
@@ -21,7 +22,10 @@ class RevenueService:
         4. Computes Lift: P(A ∩ B) / (P(A) * P(B))
         5. Ranks rules by Lift descending.
         """
-        orders = db.query(Order).filter(Order.status.in_(["PAID", "AUTHORIZED"])).all()
+        query = db.query(Order).filter(Order.status.in_(["PAID", "AUTHORIZED"]))
+        if merchant_id:
+            query = query.filter(Order.merchant_id == merchant_id)
+        orders = query.all()
         if not orders or len(orders) < 5:
             return []
 
@@ -184,12 +188,15 @@ class RevenueService:
         return results
 
     @staticmethod
-    def get_revenue_insights(db: Session) -> RevenueInsightsResponse:
+    def get_revenue_insights(db: Session, merchant_id: Optional[str] = None) -> RevenueInsightsResponse:
         """
         Calculates end-to-end fintech revenue performance metrics and dynamically
         generates bundle opportunities from mined Apriori rules.
         """
-        paid_orders = db.query(Order).filter(Order.status.in_(["PAID", "AUTHORIZED"])).all()
+        query = db.query(Order).filter(Order.status.in_(["PAID", "AUTHORIZED"]))
+        if merchant_id:
+            query = query.filter(Order.merchant_id == merchant_id)
+        paid_orders = query.all()
         total_orders = len(paid_orders)
 
         # Handle Insufficient Transaction Data Gracefully
@@ -230,7 +237,7 @@ class RevenueService:
                 category_rev[cat] += item.total_price
 
         # Mine real rules
-        rules = RevenueService.mine_basket_associations(db, min_support=0.05, min_confidence=0.20)
+        rules = RevenueService.mine_basket_associations(db, min_support=0.05, min_confidence=0.20, merchant_id=merchant_id)
 
         # Dynamically generate bundles from top rules
         bundles = []

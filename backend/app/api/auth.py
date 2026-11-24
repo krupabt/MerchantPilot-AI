@@ -30,15 +30,8 @@ def sign_in(request: SignInRequest, req: Request, db: Session = Depends(get_db))
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Authentication failed. Please try again.")
 
 @router.get("/me", response_model=UserResponse, summary="Get Current Authenticated User Profile")
-def get_me(current_user: User = Depends(get_current_user)):
-    return UserResponse(
-        id=current_user.id,
-        name=current_user.name,
-        email=current_user.email,
-        role=current_user.role,
-        merchant_id=current_user.merchant_id,
-        created_at=current_user.created_at
-    )
+def get_me(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    return AuthService._build_user_response(db, current_user)
 
 @router.put("/me", response_model=UserResponse, summary="Update Authenticated User Profile")
 def update_me(

@@ -20,6 +20,9 @@ import MarketBasketAnalysis from './pages/MarketBasketAnalysis';
 import AuditTrail from './pages/AuditTrail';
 import Policies from './pages/Policies';
 import ActionCenterPage from './pages/ActionCenterPage';
+import SalesManagement from './pages/SalesManagement';
+import DataImport from './pages/DataImport';
+import Settings from './pages/Settings';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -93,18 +96,27 @@ function MainLayout() {
             <Route path="/product-intelligence" element={<MarketBasketAnalysis />} />
             <Route path="/merchant/market-basket" element={<Navigate to="/product-intelligence" replace />} />
 
-            {/* Orders & Payments */}
-            <Route path="/orders" element={<MerchantOrders />} />
-            <Route path="/merchant/orders" element={<Navigate to="/orders" replace />} />
-            <Route path="/transactions" element={<Navigate to="/orders" replace />} />
+            {/* In-Store POS & Sales */}
+            <Route path="/sales" element={<SalesManagement />} />
+            <Route path="/pos" element={<Navigate to="/sales" replace />} />
+            <Route path="/merchant/sales" element={<Navigate to="/sales" replace />} />
 
             {/* Product Catalog Management */}
             <Route path="/catalog" element={<Catalog />} />
             <Route path="/merchant/products" element={<Navigate to="/catalog" replace />} />
 
-            {/* Commercial Policies & Settings */}
-            <Route path="/settings" element={<Policies />} />
-            <Route path="/policies" element={<Navigate to="/settings" replace />} />
+            {/* Orders & Payments */}
+            <Route path="/orders" element={<MerchantOrders />} />
+            <Route path="/merchant/orders" element={<Navigate to="/orders" replace />} />
+            <Route path="/transactions" element={<Navigate to="/orders" replace />} />
+
+            {/* Data Import & Migration */}
+            <Route path="/import" element={<DataImport />} />
+            <Route path="/merchant/import" element={<Navigate to="/import" replace />} />
+
+            {/* Business Settings & Commercial Policies */}
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/policies" element={<Policies />} />
             <Route path="/merchant/settings" element={<Navigate to="/settings" replace />} />
 
             {/* Audit Trail */}

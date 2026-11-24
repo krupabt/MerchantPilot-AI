@@ -10,6 +10,7 @@ from backend.app.models.order import Order, OrderItem
 from backend.app.models.payment import Payment
 from backend.app.models.audit import AuditLog
 from backend.app.models.user import User
+from backend.app.models.merchant import Merchant
 from backend.app.schemas.merchant import (
     ProductCreateRequest, ProductUpdateRequest, CategoryCreateRequest,
     MerchantStatsResponse, TopProductResponse, RevenueTrendItem
@@ -17,30 +18,62 @@ from backend.app.schemas.merchant import (
 
 class MerchantService:
     @staticmethod
-    def get_merchant_stats(db: Session, merchant_id: str = "m_1001") -> Dict[str, Any]:
+    def get_merchant_stats(db: Session, merchant_id: str = "m_1001", date_range: str = "all") -> Dict[str, Any]:
         """
-        Calculates 100% database-derived analytics for the authenticated merchant.
+        Calculates 100% database-derived analytics for the authenticated merchant,
+        including Revenue, Cost of Goods Sold (COGS), Gross Profit, and Gross Margin.
         Zero mock data or fabricated numbers.
         """
-        # 1. Total revenue from verified paid orders
-        total_rev_scalar = db.query(func.sum(Order.final_amount)).filter(
+        # Determine date filter
+        now = datetime.utcnow()
+        start_filter = None
+        if date_range == "today":
+            start_filter = datetime(now.year, now.month, now.day)
+        elif date_range == "7d":
+            start_filter = now - timedelta(days=7)
+        elif date_range == "30d":
+            start_filter = now - timedelta(days=30)
+
+        # 1. Base order query for paid orders
+        paid_orders_q = db.query(Order).filter(
             Order.merchant_id == merchant_id,
             Order.status.in_(["PAID", "AUTHORIZED"])
-        ).scalar()
-        total_revenue = round(float(total_rev_scalar or 0.0), 2)
+        )
+        if start_filter:
+            paid_orders_q = paid_orders_q.filter(Order.created_at >= start_filter)
 
-        # 2. Order counts
-        total_orders = db.query(Order).filter(Order.merchant_id == merchant_id).count()
-        pending_orders = db.query(Order).filter(
-            Order.merchant_id == merchant_id,
-            Order.status == "PENDING"
-        ).count()
-        completed_orders = db.query(Order).filter(
-            Order.merchant_id == merchant_id,
-            Order.status.in_(["PAID", "AUTHORIZED"])
-        ).count()
+        paid_orders = paid_orders_q.all()
+        paid_order_ids = [o.id for o in paid_orders]
 
-        # 3. Average Order Value (AOV)
+        total_revenue = round(sum(o.final_amount for o in paid_orders), 2)
+        completed_orders = len(paid_orders)
+
+        # 2. Total COGS calculation
+        product_map = {p.id: p for p in db.query(Product).filter(Product.merchant_id == merchant_id).all()}
+        order_items = db.query(OrderItem).filter(OrderItem.order_id.in_(paid_order_ids)).all() if paid_order_ids else []
+
+        total_cogs = 0.0
+        for item in order_items:
+            prod = product_map.get(item.product_id)
+            unit_cost = item.unit_cost if (item.unit_cost and item.unit_cost > 0) else (prod.cost_price if prod and prod.cost_price else 0.0)
+            total_cogs += unit_cost * item.quantity
+
+        total_cogs = round(total_cogs, 2)
+        gross_profit = round(total_revenue - total_cogs, 2)
+        gross_margin_pct = round((gross_profit / total_revenue * 100), 1) if total_revenue > 0 else 0.0
+
+        # 3. Order counts
+        orders_q = db.query(Order).filter(Order.merchant_id == merchant_id)
+        if start_filter:
+            orders_q = orders_q.filter(Order.created_at >= start_filter)
+        total_orders = orders_q.count()
+
+        pending_q = db.query(Order).filter(Order.merchant_id == merchant_id, Order.status == "PENDING")
+        if start_filter:
+            pending_q = pending_q.filter(Order.created_at >= start_filter)
+        pending_orders = pending_q.count()
+
+        # 4. Average Order Value (AOV)
         aov = round(total_revenue / completed_orders, 2) if completed_orders > 0 else 0.0
 
         # 4. Inventory counts
@@ -169,6 +202,9 @@ class MerchantService:
 
         return {
             "total_revenue": total_revenue,
+            "total_cogs": total_cogs,
+            "gross_profit": gross_profit,
+            "gross_profit_margin_pct": gross_margin_pct,
             "total_orders": total_orders,
             "pending_orders": pending_orders,
             "completed_orders": completed_orders,
@@ -178,7 +214,8 @@ class MerchantService:
             "top_selling_products": top_selling_products,
             "low_stock_products": low_stock_products,
             "revenue_trend": revenue_trend,
-            "recent_orders": recent_orders
+            "recent_orders": recent_orders,
+            "date_range": date_range
         }
 
     @staticmethod
@@ -201,7 +238,8 @@ class MerchantService:
             q = q.filter(
                 Product.name.ilike(search_clean) |
                 Product.description.ilike(search_clean) |
-                Product.id.ilike(search_clean)
+                Product.id.ilike(search_clean) |
+                Product.sku.ilike(search_clean)
             )
         if stock_filter == "OUT_OF_STOCK":
             q = q.filter(Product.stock <= 0)
@@ -214,11 +252,13 @@ class MerchantService:
         return [
             {
                 "id": p.id,
+                "sku": getattr(p, "sku", None) or p.id,
                 "merchant_id": p.merchant_id,
                 "category_id": p.category_id,
                 "category": p.category,
                 "name": p.name,
                 "description": p.description,
+                "cost_price": getattr(p, "cost_price", 0.0),
                 "price": p.price,
                 "currency": p.currency,
                 "stock": p.stock,
@@ -236,6 +276,16 @@ class MerchantService:
 
     @staticmethod
     def create_product(db: Session, merchant_id: str, data: ProductCreateRequest) -> Product:
+        # Check duplicate SKU within merchant workspace
+        sku_val = data.sku.strip() if getattr(data, "sku", None) and data.sku.strip() else None
+        if sku_val:
+            dup_sku = db.query(Product).filter(
+                Product.merchant_id == merchant_id,
+                Product.sku == sku_val
+            ).first()
+            if dup_sku:
+                raise ValueError(f"A product with SKU '{sku_val}' already exists in your workspace.")
+
         # Match or create category
         cat_id = data.category_id
         if not cat_id and data.category:
@@ -255,13 +305,16 @@ class MerchantService:
                 cat_id = cat.id
 
         prod_id = f"P{uuid.uuid4().hex[:6].upper()}"
+        cost_val = float(getattr(data, "cost_price", 0.0) or 0.0)
         new_prod = Product(
             id=prod_id,
+            sku=sku_val or prod_id,
             merchant_id=merchant_id,
             category_id=cat_id,
             name=data.name.strip(),
             category=data.category.strip(),
             description=data.description.strip(),
+            cost_price=cost_val,
             price=data.price,
             currency=data.currency,
             stock=data.stock,
@@ -287,6 +340,18 @@ class MerchantService:
         if not prod:
             raise ValueError(f"Product '{product_id}' not found or you do not have permission to modify it.")
 
+        if getattr(data, "sku", None) is not None:
+            sku_val = data.sku.strip() if data.sku else None
+            if sku_val and sku_val != prod.sku:
+                dup_sku = db.query(Product).filter(
+                    Product.merchant_id == merchant_id,
+                    Product.sku == sku_val,
+                    Product.id != prod.id
+                ).first()
+                if dup_sku:
+                    raise ValueError(f"A product with SKU '{sku_val}' already exists in your workspace.")
+            prod.sku = sku_val
+
         if data.name is not None:
             prod.name = data.name.strip()
         if data.category is not None:
@@ -295,6 +360,8 @@ class MerchantService:
             prod.category_id = data.category_id
         if data.description is not None:
             prod.description = data.description.strip()
+        if getattr(data, "cost_price", None) is not None:
+            prod.cost_price = float(data.cost_price)
         if data.price is not None:
             prod.price = data.price
         if data.stock is not None:
@@ -331,15 +398,32 @@ class MerchantService:
         return True
 
     @staticmethod
-    def update_stock(db: Session, merchant_id: str, product_id: str, new_stock: int) -> Product:
+    def update_stock(db: Session, merchant_id: str, product_id: str, new_stock: int, reason: Optional[str] = None) -> Product:
         prod = db.query(Product).filter(
             Product.id == product_id,
             Product.merchant_id == merchant_id
         ).first()
         if not prod:
             raise ValueError(f"Product '{product_id}' not found or access denied.")
+
+        delta = new_stock - prod.stock
+        prev = prod.stock
         prod.stock = new_stock
         prod.updated_at = datetime.utcnow()
+
+        from backend.app.models.stock_adjustment import StockAdjustment
+        adj = StockAdjustment(
+            id=f"adj_{uuid.uuid4().hex[:10]}",
+            merchant_id=merchant_id,
+            product_id=prod.id,
+            product_name=prod.name,
+            adjustment_type="RESTOCK" if delta > 0 else "MANUAL",
+            quantity_delta=delta,
+            previous_stock=prev,
+            new_stock=new_stock,
+            reason=reason or ("Manual inventory adjustment" if delta < 0 else "Restock addition")
+        )
+        db.add(adj)
         db.commit()
         db.refresh(prod)
         return prod
@@ -487,3 +571,83 @@ class MerchantService:
         db.commit()
         db.refresh(cat)
         return cat
+
+    @staticmethod
+    def get_settings(db: Session, merchant_id: str) -> Dict[str, Any]:
+        m = db.query(Merchant).filter(Merchant.id == merchant_id).first()
+        if not m:
+            u = db.query(User).filter(User.merchant_id == merchant_id).first()
+            if u:
+                return {
+                    "merchant_id": merchant_id,
+                    "name": u.name,
+                    "store_name": u.name,
+                    "email": u.email,
+                    "currency": "INR",
+                    "business_category": "General Retail",
+                    "phone": None,
+                    "address": None,
+                    "is_demo": False,
+                    "created_at": u.created_at.isoformat() if u.created_at else None
+                }
+            raise ValueError(f"Merchant workspace '{merchant_id}' not found.")
+        return {
+            "merchant_id": m.id,
+            "name": m.name,
+            "store_name": m.name,
+            "email": m.email,
+            "currency": m.currency,
+            "business_category": getattr(m, "business_category", "General Retail"),
+            "phone": getattr(m, "phone", None),
+            "address": getattr(m, "address", None),
+            "is_demo": getattr(m, "is_demo", False),
+            "created_at": m.created_at.isoformat() if m.created_at else None
+        }
+
+    @staticmethod
+    def update_settings(db: Session, merchant_id: str, data: Any) -> Dict[str, Any]:
+        m = db.query(Merchant).filter(Merchant.id == merchant_id).first()
+        if not m:
+            raise ValueError(f"Merchant workspace '{merchant_id}' not found.")
+        if getattr(data, "store_name", None):
+            m.name = data.store_name.strip()
+        elif getattr(data, "name", None):
+            m.name = data.name.strip()
+        if getattr(data, "business_category", None):
+            m.business_category = data.business_category.strip()
+        if getattr(data, "phone", None) is not None:
+            m.phone = data.phone.strip() if data.phone else None
+        if getattr(data, "address", None) is not None:
+            m.address = data.address.strip() if data.address else None
+        if getattr(data, "currency", None):
+            m.currency = data.currency.strip().upper()
+        if getattr(data, "is_demo", None) is not None:
+            m.is_demo = bool(data.is_demo)
+        db.commit()
+        db.refresh(m)
+        return MerchantService.get_settings(db, merchant_id)
+
+    @staticmethod
+    def list_stock_adjustments(db: Session, merchant_id: str, limit: int = 50) -> List[Dict[str, Any]]:
+        from backend.app.models.stock_adjustment import StockAdjustment
+        adjs = (
+            db.query(StockAdjustment)
+            .filter(StockAdjustment.merchant_id == merchant_id)
+            .order_by(StockAdjustment.created_at.desc())
+            .limit(limit)
+            .all()
+        )
+        return [
+            {
+                "id": a.id,
+                "product_id": a.product_id,
+                "product_name": a.product_name,
+                "adjustment_type": a.adjustment_type,
+                "quantity_delta": a.quantity_delta,
+                "previous_stock": a.previous_stock,
+                "new_stock": a.new_stock,
+                "reason": a.reason,
+                "created_at": a.created_at.isoformat() if a.created_at else None
+            }
+            for a in adjs
+        ]

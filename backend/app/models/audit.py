@@ -6,6 +6,7 @@ class AuditLog(Base):
     __tablename__ = "audit_logs"
 
     id = Column(String(50), primary_key=True)
+    merchant_id = Column(String(50), nullable=True, index=True)
     session_id = Column(String(50), nullable=True, index=True)
     actor = Column(String(50), nullable=False, index=True)  # AI_BUYER, AI_MERCHANT_AGENT, POLICY_ENGINE, APPROVAL_GATE, RAZORPAY_SYSTEM
     intent = Column(String(200), nullable=True)

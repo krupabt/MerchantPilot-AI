@@ -6,10 +6,12 @@ class ProductSpec(BaseModel):
 
 class ProductBase(BaseModel):
     id: str
+    sku: Optional[str] = None
     name: str
     category: str
     description: str
     price: float
+    cost_price: Optional[float] = 0.0
     currency: str = "INR"
     stock: int
     rating: float = 4.5

@@ -6,6 +6,7 @@ import {
   CheckSquare,
   Package,
   ShoppingBag,
+  ShoppingCart,
   TrendingUp,
   Boxes,
   Sliders,
@@ -13,7 +14,9 @@ import {
   Store,
   ArrowUpRight,
   LogOut,
-  ChevronRight
+  ChevronRight,
+  UploadCloud,
+  Layers
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -27,17 +30,20 @@ const NAV_GROUPS = [
     ]
   },
   {
-    title: 'BUSINESS',
+    title: 'OPERATIONS',
     items: [
-      { name: 'Products & Inventory', path: '/inventory', icon: Package },
+      { name: 'In-Store Sales (POS)', path: '/sales', icon: ShoppingCart },
+      { name: 'Product Catalog', path: '/catalog', icon: Layers },
+      { name: 'Stock & Runway', path: '/inventory', icon: Package },
       { name: 'Orders & Payments', path: '/orders', icon: ShoppingBag },
     ]
   },
   {
-    title: 'INSIGHTS',
+    title: 'INTELLIGENCE',
     items: [
       { name: 'Sales Analytics', path: '/analytics', icon: TrendingUp },
-      { name: 'Product Intelligence', path: '/product-intelligence', icon: Boxes },
+      { name: 'Basket Affinity', path: '/product-intelligence', icon: Boxes },
+      { name: 'Data Import (CSV)', path: '/import', icon: UploadCloud },
     ]
   },
   {
@@ -78,13 +84,13 @@ export default function MerchantSidebar({ mobile = false, onClose }) {
               <span className="font-semibold text-sm tracking-tight text-[#202923] block leading-none">
                 MerchantPilot
               </span>
-              <span className="text-[11px] text-[#6B746E] block mt-0.5 font-medium">
-                Apex Electronics
+              <span className="text-[11px] text-[#6B746E] block mt-0.5 font-medium truncate max-w-[120px]">
+                {user?.store_name || user?.name || 'Apex Electronics'}
               </span>
             </div>
           </NavLink>
           <span className="text-[10px] font-mono font-medium text-[#234E42] bg-[#B8D4C4]/40 px-1.5 py-0.5 rounded border border-[#B8D4C4]">
-            m_1001
+            {user?.merchant_id || 'm_1001'}
           </span>
         </div>
 

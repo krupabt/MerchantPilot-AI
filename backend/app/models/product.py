@@ -10,8 +10,10 @@ class Product(Base):
     merchant_id = Column(String(50), ForeignKey("merchants.id"), default="m_1001", index=True, nullable=False)
     category_id = Column(String(50), ForeignKey("categories.id"), nullable=True, index=True)
     name = Column(String(150), nullable=False, index=True)
+    sku = Column(String(100), nullable=True, index=True)
     category = Column(String(100), nullable=False, index=True)  # Kept for direct string queries & test compatibility
     description = Column(String(1000), nullable=False)
+    cost_price = Column(Float, default=0.0, nullable=False)  # Purchase cost
     price = Column(Float, nullable=False)
     currency = Column(String(10), default="INR")
     stock = Column(Integer, default=10, nullable=False)

@@ -14,6 +14,7 @@ router = APIRouter(prefix="/dashboard", tags=["Merchant Dashboard"])
 
 @router.get("/stats", summary="Overview Metrics for Merchant Fintech Dashboard")
 def get_dashboard_stats(
+    date_range: Optional[str] = Query(default="all"),
     current_user: Optional[User] = Depends(get_optional_user),
     db: Session = Depends(get_db)
 ):
@@ -21,14 +22,18 @@ def get_dashboard_stats(
     merchant_id = current_user.merchant_id if (current_user and current_user.merchant_id) else "m_1001"
     
     # 1. Real database-derived statistics via MerchantService
-    merchant_stats = MerchantService.get_merchant_stats(db, merchant_id=merchant_id)
+    merchant_stats = MerchantService.get_merchant_stats(db, merchant_id=merchant_id, date_range=date_range or "all")
     
     # 2. Revenue insights from real transaction baskets
-    rev_insights = RevenueService.get_revenue_insights(db)
+    rev_insights = RevenueService.get_revenue_insights(db, merchant_id=merchant_id)
     
     # 3. Policy violations & AI sessions from audit logs
-    blocked_count = db.query(AuditLog).filter(AuditLog.policy_result == "VIOLATION").count()
-    total_ai_sessions = db.query(AuditLog.session_id).distinct().count()
+    if merchant_id == "m_1001":
+        blocked_count = db.query(AuditLog).filter(AuditLog.policy_result == "VIOLATION").count()
+        total_ai_sessions = db.query(AuditLog.session_id).distinct().count()
+    else:
+        blocked_count = db.query(AuditLog).filter(AuditLog.merchant_id == merchant_id, AuditLog.policy_result == "VIOLATION").count()
+        total_ai_sessions = db.query(AuditLog.session_id).filter(AuditLog.merchant_id == merchant_id).distinct().count()
 
     # 4. Active products count
     active_products_count = db.query(Product).filter(
@@ -38,6 +43,10 @@ def get_dashboard_stats(
 
     return {
         "total_revenue": merchant_stats["total_revenue"],
+        "total_cogs": merchant_stats.get("total_cogs", 0.0),
+        "gross_profit": merchant_stats.get("gross_profit", 0.0),
+        "gross_profit_margin_pct": merchant_stats.get("gross_profit_margin_pct", 0.0),
+        "date_range": merchant_stats.get("date_range", "all"),
         "active_products": active_products_count,
         "revenue_insights": rev_insights,
         "blocked_actions_count": blocked_count,

@@ -275,3 +275,37 @@ def reject_action(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+# ----------------- Business Settings & Adjustments -----------------
+
+@router.get("/settings", summary="Get Merchant Business Settings")
+def get_merchant_settings(
+    current_merchant: User = Depends(get_current_merchant),
+    db: Session = Depends(get_db)
+):
+    try:
+        return MerchantService.get_settings(db, current_merchant.merchant_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+@router.put("/settings", summary="Update Merchant Business Settings")
+def update_merchant_settings(
+    request: Dict[str, Any],
+    current_merchant: User = Depends(get_current_merchant),
+    db: Session = Depends(get_db)
+):
+    try:
+        from types import SimpleNamespace
+        data_obj = SimpleNamespace(**request)
+        return MerchantService.update_settings(db, current_merchant.merchant_id, data_obj)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/inventory/adjustments", summary="List Stock Adjustment History")
+def list_stock_adjustments(
+    limit: int = 50,
+    current_merchant: User = Depends(get_current_merchant),
+    db: Session = Depends(get_db)
+):
+    return MerchantService.list_stock_adjustments(db, current_merchant.merchant_id, limit=limit)
+
+

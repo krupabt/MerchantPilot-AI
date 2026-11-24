@@ -10,6 +10,8 @@ from backend.app.models.payment import Payment
 from backend.app.models.session import AgentSession, AgentAction
 from backend.app.models.audit import AuditLog
 from backend.app.models.action import MerchantAction
+from backend.app.models.import_record import ImportRecord
+from backend.app.models.stock_adjustment import StockAdjustment
 
 __all__ = [
     "Merchant",
@@ -26,5 +28,7 @@ __all__ = [
     "AgentSession",
     "AgentAction",
     "AuditLog",
-    "MerchantAction"
+    "MerchantAction",
+    "ImportRecord",
+    "StockAdjustment"
 ]

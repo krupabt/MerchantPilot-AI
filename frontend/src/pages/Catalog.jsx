@@ -27,9 +27,11 @@ export default function Catalog() {
   // Add Product Form
   const [newProduct, setNewProduct] = useState({
     id: '',
+    sku: '',
     name: '',
     category: '',
     price: '',
+    cost_price: '',
     stock: '',
     low_stock_threshold: '5',
     description: '',
@@ -74,9 +76,11 @@ export default function Catalog() {
     try {
       const payload = {
         id: newProduct.id.trim(),
+        sku: newProduct.sku ? newProduct.sku.trim() : newProduct.id.trim(),
         name: newProduct.name.trim(),
         category: newProduct.category.trim() || 'General',
         price: parseFloat(newProduct.price),
+        cost_price: parseFloat(newProduct.cost_price || 0),
         stock: parseInt(newProduct.stock, 10),
         low_stock_threshold: parseInt(newProduct.low_stock_threshold, 10) || 5,
         description: newProduct.description.trim(),
@@ -87,9 +91,11 @@ export default function Catalog() {
       setShowAddModal(false);
       setNewProduct({
         id: '',
+        sku: '',
         name: '',
         category: '',
         price: '',
+        cost_price: '',
         stock: '',
         low_stock_threshold: '5',
         description: '',
@@ -276,9 +282,14 @@ export default function Catalog() {
                 </div>
 
                 <div className="pt-3 border-t border-[#DEE3DC] flex items-center justify-between">
-                  <span className="text-base font-bold text-[#202923]">
-                    ₹{p.price?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                  </span>
+                  <div>
+                    <span className="text-base font-bold text-[#202923] block leading-tight">
+                      ₹{p.price?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </span>
+                    <span className="text-[10px] text-[#6B746E]">
+                      Cost: ₹{(p.cost_price || 0).toLocaleString('en-IN')} (Margin: {p.price > 0 ? Math.round(((p.price - (p.cost_price || 0)) / p.price) * 100) : 0}%)
+                    </span>
+                  </div>
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => handleQuickStockUpdate(p.id, p.stock, 5)}
@@ -316,7 +327,7 @@ export default function Catalog() {
             <form onSubmit={handleCreateProduct} className="space-y-3 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[#202923] font-medium block mb-1">SKU / Product ID</label>
+                  <label className="text-[#202923] font-medium block mb-1">Product ID / Code *</label>
                   <input
                     type="text"
                     required
@@ -327,11 +338,35 @@ export default function Catalog() {
                   />
                 </div>
                 <div>
-                  <label className="text-[#202923] font-medium block mb-1">Category</label>
+                  <label className="text-[#202923] font-medium block mb-1">SKU (Barcode/Tag)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. SKU-WM-001"
+                    value={newProduct.sku}
+                    onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })}
+                    className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-md px-3 py-1.5"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[#202923] font-medium block mb-1">Product name *</label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Laptops"
+                    placeholder="Apex Pro Wireless Mouse"
+                    value={newProduct.name}
+                    onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                    className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-md px-3 py-1.5"
+                  />
+                </div>
+                <div>
+                  <label className="text-[#202923] font-medium block mb-1">Category *</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Electronics"
                     value={newProduct.category}
                     onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
                     className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-md px-3 py-1.5"
@@ -339,44 +374,44 @@ export default function Catalog() {
                 </div>
               </div>
 
-              <div>
-                <label className="text-[#202923] font-medium block mb-1">Product name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Apex Pro Wireless Mouse"
-                  value={newProduct.name}
-                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                  className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-md px-3 py-1.5"
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div>
-                  <label className="text-[#202923] font-medium block mb-1">Price (₹)</label>
+                  <label className="text-[#202923] font-medium block mb-1">Selling Price (₹) *</label>
                   <input
                     type="number"
                     step="0.01"
                     required
-                    placeholder="2499.00"
+                    placeholder="700.00"
                     value={newProduct.price}
                     onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
                     className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-md px-3 py-1.5"
                   />
                 </div>
                 <div>
-                  <label className="text-[#202923] font-medium block mb-1">Initial stock</label>
+                  <label className="text-[#202923] font-medium block mb-1">Cost Price (₹) *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    placeholder="400.00"
+                    value={newProduct.cost_price}
+                    onChange={(e) => setNewProduct({ ...newProduct, cost_price: e.target.value })}
+                    className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-md px-3 py-1.5"
+                  />
+                </div>
+                <div>
+                  <label className="text-[#202923] font-medium block mb-1">Initial Stock *</label>
                   <input
                     type="number"
                     required
-                    placeholder="25"
+                    placeholder="20"
                     value={newProduct.stock}
                     onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
                     className="w-full bg-[#F6F5F1] border border-[#DEE3DC] rounded-md px-3 py-1.5"
                   />
                 </div>
                 <div>
-                  <label className="text-[#202923] font-medium block mb-1">Low threshold</label>
+                  <label className="text-[#202923] font-medium block mb-1">Low Alert Qty</label>
                   <input
                     type="number"
                     placeholder="5"

@@ -19,6 +19,10 @@ class Order(Base):
     currency = Column(String(10), default="INR")
     status = Column(String(30), default="PENDING", index=True)  # PENDING, PAID, CANCELLED, FAILED
     fulfillment_status = Column(String(30), default="UNFULFILLED", index=True)  # UNFULFILLED, PROCESSING, SHIPPED, DELIVERED, CANCELLED
+    sales_channel = Column(String(30), default="ONLINE", nullable=False)  # ONLINE, POS, IN_STORE
+    payment_method = Column(String(30), default="RAZORPAY", nullable=False)  # CASH, UPI, CARD, RAZORPAY
+    payment_reference = Column(String(100), nullable=True)
+    notes = Column(String(500), nullable=True)
     is_ai_assisted = Column(Boolean, default=False)
     is_bundle = Column(Boolean, default=False)
     bundle_name = Column(String(150), nullable=True)
@@ -40,6 +44,7 @@ class OrderItem(Base):
     product_name = Column(String(150), nullable=False)
     quantity = Column(Integer, default=1, nullable=False)
     unit_price = Column(Float, nullable=False)
+    unit_cost = Column(Float, default=0.0, nullable=False)  # Purchase cost recorded at sale
     total_price = Column(Float, nullable=False)
 
     order = relationship("Order", back_populates="items")

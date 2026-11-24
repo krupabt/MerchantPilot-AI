@@ -15,10 +15,12 @@ class CategoryResponse(BaseModel):
 
 class ProductCreateRequest(BaseModel):
     name: str = Field(..., min_length=2, max_length=150)
+    sku: Optional[str] = Field(None, max_length=100)
     category: str = Field(..., min_length=2, max_length=100)
     category_id: Optional[str] = None
-    description: str = Field(..., min_length=5, max_length=1000)
-    price: float = Field(..., gt=0)
+    description: Optional[str] = Field("Quality retail product.", max_length=1000)
+    cost_price: float = Field(0.0, ge=0, description="Purchase cost per unit")
+    price: float = Field(..., gt=0, description="Selling price per unit")
     currency: str = "INR"
     stock: int = Field(0, ge=0)
     low_stock_threshold: int = Field(5, ge=0)
@@ -29,9 +31,11 @@ class ProductCreateRequest(BaseModel):
 
 class ProductUpdateRequest(BaseModel):
     name: Optional[str] = Field(None, min_length=2, max_length=150)
+    sku: Optional[str] = Field(None, max_length=100)
     category: Optional[str] = None
     category_id: Optional[str] = None
     description: Optional[str] = Field(None, min_length=5, max_length=1000)
+    cost_price: Optional[float] = Field(None, ge=0)
     price: Optional[float] = Field(None, gt=0)
     stock: Optional[int] = Field(None, ge=0)
     low_stock_threshold: Optional[int] = Field(None, ge=0)
@@ -40,6 +44,24 @@ class ProductUpdateRequest(BaseModel):
     tags: Optional[List[str]] = None
     compatible_product_ids: Optional[List[str]] = None
     is_active: Optional[bool] = None
+
+class MerchantSettingsResponse(BaseModel):
+    merchant_id: str
+    name: str
+    email: str
+    currency: str
+    business_category: str
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    is_demo: bool = False
+    created_at: Optional[datetime] = None
+
+class MerchantSettingsUpdateRequest(BaseModel):
+    name: Optional[str] = Field(None, min_length=2, max_length=100)
+    business_category: Optional[str] = Field(None, min_length=2, max_length=100)
+    phone: Optional[str] = Field(None, max_length=30)
+    address: Optional[str] = Field(None, max_length=300)
+    currency: Optional[str] = Field(None, max_length=10)
 
 class StockUpdateRequest(BaseModel):
     stock: int = Field(..., ge=0)

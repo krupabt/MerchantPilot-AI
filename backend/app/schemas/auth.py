@@ -11,6 +11,9 @@ class SignUpRequest(BaseModel):
     password: str = Field(..., min_length=6, max_length=100)
     role: Optional[str] = "customer"  # Default to customer, can be "merchant"
     store_name: Optional[str] = None  # If registering as a merchant
+    business_category: Optional[str] = "General Retail"  # e.g., Electronics, Clothing, Grocery, Stationery
+    business_phone: Optional[str] = None
+    business_address: Optional[str] = None
 
     @field_validator("email")
     @classmethod
@@ -51,6 +54,11 @@ class UserResponse(BaseModel):
     email: str
     role: str
     merchant_id: Optional[str] = None
+    store_name: Optional[str] = None
+    business_category: Optional[str] = None
+    business_phone: Optional[str] = None
+    business_address: Optional[str] = None
+    is_demo: Optional[bool] = False
     created_at: Optional[datetime] = None
 
 class AuthResponse(BaseModel):

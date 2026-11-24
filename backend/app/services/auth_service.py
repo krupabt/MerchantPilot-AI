@@ -74,6 +74,36 @@ def verify_token(token: str) -> Optional[dict]:
 
 class AuthService:
     @staticmethod
+    def _build_user_response(db: Session, user: User) -> UserResponse:
+        store_name = None
+        biz_category = None
+        phone = None
+        address = None
+        is_demo = False
+        if user.merchant_id:
+            m = db.query(Merchant).filter(Merchant.id == user.merchant_id).first()
+            if m:
+                store_name = m.name
+                biz_category = getattr(m, "business_category", "General Retail")
+                phone = getattr(m, "phone", None)
+                address = getattr(m, "address", None)
+                is_demo = getattr(m, "is_demo", False)
+
+        return UserResponse(
+            id=user.id,
+            name=user.name,
+            email=user.email,
+            role=user.role,
+            merchant_id=user.merchant_id,
+            store_name=store_name,
+            business_category=biz_category,
+            business_phone=phone,
+            business_address=address,
+            is_demo=is_demo,
+            created_at=user.created_at
+        )
+
+    @staticmethod
     def sign_up(db: Session, request: SignUpRequest) -> AuthResponse:
         email_clean = request.email.lower().strip()
         existing = db.query(User).filter(User.email == email_clean).first()
@@ -82,18 +112,23 @@ class AuthService:
 
         user_id = f"usr_{uuid.uuid4().hex[:10]}"
         pwd_hash = hash_password(request.password)
-        role = request.role or "customer"
+        role = (request.role or "customer").lower().strip()
         merchant_id = None
 
         if role == "merchant":
             # Provision merchant entity for this user
             merchant_id = f"m_{uuid.uuid4().hex[:8]}"
             store_title = request.store_name.strip() if request.store_name else f"{request.name.strip()}'s Store"
+            biz_category = request.business_category.strip() if getattr(request, "business_category", None) else "General Retail"
             new_merchant = Merchant(
                 id=merchant_id,
                 name=store_title,
                 email=email_clean,
-                currency="INR"
+                currency="INR",
+                business_category=biz_category,
+                phone=request.business_phone.strip() if getattr(request, "business_phone", None) else None,
+                address=request.business_address.strip() if getattr(request, "business_address", None) else None,
+                is_demo=False
             )
             db.add(new_merchant)
             db.flush()
@@ -149,14 +184,7 @@ class AuthService:
             success=True,
             message="Account created successfully.",
             token=token,
-            user=UserResponse(
-                id=new_user.id,
-                name=new_user.name,
-                email=new_user.email,
-                role=new_user.role,
-                merchant_id=new_user.merchant_id,
-                created_at=new_user.created_at
-            )
+            user=AuthService._build_user_response(db, new_user)
         )
 
     @staticmethod
@@ -171,14 +199,7 @@ class AuthService:
             success=True,
             message="Sign in successful.",
             token=token,
-            user=UserResponse(
-                id=user.id,
-                name=user.name,
-                email=user.email,
-                role=user.role,
-                merchant_id=user.merchant_id,
-                created_at=user.created_at
-            )
+            user=AuthService._build_user_response(db, user)
         )
 
     @staticmethod

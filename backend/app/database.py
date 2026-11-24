@@ -28,10 +28,57 @@ Base = declarative_base(metadata=metadata)
 
 _db_initialized = False
 
+def _ensure_schema_columns():
+    """Ensure any newly added model columns exist on existing databases."""
+    try:
+        from sqlalchemy import inspect, text
+        inspector = inspect(engine)
+        tables = inspector.get_table_names()
+
+        columns_to_add = {
+            "products": [
+                ("cost_price", "FLOAT DEFAULT 0.0"),
+                ("sku", "VARCHAR(100)")
+            ],
+            "orders": [
+                ("sales_channel", "VARCHAR(30) DEFAULT 'ONLINE'"),
+                ("payment_method", "VARCHAR(30) DEFAULT 'RAZORPAY'"),
+                ("payment_reference", "VARCHAR(100)"),
+                ("notes", "VARCHAR(500)")
+            ],
+            "order_items": [
+                ("unit_cost", "FLOAT DEFAULT 0.0")
+            ],
+            "merchants": [
+                ("business_category", "VARCHAR(100) DEFAULT 'General Retail'"),
+                ("phone", "VARCHAR(30)"),
+                ("address", "VARCHAR(300)"),
+                ("is_demo", "BOOLEAN DEFAULT 0")
+            ],
+            "audit_logs": [
+                ("merchant_id", "VARCHAR(50)")
+            ]
+        }
+
+        with engine.connect() as conn:
+            for table_name, cols in columns_to_add.items():
+                if table_name in tables:
+                    existing_cols = [c["name"] for c in inspector.get_columns(table_name)]
+                    for col_name, col_type in cols:
+                        if col_name not in existing_cols:
+                            try:
+                                conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type}"))
+                                conn.commit()
+                            except Exception:
+                                pass
+    except Exception as e:
+        print(f"_ensure_schema_columns note: {e}")
+
 def init_db():
     global _db_initialized
     if not _db_initialized:
         Base.metadata.create_all(bind=engine)
+        _ensure_schema_columns()
         try:
             from backend.app.models.product import Product
             from backend.app.seed.seed_data import seed_database

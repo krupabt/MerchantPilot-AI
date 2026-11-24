@@ -42,8 +42,37 @@ class MerchantAIService:
                     last_assistant_msg = turn.get("text") or turn.get("content") or ""
                     break
 
+        # Resolve referenced product if any (direct or via multi-turn history)
+        referenced_product = cls._find_referenced_product(db, merchant_id, q, history)
+
+        # 0A. DISCOUNT FEASIBILITY INTENT
+        if any(w in q for w in ["discount", "can i give", "can i afford", "can i offer", "afford to give", "afford to offer"]) and any(w in q for w in ["afford", "feasib", "can i", "%", "margin", "allow"]):
+            res = cls._handle_discount_feasibility(db, merchant_id, q, referenced_product)
+
+        # 0B. SPECIFIC PRODUCT STOCK INTENT
+        elif referenced_product and any(w in q for w in [
+            "how many", "remaining", "units remaining", "units left", "stock of", 
+            "do i have", "stock remaining", "stock left", "how much stock"
+        ]):
+            res = cls._handle_product_stock_query(db, merchant_id, referenced_product)
+
+        # 0C. SPECIFIC PRODUCT PROFIT INTENT (Direct or follow-up)
+        elif referenced_product and any(w in q for w in [
+            "how much profit", "profit did it", "profit did that", "profit generated",
+            "margin did it", "profit made", "what profit"
+        ]):
+            res = cls._handle_product_profit_query(db, merchant_id, referenced_product)
+
+        # 0D. GENERAL GROSS PROFIT / PROFIT INTENT
+        elif any(w in q for w in [
+            "gross profit", "profit", "cogs", "cost of goods", "profit margin",
+            "gross margin", "margins", "how much revenue and gross profit", "net profit",
+            "revenue and profit"
+        ]):
+            res = cls._handle_gross_profit(db, merchant_id, q)
+
         # 1. PERIOD-OVER-PERIOD COMPARISON INTENT
-        if any(w in q for w in [
+        elif any(w in q for w in [
             "compared to", "versus", "vs", "growth", "growing or declining",
             "this week vs", "last week", "this month vs", "last month", "change in sales",
             "period comparison", "compare sales", "performance change", "are we growing"
@@ -147,6 +176,351 @@ class MerchantAIService:
             res = cls._try_gemini_synthesis(query, res, history)
 
         return res
+
+    @classmethod
+    def _find_referenced_product(
+        cls,
+        db: Session,
+        merchant_id: str,
+        query: str,
+        history: Optional[List[Dict[str, str]]] = None
+    ) -> Optional[Product]:
+        """Finds product referenced directly in query or resolved via multi-turn conversation history."""
+        products = db.query(Product).filter(
+            Product.merchant_id == merchant_id,
+            Product.is_active == True
+        ).all()
+        if not products:
+            return None
+
+        q_lower = query.lower()
+
+        # 1. Direct match in query (longest product name first to avoid prefix collisions)
+        sorted_products = sorted(products, key=lambda p: len(p.name), reverse=True)
+        for p in sorted_products:
+            p_name_clean = p.name.lower()
+            if p_name_clean in q_lower:
+                return p
+            if p.sku and p.sku.lower() in q_lower:
+                return p
+
+        # 2. Token match for distinctive words (e.g. "wireless mouse" -> "mouse", "keyboard")
+        for p in sorted_products:
+            p_words = [w for w in re.split(r'\s+', p.name.lower()) if len(w) > 3]
+            if p_words and all(w in q_lower for w in p_words):
+                return p
+
+        # 3. History resolution if conversational pronouns or follow-up cues exist
+        pronouns = ["it", "that", "this", "this item", "this product", "the product", "item", "them", "units"]
+        has_pronoun = any(re.search(rf'\b{re.escape(w)}\b', q_lower) for w in pronouns)
+        if has_pronoun and history:
+            for turn in reversed(history):
+                text = (turn.get("text") or turn.get("content") or "").lower()
+                for p in sorted_products:
+                    if p.name.lower() in text or (p.sku and p.sku.lower() in text):
+                        return p
+
+        return None
+
+    @classmethod
+    def _handle_product_stock_query(cls, db: Session, merchant_id: str, product: Product) -> Dict[str, Any]:
+        """Answers exact inventory status, runway, and financial metrics for a specific product."""
+        cutoff = datetime.utcnow() - timedelta(days=30)
+        recent_sales = db.query(
+            func.coalesce(func.sum(OrderItem.quantity), 0)
+        ).join(Order, OrderItem.order_id == Order.id).filter(
+            Order.merchant_id == merchant_id,
+            Order.status == "PAID",
+            OrderItem.product_id == product.id,
+            Order.created_at >= cutoff
+        ).scalar() or 0
+
+        daily_velocity = recent_sales / 30.0
+        runway_days = round(product.stock / daily_velocity, 1) if daily_velocity > 0 else (999 if product.stock > 0 else 0)
+
+        threshold = product.low_stock_threshold or 5
+        if product.stock <= 0:
+            status = "OUT_OF_STOCK"
+            health_badge = "🔴 Out of Stock"
+        elif product.stock <= threshold:
+            status = "LOW_STOCK"
+            health_badge = "⚠️ Low Stock Alert"
+        else:
+            status = "OPTIMAL"
+            health_badge = "🟢 Healthy Stock"
+
+        unit_margin = product.price - (product.cost_price or 0.0)
+        margin_pct = round((unit_margin / product.price * 100), 1) if product.price > 0 else 0.0
+
+        answer = (
+            f"📦 **Inventory Status for '{product.name}'** ({health_badge}):\n\n"
+            f"• **Remaining Stock:** **{product.stock} units** (Safety Threshold: {threshold})\n"
+            f"• **Selling Price:** ₹{product.price:,.2f} | **Cost Price:** ₹{(product.cost_price or 0.0):,.2f}\n"
+            f"• **Unit Profit Margin:** ₹{unit_margin:,.2f} ({margin_pct}%)\n"
+            f"• **Estimated Runway:** {f'{runway_days} days' if runway_days < 900 else 'Sufficient stock (>90 days)'} "
+            f"based on {recent_sales} units sold in past 30 days.\n"
+        )
+
+        rows = [{
+            "sku": product.sku or f"PRD-{product.id[:6]}",
+            "product_name": product.name,
+            "category": product.category or "General",
+            "stock_remaining": f"{product.stock} units",
+            "selling_price": f"₹{product.price:,.2f}",
+            "cost_price": f"₹{(product.cost_price or 0.0):,.2f}",
+            "margin": f"{margin_pct}%",
+            "status": status
+        }]
+
+        recs = []
+        if product.stock <= threshold:
+            recs.append(f"Place purchase order to restock {product.name} up to 30-day buffer.")
+        else:
+            recs.append(f"Stock level is healthy. Promote {product.name} to maximize gross profit.")
+
+        return {
+            "intent": "PRODUCT_STOCK_QUERY",
+            "answer": answer,
+            "data": rows[0],
+            "structured_table": {
+                "title": f"Stock Report: {product.name}",
+                "headers": ["SKU", "Product Name", "Category", "Current Stock", "Selling Price", "Cost Price", "Gross Margin", "Health Status"],
+                "rows": rows
+            },
+            "actionable_recommendations": recs
+        }
+
+    @classmethod
+    def _handle_product_profit_query(cls, db: Session, merchant_id: str, product: Product) -> Dict[str, Any]:
+        """Calculates specific units sold, revenue, COGS, and gross profit for a single product."""
+        items = db.query(OrderItem).join(Order, OrderItem.order_id == Order.id).filter(
+            Order.merchant_id == merchant_id,
+            Order.status == "PAID",
+            OrderItem.product_id == product.id
+        ).all()
+
+        total_units = sum(i.quantity for i in items)
+        total_rev = sum(i.total_price for i in items)
+        total_cost = sum((i.unit_cost if (i.unit_cost and i.unit_cost > 0) else (product.cost_price or 0.0)) * i.quantity for i in items)
+        gross_profit = total_rev - total_cost
+        margin_pct = round((gross_profit / total_rev * 100), 1) if total_rev > 0 else 0.0
+
+        answer = (
+            f"💰 **Financial & Profit Performance for '{product.name}'**:\n\n"
+            f"• **Units Sold:** **{total_units} units**\n"
+            f"• **Total Revenue Generated:** **₹{total_rev:,.2f}**\n"
+            f"• **Cost of Goods Sold (COGS):** **₹{total_cost:,.2f}** (Base Cost: ₹{(product.cost_price or 0.0):,.2f}/unit)\n"
+            f"• **Gross Profit:** **₹{gross_profit:,.2f}**\n"
+            f"• **Gross Margin:** **{margin_pct}%**\n\n"
+            f"This product contributes **₹{gross_profit:,.2f}** in net earnings to your business."
+        )
+
+        rows = [{
+            "product_name": product.name,
+            "units_sold": total_units,
+            "total_revenue": f"₹{total_rev:,.2f}",
+            "total_cogs": f"₹{total_cost:,.2f}",
+            "gross_profit": f"₹{gross_profit:,.2f}",
+            "margin_pct": f"{margin_pct}%"
+        }]
+
+        return {
+            "intent": "PRODUCT_PROFIT_QUERY",
+            "answer": answer,
+            "data": rows[0],
+            "structured_table": {
+                "title": f"Profit Ledger: {product.name}",
+                "headers": ["Product Name", "Units Sold", "Total Revenue", "COGS (Cost)", "Gross Profit", "Gross Margin"],
+                "rows": rows
+            },
+            "actionable_recommendations": [
+                f"Leverage '{product.name}' with {margin_pct}% margin in promotional cross-sells.",
+                "Maintain supplier purchase volume to retain favorable wholesale unit cost."
+            ]
+        }
+
+    @classmethod
+    def _handle_discount_feasibility(cls, db: Session, merchant_id: str, query: str, product: Optional[Product]) -> Dict[str, Any]:
+        """Evaluates whether requested discount is feasible against product unit margin and policy guardrails."""
+        match = re.search(r'(\d+(?:\.\d+)?)\s*%', query)
+        discount_pct = float(match.group(1)) if match else 10.0
+        max_policy_discount = 15.0
+
+        if product:
+            cost = product.cost_price or 0.0
+            price = product.price
+            disc_amt = round(price * (discount_pct / 100.0), 2)
+            new_price = price - disc_amt
+            new_margin = new_price - cost
+            new_margin_pct = round((new_margin / new_price * 100), 1) if new_price > 0 else 0.0
+
+            feasible = (discount_pct <= max_policy_discount) and (new_margin > 0)
+            status_text = "✅ **Feasible and Compliant**" if feasible else "⚠️ **Not Recommended / Breaches Guardrails**"
+
+            answer = (
+                f"🏷️ **Discount Feasibility Analysis for '{product.name}'** ({status_text}):\n\n"
+                f"• **Current Price:** ₹{price:,.2f} | **Cost Price:** ₹{cost:,.2f} (Current Margin: ₹{price - cost:,.2f})\n"
+                f"• **Proposed Discount:** **{discount_pct}%** (-₹{disc_amt:,.2f})\n"
+                f"• **Discounted Price:** **₹{new_price:,.2f}**\n"
+                f"• **Post-Discount Profit Margin:** **₹{new_margin:,.2f} per unit** ({new_margin_pct}%)\n"
+                f"• **Guardrail Check:** {'Within' if discount_pct <= max_policy_discount else 'Exceeds'} standard 15% discount limit.\n\n"
+            )
+            if feasible:
+                answer += f"Yes! You can safely offer a **{discount_pct}% discount**. You will still pocket **₹{new_margin:,.2f} gross profit** on every unit sold."
+            else:
+                answer += f"Caution: A **{discount_pct}% discount** either breaches commercial policy or leaves insufficient unit margin."
+
+            rows = [{
+                "product_name": product.name,
+                "original_price": f"₹{price:,.2f}",
+                "discount": f"{discount_pct}% (-₹{disc_amt:,.2f})",
+                "final_price": f"₹{new_price:,.2f}",
+                "unit_cost": f"₹{cost:,.2f}",
+                "retained_margin": f"₹{new_margin:,.2f} ({new_margin_pct}%)",
+                "status": "APPROVED" if feasible else "BLOCKED"
+            }]
+
+            recs = [
+                f"Limit promotional duration to 7 days to preserve baseline pricing power.",
+                "Ensure inventory buffer is sufficient to withstand volume surge."
+            ] if feasible else [
+                "Consider bundling with an accessory instead of direct price discounting."
+            ]
+
+            return {
+                "intent": "DISCOUNT_FEASIBILITY",
+                "answer": answer,
+                "data": rows[0],
+                "structured_table": {
+                    "title": f"Discount Simulation: {product.name}",
+                    "headers": ["Product Name", "Catalog Price", "Discount", "Discounted Price", "Cost Price", "Retained Margin", "Policy Status"],
+                    "rows": rows
+                },
+                "actionable_recommendations": recs
+            }
+        else:
+            products = db.query(Product).filter(Product.merchant_id == merchant_id, Product.is_active == True).all()
+            total_items = len(products)
+            answer = (
+                f"🏷️ **General Discount Policy Evaluation ({discount_pct}%)**:\n\n"
+                f"• **Policy Limit:** Maximum allowable promotional discount is **15.0%**.\n"
+                f"• **Proposed Discount:** **{discount_pct}%** is {'compliant with' if discount_pct <= 15.0 else 'in violation of'} merchant guardrails.\n"
+                f"• **Catalog Scope:** {total_items} active products evaluated.\n\n"
+                f"To inspect exact unit margin feasibility, ask about a specific product (e.g. 'Can I discount Wireless Mouse by 10%?')."
+            )
+            return {
+                "intent": "DISCOUNT_FEASIBILITY",
+                "answer": answer,
+                "data": {"discount_pct": discount_pct, "policy_max": 15.0, "compliant": discount_pct <= 15.0},
+                "structured_table": None,
+                "actionable_recommendations": [
+                    "Specify a product name for exact margin impact calculation."
+                ]
+            }
+
+    @classmethod
+    def _handle_gross_profit(cls, db: Session, merchant_id: str, query: str) -> Dict[str, Any]:
+        """Calculates exact gross profit (Revenue - Cost of Goods Sold) and itemized profit breakdown."""
+        q_lower = query.lower()
+
+        query_orders = db.query(Order).filter(
+            Order.merchant_id == merchant_id,
+            Order.status == "PAID"
+        )
+        time_desc = "All-Time"
+        now = datetime.utcnow()
+        if "today" in q_lower:
+            start_of_day = datetime(now.year, now.month, now.day)
+            query_orders = query_orders.filter(Order.created_at >= start_of_day)
+            time_desc = "Today"
+        elif "yesterday" in q_lower:
+            yesterday_start = datetime(now.year, now.month, now.day) - timedelta(days=1)
+            query_orders = query_orders.filter(Order.created_at >= yesterday_start, Order.created_at < datetime(now.year, now.month, now.day))
+            time_desc = "Yesterday"
+        elif "month" in q_lower:
+            query_orders = query_orders.filter(Order.created_at >= (now - timedelta(days=30)))
+            time_desc = "Last 30 Days"
+        elif "week" in q_lower or "7" in q_lower:
+            query_orders = query_orders.filter(Order.created_at >= (now - timedelta(days=7)))
+            time_desc = "Last 7 Days"
+
+        orders = query_orders.all()
+        order_ids = [o.id for o in orders]
+
+        total_rev = sum(o.final_amount for o in orders)
+        total_discount = sum(o.discount_amount for o in orders)
+
+        product_map = {p.id: p for p in db.query(Product).filter(Product.merchant_id == merchant_id).all()}
+        items = db.query(OrderItem).filter(OrderItem.order_id.in_(order_ids)).all() if order_ids else []
+
+        total_cogs = 0.0
+        item_stats = {}
+
+        for item in items:
+            p = product_map.get(item.product_id)
+            unit_cost = item.unit_cost if (item.unit_cost and item.unit_cost > 0) else (p.cost_price if p and p.cost_price else 0.0)
+            item_cogs = unit_cost * item.quantity
+            total_cogs += item_cogs
+
+            p_id = item.product_id or item.product_name
+            if p_id not in item_stats:
+                item_stats[p_id] = {
+                    "name": item.product_name,
+                    "units": 0,
+                    "rev": 0.0,
+                    "cogs": 0.0
+                }
+            item_stats[p_id]["units"] += item.quantity
+            item_stats[p_id]["rev"] += item.total_price
+            item_stats[p_id]["cogs"] += item_cogs
+
+        gross_profit = total_rev - total_cogs
+        margin_pct = round((gross_profit / total_rev * 100), 1) if total_rev > 0 else 0.0
+
+        rows = []
+        for p_id, s in sorted(item_stats.items(), key=lambda x: (x[1]["rev"] - x[1]["cogs"]), reverse=True):
+            p_profit = s["rev"] - s["cogs"]
+            p_margin = round((p_profit / s["rev"] * 100), 1) if s["rev"] > 0 else 0.0
+            rows.append({
+                "product_name": s["name"],
+                "units_sold": s["units"],
+                "revenue": f"₹{s['rev']:,.2f}",
+                "cogs": f"₹{s['cogs']:,.2f}",
+                "gross_profit": f"₹{p_profit:,.2f}",
+                "margin": f"{p_margin}%"
+            })
+
+        answer = (
+            f"💼 **Financial Performance & Gross Profit ({time_desc})**:\n\n"
+            f"• **Total Settled Revenue:** **₹{total_rev:,.2f}** ({len(orders)} completed orders)\n"
+            f"• **Cost of Goods Sold (COGS):** **₹{total_cogs:,.2f}**\n"
+            f"• **Gross Profit:** **₹{gross_profit:,.2f}**\n"
+            f"• **Gross Profit Margin:** **{margin_pct}%**\n"
+            f"• **Total Discounts Granted:** ₹{total_discount:,.2f}\n\n"
+            f"Formula: `Gross Profit = Total Revenue (₹{total_rev:,.2f}) – COGS (₹{total_cogs:,.2f})`."
+        )
+
+        return {
+            "intent": "GROSS_PROFIT_SUMMARY",
+            "answer": answer,
+            "data": {
+                "timeframe": time_desc,
+                "total_revenue": round(total_rev, 2),
+                "total_cogs": round(total_cogs, 2),
+                "gross_profit": round(gross_profit, 2),
+                "gross_margin_pct": margin_pct,
+                "orders_count": len(orders)
+            },
+            "structured_table": {
+                "title": f"Product Profitability Breakdown ({time_desc})",
+                "headers": ["Product Name", "Units Sold", "Revenue", "COGS (Cost)", "Gross Profit", "Margin %"],
+                "rows": rows[:8]
+            },
+            "actionable_recommendations": [
+                f"Focus sales and promotional efforts on top margin contributors to expand gross profit.",
+                "Review supplier wholesale pricing for products with gross margins below 25%."
+            ]
+        }
 
     @classmethod
     def _handle_period_comparison(cls, db: Session, merchant_id: str, days: int = 7) -> Dict[str, Any]:

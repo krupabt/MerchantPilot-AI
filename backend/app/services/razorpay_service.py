@@ -77,6 +77,10 @@ class RazorpayService:
             subtotal += item_total
             verified_items.append((prod, qty, item_total))
 
+        # Dynamically bind order to product's merchant partition if available
+        if verified_items and verified_items[0][0].merchant_id:
+            merchant_id = verified_items[0][0].merchant_id
+
         # Server-side amount — never trust client-submitted amount
         final_amount = max(1.0, subtotal - discount_amount)
         amount_paise = int(round(final_amount * 100))
@@ -146,6 +150,7 @@ class RazorpayService:
                 product_name=prod.name,
                 quantity=qty,
                 unit_price=prod.price,
+                unit_cost=getattr(prod, "cost_price", 0.0) or 0.0,
                 total_price=total_price
             )
             db.add(order_item)

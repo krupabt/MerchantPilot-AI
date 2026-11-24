@@ -76,8 +76,23 @@ export const verifyRazorpayPayment = (paymentData) => api.post('/razorpay/verify
 export const getAuditLogs = (params) => api.get('/audit/logs', { params });
 
 // Dashboard Stats & Transactions
-export const getDashboardStats = () => api.get('/dashboard/stats');
+export const getDashboardStats = (params) => api.get('/dashboard/stats', { params });
 export const getTransactions = () => api.get('/dashboard/transactions');
+
+// Sales & POS APIs
+export const recordPosSale = (data) => api.post('/merchant/sales', data);
+export const getMerchantSales = (params) => api.get('/merchant/sales', { params });
+export const getSaleReceipt = (orderId) => api.get(`/merchant/sales/${orderId}/receipt`);
+
+// Import APIs
+export const getImportTemplate = (type) => api.get(`/merchant/import/templates/${type}`);
+export const previewCsvImport = (data) => api.post('/merchant/import/preview', data);
+export const confirmCsvImport = (data) => api.post('/merchant/import/confirm', data);
+export const getImportHistory = () => api.get('/merchant/import/history');
+
+// Settings APIs
+export const getMerchantSettings = () => api.get('/merchant/settings');
+export const updateMerchantSettings = (data) => api.put('/merchant/settings', data);
 
 // AI Assistant APIs
 export const postMerchantAIAssistant = (payload) => {
