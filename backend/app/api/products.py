@@ -11,9 +11,12 @@ router = APIRouter(prefix="/products", tags=["Merchant Products"])
 def list_products(
     category: Optional[str] = None,
     query: Optional[str] = None,
+    merchant_id: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
     q = db.query(Product).filter(Product.is_active == True)
+    if merchant_id:
+        q = q.filter(Product.merchant_id == merchant_id)
     if category:
         q = q.filter(Product.category.ilike(f"%{category}%"))
     if query:

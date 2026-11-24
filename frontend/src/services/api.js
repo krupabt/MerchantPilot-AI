@@ -56,7 +56,7 @@ export const getAgentPolicies = () => api.get('/agent/policies');
 export const postAgentChat = (data) => api.post('/agent/chat', data);
 
 // Products APIs
-export const listProducts = (params) => api.get('/products', { params });
+export const listProducts = (params) => api.get('/products', { params: { merchant_id: 'm_1001', ...params } });
 export const getProductDetails = (id) => api.get(`/products/${id}`);
 
 // Revenue Intelligence APIs
