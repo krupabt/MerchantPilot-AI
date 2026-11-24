@@ -80,6 +80,19 @@ export const getDashboardStats = () => api.get('/dashboard/stats');
 export const getTransactions = () => api.get('/dashboard/transactions');
 
 // AI Assistant APIs
-export const postMerchantAIAssistant = (query) => api.post('/merchant/ai-assistant', { query });
+export const postMerchantAIAssistant = (payload) => {
+  if (typeof payload === 'string') {
+    return api.post('/merchant/ai-assistant', { query: payload });
+  }
+  return api.post('/merchant/ai-assistant', payload);
+};
+
+// Merchant Intelligence & Action Center APIs
+export const getSalesPeriodComparison = (days = 7) => api.get('/merchant/analytics/period-comparison', { params: { days } });
+export const getInventoryIntelligence = (targetBufferDays = 30) => api.get('/merchant/inventory/intelligence', { params: { target_buffer_days: targetBufferDays } });
+export const getMerchantActions = (status) => api.get('/merchant/actions', { params: status ? { status } : {} });
+export const generateMerchantActions = () => api.post('/merchant/actions/generate');
+export const approveMerchantAction = (actionId) => api.post(`/merchant/actions/${actionId}/approve`);
+export const rejectMerchantAction = (actionId) => api.post(`/merchant/actions/${actionId}/reject`);
 
 export default api;

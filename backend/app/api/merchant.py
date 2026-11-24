@@ -6,6 +6,9 @@ from backend.app.database import get_db
 from backend.app.api.deps import get_current_merchant
 from backend.app.models.user import User
 from backend.app.services.merchant_service import MerchantService
+from backend.app.services.analytics_service import AnalyticsService
+from backend.app.services.inventory_intelligence_service import InventoryIntelligenceService
+from backend.app.services.action_service import ActionService
 from backend.app.schemas.merchant import (
     ProductCreateRequest, ProductUpdateRequest, StockUpdateRequest,
     FulfillmentUpdateRequest, CategoryCreateRequest, CategoryResponse
@@ -181,3 +184,94 @@ def create_category(
         description=cat.description,
         created_at=cat.created_at
     )
+
+# ----------------- Sales Period Analytics -----------------
+
+@router.get("/analytics/period-comparison", summary="Sales Performance Period Comparison")
+def get_period_comparison(
+    days: int = Query(7, description="Window size in days (7 or 30)"),
+    current_merchant: User = Depends(get_current_merchant),
+    db: Session = Depends(get_db)
+):
+    return AnalyticsService.get_sales_period_comparison(
+        db=db,
+        merchant_id=current_merchant.merchant_id,
+        window_days=days
+    )
+
+# ----------------- Inventory Intelligence -----------------
+
+@router.get("/inventory/intelligence", summary="Inventory Velocity, Runway & Replenishment")
+def get_inventory_intelligence(
+    target_buffer_days: int = Query(30, description="Target buffer days"),
+    current_merchant: User = Depends(get_current_merchant),
+    db: Session = Depends(get_db)
+):
+    return InventoryIntelligenceService.get_inventory_intelligence(
+        db=db,
+        merchant_id=current_merchant.merchant_id,
+        target_buffer_days=target_buffer_days
+    )
+
+# ----------------- Merchant Action Center -----------------
+
+@router.get("/actions", summary="List Merchant Proactive Actions")
+def list_actions(
+    status: Optional[str] = Query(None, description="PENDING, APPROVED, REJECTED, EXECUTED, or ALL"),
+    current_merchant: User = Depends(get_current_merchant),
+    db: Session = Depends(get_db)
+):
+    actions = ActionService.get_merchant_actions(
+        db=db,
+        merchant_id=current_merchant.merchant_id,
+        status=status
+    )
+    return {"actions": actions, "count": len(actions)}
+
+@router.post("/actions/generate", summary="Scan Database and Generate Proactive Actions")
+def generate_actions(
+    current_merchant: User = Depends(get_current_merchant),
+    db: Session = Depends(get_db)
+):
+    actions = ActionService.generate_proactive_actions(
+        db=db,
+        merchant_id=current_merchant.merchant_id
+    )
+    return {"actions": actions, "count": len(actions)}
+
+@router.post("/actions/{action_id}/approve", summary="Approve and Execute Merchant Action")
+def approve_action(
+    action_id: str,
+    current_merchant: User = Depends(get_current_merchant),
+    db: Session = Depends(get_db)
+):
+    try:
+        return ActionService.approve_and_execute_action(
+            db=db,
+            merchant_id=current_merchant.merchant_id,
+            action_id=action_id,
+            user_email=current_merchant.email
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/actions/{action_id}/reject", summary="Reject Merchant Action")
+def reject_action(
+    action_id: str,
+    current_merchant: User = Depends(get_current_merchant),
+    db: Session = Depends(get_db)
+):
+    try:
+        return ActionService.reject_action(
+            db=db,
+            merchant_id=current_merchant.merchant_id,
+            action_id=action_id,
+            user_email=current_merchant.email
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+

@@ -29,6 +29,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { getDashboardStats } from '../services/api';
+import MerchantActionCenter from '../components/MerchantActionCenter';
 
 const QUICK_COPILOT_QUESTIONS = [
   'Which products are low in stock?',
@@ -258,6 +259,9 @@ export default function Dashboard() {
           ))}
         </div>
       </div>
+
+      {/* Proactive Merchant Action Center */}
+      <MerchantActionCenter onActionExecuted={fetchStats} />
 
       {/* Revenue Trend Area Chart */}
       <div className="surface-card p-6 space-y-4">

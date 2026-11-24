@@ -11,22 +11,64 @@ from backend.app.config import settings
 from backend.app.models.order import Order, OrderItem
 from backend.app.models.product import Product
 from backend.app.models.user import User
+from backend.app.services.analytics_service import AnalyticsService
+from backend.app.services.inventory_intelligence_service import InventoryIntelligenceService
+from backend.app.services.action_service import ActionService
 
 logger = logging.getLogger(__name__)
 
 class MerchantAIService:
     @classmethod
-    def answer_query(cls, db: Session, merchant_id: str, query: str) -> Dict[str, Any]:
+    def answer_query(
+        cls,
+        db: Session,
+        merchant_id: str,
+        query: str,
+        history: Optional[List[Dict[str, str]]] = None,
+        session_id: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
-        Interprets merchant natural language business queries, executing real SQL
-        aggregations and generating grounded, factual responses with zero hallucination.
-        Supports both deterministic analytics and LLM-enhanced explanations when configured.
+        Interprets merchant business questions, supporting multi-turn conversational context,
+        period-over-period comparisons, stock runway calculations, and proactive action triggers.
         """
-        # Normalize string: lower, strip, replace hyphens and underscores with spaces
+        # Normalize text
         q = re.sub(r'[-_]', ' ', query.lower().strip())
 
-        # 1. SLOW MOVING / DEAD STOCK INTENT (Check before generic 'stock')
+        # Contextual resolution if follow-up question
+        last_assistant_msg = ""
+        if history and len(history) > 0:
+            for turn in reversed(history):
+                if turn.get("sender") == "assistant" or turn.get("role") == "assistant":
+                    last_assistant_msg = turn.get("text") or turn.get("content") or ""
+                    break
+
+        # 1. PERIOD-OVER-PERIOD COMPARISON INTENT
         if any(w in q for w in [
+            "compared to", "versus", "vs", "growth", "growing or declining",
+            "this week vs", "last week", "this month vs", "last month", "change in sales",
+            "period comparison", "compare sales", "performance change", "are we growing"
+        ]):
+            days = 30 if "month" in q else 7
+            res = cls._handle_period_comparison(db, merchant_id, days)
+
+        # 2. STOCK RUNWAY & REPLENISHMENT INTENT
+        elif any(w in q for w in [
+            "runway", "days of stock", "how long will stock last", "how long will inventory last",
+            "how many should i reorder", "how many to reorder", "replenishment quantity",
+            "restock quantity", "estimated days left", "runway days"
+        ]):
+            res = cls._handle_runway_intelligence(db, merchant_id)
+
+        # 3. PROACTIVE MERCHANT ACTIONS INTENT
+        elif any(w in q for w in [
+            "what action", "what should i do", "what actions should i take",
+            "action center", "action directives", "recommended actions",
+            "action items", "urgent actions", "proactive action"
+        ]):
+            res = cls._handle_merchant_actions(db, merchant_id)
+
+        # 4. SLOW MOVING / DEAD STOCK INTENT
+        elif any(w in q for w in [
             "slow moving", "dead stock", "not selling", "zero sale", "zero sales",
             "least popular", "worst seller", "discontinue", "stagnant", "unsold",
             "lowest sale", "lowest sales", "dead inventory", "stagnant inventory",
@@ -34,7 +76,7 @@ class MerchantAIService:
         ]):
             res = cls._handle_slow_moving(db, merchant_id)
 
-        # 2. LOW STOCK / INVENTORY ALERT INTENT
+        # 5. LOW STOCK / INVENTORY ALERT INTENT
         elif any(w in q for w in [
             "low stock", "low in stock", "out of stock", "reorder", 
             "running out", "shortage", "replenish", "units left",
@@ -43,9 +85,13 @@ class MerchantAIService:
         ]) or (
             "stock" in q and not any(neg in q for neg in ["dead stock", "zero stock", "no sales"])
         ) or "inventory" in q:
-            res = cls._handle_low_stock(db, merchant_id)
+            # Check if follow-up asking for cost of replenishment
+            if any(w in q for w in ["cost", "how much will it cost", "budget needed", "total cost"]):
+                res = cls._handle_runway_intelligence(db, merchant_id)
+            else:
+                res = cls._handle_low_stock(db, merchant_id)
 
-        # 3. TOP PRODUCTS / BEST SELLERS INTENT
+        # 6. TOP PRODUCTS / BEST SELLERS INTENT
         elif any(w in q for w in [
             "top product", "top products", "best seller", "best sellers", 
             "sold the most", "most popular", "highest sales", "most units", 
@@ -55,33 +101,33 @@ class MerchantAIService:
         ]):
             res = cls._handle_top_products(db, merchant_id)
 
-        # 4. AVERAGE ORDER VALUE (AOV) INTENT
+        # 7. AVERAGE ORDER VALUE (AOV) INTENT
         elif any(w in q for w in [
             "aov", "average order", "average spend", "basket size", "spend per order"
         ]):
             res = cls._handle_aov(db, merchant_id)
 
-        # 5. BUNDLE / CROSS-SELL RECOMMENDATION INTENT
+        # 8. BUNDLE / CROSS-SELL RECOMMENDATION INTENT
         elif any(w in q for w in [
             "bundle", "cross-sell", "bundle recommendation", "package", 
             "frequently bought together", "pair", "upsell", "basket affinity"
         ]):
             res = cls._handle_bundle_suggestions(db, merchant_id)
 
-        # 6. ORDER STATUS / FULFILLMENT INTENT
+        # 9. ORDER STATUS / FULFILLMENT INTENT
         elif any(w in q for w in [
             "unfulfilled", "fulfillment", "pending shipment", "order status", 
             "shipping", "pending order", "dispatch", "delayed order", "deliveries"
         ]):
             res = cls._handle_fulfillment_status(db, merchant_id)
 
-        # 7. CATEGORY PERFORMANCE / BREAKDOWN INTENT
+        # 10. CATEGORY PERFORMANCE / BREAKDOWN INTENT
         elif any(w in q for w in [
             "category", "categories", "department", "by category", "catalog breakdown"
         ]):
             res = cls._handle_category_breakdown(db, merchant_id)
 
-        # 8. COPILOT STRATEGY / BUSINESS RECOMMENDATIONS INTENT
+        # 11. COPILOT STRATEGY / BUSINESS RECOMMENDATIONS INTENT
         elif any(w in q for w in [
             "recommendation", "how to increase", "advice", "grow revenue", 
             "copilot", "insights", "how to improve", "increase profit", 
@@ -89,18 +135,146 @@ class MerchantAIService:
         ]):
             res = cls._handle_copilot_insights(db, merchant_id)
 
-        # 9. DEFAULT / GENERAL REVENUE & FINANCIAL SUMMARY
+        # 12. DEFAULT / REVENUE SUMMARY
         else:
             res = cls._handle_revenue_summary(db, merchant_id, q)
 
-        # Ensure schema symmetry: both intent and query_type are present
+        # Symmetrize intent and query_type for frontends
         res["query_type"] = res.get("intent", "REVENUE_SUMMARY")
 
-        # Optional Gemini Enhancement (if configured and valid key provided)
+        # Optional Gemini Enhancement (if configured)
         if getattr(settings, "GEMINI_API_KEY", None):
-            res = cls._try_gemini_synthesis(query, res)
+            res = cls._try_gemini_synthesis(query, res, history)
 
         return res
+
+    @classmethod
+    def _handle_period_comparison(cls, db: Session, merchant_id: str, days: int = 7) -> Dict[str, Any]:
+        """Calculates factual period-over-period sales growth and drivers."""
+        comparison = AnalyticsService.get_sales_period_comparison(db, merchant_id, days)
+        growth = comparison["growth"]
+        curr = comparison["current_period"]
+        prev = comparison["previous_period"]
+
+        sign = "+" if growth["revenue_change_abs"] >= 0 else ""
+        answer = (
+            f"📈 **Sales Performance Comparison ({days}-Day Trailing Window)**:\n\n"
+            f"• **Current Period Revenue:** **₹{curr['revenue']:,.2f}** ({curr['orders_count']} orders, AOV: ₹{curr['aov']:,.2f})\n"
+            f"• **Previous Period Revenue:** **₹{prev['revenue']:,.2f}** ({prev['orders_count']} orders, AOV: ₹{prev['aov']:,.2f})\n"
+            f"• **Net Change:** **{sign}₹{abs(growth['revenue_change_abs']):,.2f}** ({sign}{growth['revenue_growth_pct']}% growth)\n"
+            f"• **Status:** `{growth['status']}`\n\n"
+            f"🔍 **Correlation Analysis**: {comparison['causality_note']}"
+        )
+
+        rows = []
+        for g in comparison.get("top_gainers", []):
+            rows.append({
+                "product_name": g["name"],
+                "sales_change": f"+₹{g['sales_change']:,.2f}",
+                "units_change": f"+{g['units_change']}",
+                "impact": "Top Growth Driver"
+            })
+        for d in comparison.get("top_decliners", []):
+            rows.append({
+                "product_name": d["name"],
+                "sales_change": f"-₹{abs(d['sales_change']):,.2f}",
+                "units_change": f"{d['units_change']}",
+                "impact": "Top Laggard"
+            })
+
+        return {
+            "intent": "PERIOD_COMPARISON",
+            "answer": answer,
+            "data": comparison,
+            "structured_table": {
+                "title": f"Sales Movers ({days}-Day Comparison)",
+                "headers": ["Product Name", "Revenue Shift", "Unit Shift", "Classification"],
+                "rows": rows
+            },
+            "actionable_recommendations": [
+                f"Reinforce inventory for top growth drivers to capture positive sales momentum.",
+                f"Review pricing or bundling for laggards to reverse negative revenue trend."
+            ]
+        }
+
+    @classmethod
+    def _handle_runway_intelligence(cls, db: Session, merchant_id: str) -> Dict[str, Any]:
+        """Calculates stock runway days and replenishment recommendations."""
+        intel = InventoryIntelligenceService.get_inventory_intelligence(db, merchant_id, target_buffer_days=30)
+        summary = intel["summary"]
+        records = intel["records"]
+
+        critical = [r for r in records if r["risk_status"] in ["OUT_OF_STOCK", "CRITICAL_RUNWAY", "LOW_RUNWAY"]]
+
+        answer = (
+            f"⏱️ **Stock Runway & Replenishment Model (30-Day Buffer Target)**:\n\n"
+            f"• **Critical Stockout Risks:** {summary['critical_reorders']} SKU(s) with < 7 days runway\n"
+            f"• **Low Runway SKUs:** {summary['low_runway_skus']} SKU(s) with 7-14 days runway\n"
+            f"• **Dead Stock SKUs:** {summary['dead_stock_skus']} SKU(s) with 0 sales in 30 days\n"
+            f"• **Estimated Replenishment Capital Needed:** **₹{summary['total_replenishment_capital_needed']:,.2f}**\n\n"
+            f"Top urgent item: **{critical[0]['name'] if critical else 'None'}** "
+            f"({critical[0]['current_stock'] if critical else 0} units left, runway: {critical[0]['runway_days'] if critical else 'N/A'} days)."
+        )
+
+        rows = []
+        for r in critical[:5]:
+            rows.append({
+                "name": r["name"],
+                "stock": r["current_stock"],
+                "runway": f"{r['runway_days']} days" if r["runway_days"] is not None else "0 days",
+                "reorder_qty": f"{r['recommended_reorder_qty']} units",
+                "estimated_cost": f"₹{r['estimated_reorder_cost']:,.2f}",
+                "confidence": r["confidence"]
+            })
+
+        return {
+            "intent": "STOCK_RUNWAY_INTELLIGENCE",
+            "answer": answer,
+            "data": intel,
+            "structured_table": {
+                "title": "Stock Runway & Replenishment Requirements",
+                "headers": ["Product Name", "Current Stock", "Days Runway", "Reorder Qty", "Estimated Cost", "Model Confidence"],
+                "rows": rows
+            },
+            "actionable_recommendations": [
+                f"Issue purchase order for {critical[0]['name'] if critical else 'low stock items'} to secure ongoing 30-day runway.",
+                "Review supplier lead times to synchronize replenishment cadences."
+            ]
+        }
+
+    @classmethod
+    def _handle_merchant_actions(cls, db: Session, merchant_id: str) -> Dict[str, Any]:
+        """Returns proactive, high-impact merchant action recommendations."""
+        actions = ActionService.generate_proactive_actions(db, merchant_id)
+        pending = [a for a in actions if a["status"] == "PENDING"]
+
+        answer = (
+            f"⚡ **Merchant Action Directives**: Generated **{len(pending)} pending action(s)** based on live database state.\n\n"
+            f"Every action includes verifiable evidence, expected financial impact, and requires your explicit confirmation before changing database state."
+        )
+
+        rows = []
+        for a in pending[:4]:
+            rows.append({
+                "title": a["title"],
+                "category": a["category"],
+                "impact": a["expected_impact"],
+                "status": a["status"]
+            })
+
+        return {
+            "intent": "MERCHANT_ACTIONS",
+            "answer": answer,
+            "data": pending,
+            "structured_table": {
+                "title": "Pending Proactive Actions",
+                "headers": ["Action Title", "Category", "Expected Impact", "Status"],
+                "rows": rows
+            },
+            "actionable_recommendations": [
+                "Visit the Merchant Action Center to review, confirm, or reject these recommendations."
+            ]
+        }
 
     @classmethod
     def _handle_low_stock(cls, db: Session, merchant_id: str) -> Dict[str, Any]:
@@ -187,7 +361,6 @@ class MerchantAIService:
             raw_data.append(item)
 
         if not rows:
-            # Fallback if no paid orders yet: list catalog items
             products = db.query(Product).filter(Product.merchant_id == merchant_id, Product.is_active == True).limit(5).all()
             answer = "No paid orders have settled yet to rank historical best-sellers. Showing featured active catalog products."
             for p in products:
@@ -218,13 +391,11 @@ class MerchantAIService:
 
     @classmethod
     def _handle_slow_moving(cls, db: Session, merchant_id: str) -> Dict[str, Any]:
-        """Identifies products with zero or very low sales (dead stock or stagnant inventory)."""
         products = db.query(Product).filter(
             Product.merchant_id == merchant_id,
             Product.is_active == True
         ).all()
 
-        # Query units sold per product
         sold_map = {}
         sold_records = db.query(
             OrderItem.product_id,
@@ -252,7 +423,6 @@ class MerchantAIService:
                 "raw_capital": tied_capital
             })
 
-        # Sort by units sold asc, then stock desc
         slow_items.sort(key=lambda x: (x["units_sold"], -x["raw_capital"]))
         bottom_items = slow_items[:5]
 
@@ -311,7 +481,7 @@ class MerchantAIService:
     def _handle_fulfillment_status(cls, db: Session, merchant_id: str) -> Dict[str, Any]:
         orders = db.query(Order).filter(Order.merchant_id == merchant_id).all()
 
-        unfulfilled = sum(1 for o in orders if o.fulfillment_status == "UNFULFILLED")
+        unfulfilled = sum(1 for o in orders if o.fulfillment_status == "UNFULFILLED" or not o.fulfillment_status)
         processing = sum(1 for o in orders if o.fulfillment_status == "PROCESSING")
         shipped = sum(1 for o in orders if o.fulfillment_status == "SHIPPED")
         delivered = sum(1 for o in orders if o.fulfillment_status == "DELIVERED")
@@ -400,7 +570,6 @@ class MerchantAIService:
 
     @classmethod
     def _handle_category_breakdown(cls, db: Session, merchant_id: str) -> Dict[str, Any]:
-        """Calculates revenue and stock distribution by category."""
         products = db.query(Product).filter(Product.merchant_id == merchant_id, Product.is_active == True).all()
         category_counts = {}
         for p in products:
@@ -430,7 +599,6 @@ class MerchantAIService:
 
     @classmethod
     def _handle_copilot_insights(cls, db: Session, merchant_id: str) -> Dict[str, Any]:
-        """Provides holistic AI Business Copilot analysis and actionable decision vectors."""
         paid_orders = db.query(Order).filter(Order.merchant_id == merchant_id, Order.status == "PAID").all()
         products = db.query(Product).filter(Product.merchant_id == merchant_id, Product.is_active == True).all()
 
@@ -504,19 +672,20 @@ class MerchantAIService:
         }
 
     @classmethod
-    def _try_gemini_synthesis(cls, user_query: str, res: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Optionally enriches the plain English explanation using Gemini LLM if GEMINI_API_KEY is configured.
-        Strictly preserves all deterministic SQL calculations and numbers.
-        """
+    def _try_gemini_synthesis(cls, user_query: str, res: Dict[str, Any], history: Optional[List[Dict[str, str]]] = None) -> Dict[str, Any]:
         api_key = getattr(settings, "GEMINI_API_KEY", None)
         if not api_key:
             return res
 
         try:
             import httpx
+            history_context = ""
+            if history:
+                history_context = "Previous conversation:\n" + "\n".join([f"{h.get('sender', 'user')}: {h.get('text', '')}" for h in history[-3:]]) + "\n\n"
+
             prompt = (
                 f"You are MerchantPilot AI, an intelligent executive business copilot for small merchants.\n"
+                f"{history_context}"
                 f"The merchant asked: '{user_query}'\n"
                 f"The verified database records provide the following exact facts:\n"
                 f"Answer: {res['answer']}\n"
@@ -528,7 +697,7 @@ class MerchantAIService:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
             payload = {
                 "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {"temperature": 0.2, "maxOutputTokens": 300}
+                "generationConfig": {"temperature": 0.2, "maxOutputTokens": 350}
             }
 
             with httpx.Client(timeout=4.0) as client:

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import {
   Bot,
   Send,
@@ -15,19 +15,21 @@ import {
   Clock,
   ArrowUpRight,
   Lightbulb,
-  Truck
+  Truck,
+  Zap
 } from 'lucide-react';
 import { postMerchantAIAssistant } from '../services/api';
 
 const PRESET_QUERIES = [
   'Which products are low in stock?',
+  'Compare our sales performance over the last 7 days',
+  'What is our stock runway and replenishment requirements?',
   'What were my best-selling products?',
   'What products are slow-moving or dead stock?',
-  'What is our total revenue?',
-  'What is our average order value?',
+  'What is our total revenue & average order value?',
   'How many orders are unfulfilled or pending?',
   'What products are frequently bought together?',
-  'Give me executive copilot recommendations to increase revenue'
+  'Give me proactive action recommendations to protect revenue'
 ];
 
 export default function MerchantAIAssistant() {
@@ -61,7 +63,16 @@ export default function MerchantAIAssistant() {
     setLoading(true);
 
     try {
-      const res = await postMerchantAIAssistant(q);
+      // Build conversation history for multi-turn understanding
+      const historyPayload = messages.slice(-6).map((m) => ({
+        sender: m.sender,
+        text: m.text
+      }));
+
+      const res = await postMerchantAIAssistant({
+        query: q,
+        history: historyPayload
+      });
       const answerData = res.data;
 
       setMessages([
@@ -326,6 +337,51 @@ export default function MerchantAIAssistant() {
                         </div>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {/* Structured Table for Period Comparison, Runway, Proactive Actions */}
+                {msg.structured_table && Array.isArray(msg.structured_table.headers) && Array.isArray(msg.structured_table.rows) && msg.structured_table.rows.length > 0 && (
+                  <div className="rounded-xl bg-[#1C222B] border border-[#2A3441] p-3 text-xs space-y-2 mt-2 overflow-x-auto">
+                    {msg.structured_table.title && (
+                      <span className="font-mono text-[10px] text-[#F5A524] uppercase font-bold flex items-center gap-1.5">
+                        <BarChart3 className="w-3.5 h-3.5" />
+                        {msg.structured_table.title}
+                      </span>
+                    )}
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-[#151A21] text-[#94A3B8] font-mono uppercase text-[9px] border-b border-[#2A3441]">
+                        <tr>
+                          {msg.structured_table.headers.map((h, i) => (
+                            <th key={i} className="py-1.5 px-2.5">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#2A3441]">
+                        {msg.structured_table.rows.map((row, rIdx) => (
+                          <tr key={rIdx} className="hover:bg-[#151A21]/50">
+                            {Object.values(row).map((val, cIdx) => (
+                              <td key={cIdx} className="py-1.5 px-2.5 text-[11px] font-mono text-[#F8FAFC]">
+                                {typeof val === 'number' ? val.toLocaleString('en-IN') : String(val)}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* Direct Action Center Link if Merchant Actions */}
+                {msg.query_type === 'MERCHANT_ACTIONS' && (
+                  <div className="pt-2">
+                    <Link
+                      to="/actions"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#F5A524] hover:bg-[#D97706] text-black text-xs font-bold transition shadow-amber-glow"
+                    >
+                      <Zap className="w-3.5 h-3.5" />
+                      <span>Review & Execute in Action Center →</span>
+                    </Link>
                   </div>
                 )}
 

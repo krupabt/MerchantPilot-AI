@@ -11,12 +11,14 @@ import {
   FileSearch,
   ShieldCheck,
   Store,
-  ArrowUpRight
+  ArrowUpRight,
+  Zap
 } from 'lucide-react';
 
 const merchantNavItems = [
   { name: 'AI Business Copilot', path: '/copilot', icon: Sparkles, highlight: true },
   { name: 'Executive Dashboard', path: '/', icon: LayoutDashboard },
+  { name: 'Action Center', path: '/actions', icon: Zap },
   { name: 'Inventory Intelligence', path: '/inventory', icon: Layers },
   { name: 'Sales Analytics', path: '/analytics', icon: TrendingUp },
   { name: 'Product Intelligence', path: '/product-intelligence', icon: PieChart },

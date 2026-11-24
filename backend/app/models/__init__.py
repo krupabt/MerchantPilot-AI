@@ -9,6 +9,7 @@ from backend.app.models.order import Order, OrderItem
 from backend.app.models.payment import Payment
 from backend.app.models.session import AgentSession, AgentAction
 from backend.app.models.audit import AuditLog
+from backend.app.models.action import MerchantAction
 
 __all__ = [
     "Merchant",
@@ -24,5 +25,6 @@ __all__ = [
     "Payment",
     "AgentSession",
     "AgentAction",
-    "AuditLog"
+    "AuditLog",
+    "MerchantAction"
 ]

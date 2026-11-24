@@ -19,6 +19,7 @@ import MerchantAIAssistant from './pages/MerchantAIAssistant';
 import MarketBasketAnalysis from './pages/MarketBasketAnalysis';
 import AuditTrail from './pages/AuditTrail';
 import Policies from './pages/Policies';
+import ActionCenterPage from './pages/ActionCenterPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -76,6 +77,8 @@ function MainLayout() {
             {/* AI Business Copilot */}
             <Route path="/copilot" element={<MerchantAIAssistant />} />
             <Route path="/merchant/ai-assistant" element={<Navigate to="/copilot" replace />} />
+            <Route path="/actions" element={<ActionCenterPage />} />
+            <Route path="/merchant/actions" element={<Navigate to="/actions" replace />} />
 
             {/* Inventory Intelligence */}
             <Route path="/inventory" element={<MerchantInventory />} />
