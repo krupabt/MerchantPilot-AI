@@ -15,12 +15,178 @@ from backend.app.models.user import User
 from backend.app.services.auth_service import hash_password
 
 DEMO_CATEGORIES = [
-    {"name": "Laptops", "slug": "laptops", "description": "High-performance developer laptops and workstations"},
-    {"name": "Accessories", "slug": "accessories", "description": "Ergonomic mice, laptop bags, hubs and desk essentials"},
+    {"name": "Accessories", "slug": "accessories", "description": "High-quality cables, mobile stands, adapters, and organizers"},
+    {"name": "Peripherals", "slug": "peripherals", "description": "Ergonomic wireless mice and precision mouse pads"},
+    {"name": "Audio", "slug": "audio", "description": "Stereo earphones and high-fidelity mobile audio"},
+    {"name": "Protection", "slug": "protection", "description": "Shockproof phone covers and 9H tempered glass screen protectors"},
+    {"name": "Laptops", "slug": "laptops", "description": "Developer workstations and ultrabooks"},
     {"name": "Monitors", "slug": "monitors", "description": "4K UHD professional displays and creator monitors"},
     {"name": "Cameras", "slug": "cameras", "description": "4K cinema cameras and studio gear"},
-    {"name": "Audio", "slug": "audio", "description": "Studio monitor headphones and wireless earbuds"},
     {"name": "Keyboards", "slug": "keyboards", "description": "Mechanical and custom tactile keyboards"}
+]
+
+# Primary Demo Catalog: 10 Affordable Smart Accessories
+SMART_ACCESSORIES = [
+    {
+        "id": "ACC_USB_01",
+        "sku": "ACC-USB-01",
+        "name": "USB Cable",
+        "category": "Accessories",
+        "description": "High-speed 60W USB-C braided charging and data sync cable (1.5m).",
+        "cost_price": 80.0,
+        "price": 120.0,
+        "stock": 20,
+        "low_stock_threshold": 5,
+        "rating": 4.85,
+        "image_url": "https://images.unsplash.com/photo-1608755728617-aefab37d2edd?auto=format&fit=crop&w=600&q=80",
+        "specs": {"length": "1.5 meters", "output": "60W Fast Charging", "connector": "USB-C to USB-C / Type-A", "durability": "10,000+ Bends Braided"},
+        "compatible_product_ids": ["ACC_ADA_08", "ACC_COV_04", "ACC_EAR_03", "ACC_ORG_09"],
+        "tags": ["cable", "usb", "charging", "type-c", "fast charging", "mobile accessories", "data cable", "usb cable"]
+    },
+    {
+        "id": "ACC_MOU_02",
+        "sku": "ACC-MOU-02",
+        "name": "Wireless Mouse",
+        "category": "Peripherals",
+        "description": "Ergonomic 2.4GHz wireless mouse with silent clicks and optical precision tracking.",
+        "cost_price": 250.0,
+        "price": 350.0,
+        "stock": 15,
+        "low_stock_threshold": 4,
+        "rating": 4.75,
+        "image_url": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=600&q=80",
+        "specs": {"dpi": "1600 DPI", "connectivity": "2.4GHz USB Nano Receiver", "battery": "1x AA (Up to 12 months)", "buttons": "4 Silent Switches"},
+        "compatible_product_ids": ["ACC_PAD_06", "ACC_USB_01"],
+        "tags": ["mouse", "wireless", "peripherals", "office", "laptop accessory", "silent click", "wireless mouse"]
+    },
+    {
+        "id": "ACC_EAR_03",
+        "sku": "ACC-EAR-03",
+        "name": "Earphones",
+        "category": "Audio",
+        "description": "In-ear stereo wired earphones with deep bass, inline microphone and 3.5mm gold-plated jack.",
+        "cost_price": 150.0,
+        "price": 220.0,
+        "stock": 10,
+        "low_stock_threshold": 3,
+        "rating": 4.65,
+        "image_url": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=600&q=80",
+        "specs": {"driver": "10mm Dynamic Drivers", "jack": "3.5mm Gold-plated / Type-C compatible", "mic": "Inline HD Mic with call controls", "cable": "Tangle-free 1.2m"},
+        "compatible_product_ids": ["ACC_USB_01", "ACC_COV_04", "ACC_STA_05"],
+        "tags": ["earphones", "audio", "music", "headphone", "bass", "inline mic", "mobile accessories"]
+    },
+    {
+        "id": "ACC_COV_04",
+        "sku": "ACC-COV-04",
+        "name": "Phone Cover",
+        "category": "Protection",
+        "description": "Shock-absorbing slim TPU phone cover with raised bezels for camera and screen protection.",
+        "cost_price": 60.0,
+        "price": 100.0,
+        "stock": 25,
+        "low_stock_threshold": 6,
+        "rating": 4.55,
+        "image_url": "https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?auto=format&fit=crop&w=600&q=80",
+        "specs": {"material": "Flexible Shockproof TPU", "grip": "Anti-fingerprint Matte Finish", "protection": "Mil-Grade Drop Cushioning"},
+        "compatible_product_ids": ["ACC_SCR_07", "ACC_USB_01", "ACC_STA_05"],
+        "tags": ["phone cover", "case", "mobile case", "protection", "cover", "phone", "accessories"]
+    },
+    {
+        "id": "ACC_STA_05",
+        "sku": "ACC-STA-05",
+        "name": "Mobile Stand",
+        "category": "Accessories",
+        "description": "Adjustable aluminum desktop mobile stand with anti-slip silicone cushions and cable slot.",
+        "cost_price": 100.0,
+        "price": 150.0,
+        "stock": 12,
+        "low_stock_threshold": 3,
+        "rating": 4.70,
+        "image_url": "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=600&q=80",
+        "specs": {"material": "Solid Aluminum Alloy", "angle": "270° Dual Hinge Adjustment", "compatibility": "Smartphones & Tablets up to 10-inch"},
+        "compatible_product_ids": ["ACC_USB_01", "ACC_EAR_03", "ACC_HOL_10"],
+        "tags": ["stand", "mobile stand", "desk accessory", "phone holder", "aluminum", "video call"]
+    },
+    {
+        "id": "ACC_PAD_06",
+        "sku": "ACC-PAD-06",
+        "name": "Mouse Pad",
+        "category": "Peripherals",
+        "description": "Smooth micro-textured cloth gaming and office mouse pad with non-slip natural rubber base.",
+        "cost_price": 40.0,
+        "price": 80.0,
+        "stock": 18,
+        "low_stock_threshold": 5,
+        "rating": 4.60,
+        "image_url": "https://images.unsplash.com/photo-1616440347437-b1c73416efc2?auto=format&fit=crop&w=600&q=80",
+        "specs": {"size": "260 x 210 x 3 mm", "surface": "Speed micro-weave fabric", "base": "Anti-skid rubber"},
+        "compatible_product_ids": ["ACC_MOU_02", "ACC_ORG_09"],
+        "tags": ["mouse pad", "pad", "desk", "peripherals", "rubber base", "office"]
+    },
+    {
+        "id": "ACC_SCR_07",
+        "sku": "ACC-SCR-07",
+        "name": "Screen Protector",
+        "category": "Protection",
+        "description": "9H hardness tempered glass screen protector with oleophobic coating and bubble-free installation kit.",
+        "cost_price": 50.0,
+        "price": 100.0,
+        "stock": 30,
+        "low_stock_threshold": 8,
+        "rating": 4.80,
+        "image_url": "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?auto=format&fit=crop&w=600&q=80",
+        "specs": {"hardness": "9H Scratch Resistant", "clarity": "99.9% HD Transparency", "thickness": "0.33mm Ultra-thin"},
+        "compatible_product_ids": ["ACC_COV_04", "ACC_USB_01"],
+        "tags": ["screen protector", "tempered glass", "protection", "scratch guard", "mobile accessories"]
+    },
+    {
+        "id": "ACC_ADA_08",
+        "sku": "ACC-ADA-08",
+        "name": "USB Adapter",
+        "category": "Accessories",
+        "description": "Compact OTG USB-C to USB 3.0 female adapter with 5Gbps high-speed data transmission.",
+        "cost_price": 70.0,
+        "price": 130.0,
+        "stock": 15,
+        "low_stock_threshold": 4,
+        "rating": 4.65,
+        "image_url": "https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=600&q=80",
+        "specs": {"transfer": "USB 3.0 up to 5Gbps", "casing": "Aluminum alloy casing", "plug": "Plug & Play OTG support"},
+        "compatible_product_ids": ["ACC_USB_01", "ACC_MOU_02"],
+        "tags": ["adapter", "usb adapter", "otg", "type-c", "converter", "data transfer"]
+    },
+    {
+        "id": "ACC_ORG_09",
+        "sku": "ACC-ORG-09",
+        "name": "Cable Organizer",
+        "category": "Accessories",
+        "description": "Flexible multi-slot silicone cable clip management holder with strong 3M adhesive backing.",
+        "cost_price": 30.0,
+        "price": 60.0,
+        "stock": 20,
+        "low_stock_threshold": 5,
+        "rating": 4.50,
+        "image_url": "https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&w=600&q=80",
+        "specs": {"slots": "5-channel cable organizer", "material": "Eco-friendly elastic silicone", "mounting": "Pre-applied 3M adhesive"},
+        "compatible_product_ids": ["ACC_USB_01", "ACC_EAR_03"],
+        "tags": ["cable organizer", "cable clip", "wire organizer", "desk cleanup", "silicone clip"]
+    },
+    {
+        "id": "ACC_HOL_10",
+        "sku": "ACC-HOL-10",
+        "name": "Phone Holder",
+        "category": "Accessories",
+        "description": "360-degree rotational air-vent universal magnetic car phone holder mount with strong neodymium magnets.",
+        "cost_price": 120.0,
+        "price": 180.0,
+        "stock": 10,
+        "low_stock_threshold": 3,
+        "rating": 4.70,
+        "image_url": "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=600&q=80",
+        "specs": {"rotation": "360-degree ball joint", "mounting": "Universal air vent clamp", "magnets": "4x Strong N52 neodymium magnets"},
+        "compatible_product_ids": ["ACC_COV_04", "ACC_USB_01"],
+        "tags": ["phone holder", "car mount", "magnetic holder", "phone stand", "accessories"]
+    }
 ]
 
 DEMO_PRODUCTS = [
@@ -308,12 +474,23 @@ def seed_database(db: Session = None):
         if not merchant:
             merchant = Merchant(
                 id="m_1001",
-                name="Apex Electronics & Compute",
-                email="admin@apexelectronics.com",
+                name="Smart Accessories Store",
+                email="admin@smartaccessories.com",
+                business_category="Electronics & Mobile Accessories",
+                phone="+91 98765 43210",
+                address="Shop 14, MG Road Tech Plaza, Bangalore, KA",
                 currency="INR",
+                is_demo=True,
                 created_at=datetime.utcnow() - timedelta(days=180)
             )
             db.add(merchant)
+            db.flush()
+        else:
+            merchant.name = "Smart Accessories Store"
+            merchant.business_category = "Electronics & Mobile Accessories"
+            merchant.phone = "+91 98765 43210"
+            merchant.address = "Shop 14, MG Road Tech Plaza, Bangalore, KA"
+            merchant.is_demo = True
             db.flush()
 
         # 2. Seed Product Categories
@@ -357,11 +534,14 @@ def seed_database(db: Session = None):
             db.add(policy)
             db.flush()
 
-        # 4. Seed Products
-        for prod_data in DEMO_PRODUCTS:
+        # 4. Seed Products (Smart Accessories + Demo Catalog)
+        all_prods = SMART_ACCESSORIES + DEMO_PRODUCTS
+        for prod_data in all_prods:
             existing = db.query(Product).filter(Product.id == prod_data["id"]).first()
             cat_obj = cat_map.get(prod_data["category"])
             cat_id = cat_obj.id if cat_obj else None
+            cost = prod_data.get("cost_price", round(prod_data["price"] * 0.65, 2))
+            sku = prod_data.get("sku", f"SKU-{prod_data['id']}")
             if not existing:
                 prod = Product(
                     id=prod_data["id"],
@@ -371,14 +551,16 @@ def seed_database(db: Session = None):
                     category=prod_data["category"],
                     description=prod_data["description"],
                     price=prod_data["price"],
-                    currency=prod_data["currency"],
+                    cost_price=cost,
+                    sku=sku,
+                    currency=prod_data.get("currency", "INR"),
                     stock=prod_data["stock"],
                     low_stock_threshold=prod_data.get("low_stock_threshold", 5),
-                    rating=prod_data["rating"],
+                    rating=prod_data.get("rating", 4.8),
                     image_url=prod_data["image_url"],
-                    specs=prod_data["specs"],
-                    compatible_product_ids=prod_data["compatible_product_ids"],
-                    tags=prod_data["tags"],
+                    specs=prod_data.get("specs", {}),
+                    compatible_product_ids=prod_data.get("compatible_product_ids", []),
+                    tags=prod_data.get("tags", []),
                     is_active=True,
                     created_at=datetime.utcnow() - timedelta(days=120)
                 )
@@ -388,9 +570,14 @@ def seed_database(db: Session = None):
                 existing.category = prod_data["category"]
                 existing.name = prod_data["name"]
                 existing.price = prod_data["price"]
+                existing.cost_price = cost
+                existing.sku = sku
                 existing.stock = prod_data["stock"]
-                existing.specs = prod_data["specs"]
-                existing.compatible_product_ids = prod_data["compatible_product_ids"]
+                existing.low_stock_threshold = prod_data.get("low_stock_threshold", 5)
+                existing.image_url = prod_data["image_url"]
+                existing.specs = prod_data.get("specs", {})
+                existing.compatible_product_ids = prod_data.get("compatible_product_ids", [])
+                existing.tags = prod_data.get("tags", [])
         db.flush()
 
         # 5. Seed Demo Users (Merchant and Customer)
@@ -438,38 +625,52 @@ def seed_database(db: Session = None):
                 db.add(Customer(id=cid, name=name, email=email, phone=phone, created_at=datetime.utcnow() - timedelta(days=90)))
         db.flush()
 
-        # 7. Seed Realistic Historical Order Baskets (60+ orders)
-        existing_orders_count = db.query(Order).count()
-        if existing_orders_count < 10:
-            prod_lookup = {p["id"]: p for p in DEMO_PRODUCTS}
+        # 7. Seed Realistic Historical Order Baskets (Smart Accessories & Demo Catalog)
+        has_acc_orders = db.query(OrderItem).filter(OrderItem.product_id == "ACC_USB_01").count() > 0
+        if not has_acc_orders:
+            all_prods_lookup = {p["id"]: p for p in SMART_ACCESSORIES + DEMO_PRODUCTS}
 
             basket_templates = [
-                # Pattern 1: Laptop + Mouse (Heavy co-occurrence ~ 80%)
-                (["P101", "P102"], 501.0, "Developer Starter Kit", True, True, 20),
-                # Pattern 2: Laptop + Bag (High co-occurrence ~ 45%)
-                (["P101", "P103"], 300.0, "Mobile Pro Bundle", True, True, 10),
-                # Pattern 3: Camera + Tripod (Cinema combination ~ 75%)
-                (["P107", "P108"], 1501.0, "Content Creator Pro Kit", True, True, 12),
-                # Pattern 4: Monitor + Webcam (Workstation pair ~ 55%)
-                (["P105", "P106"], 1001.0, "Ergonomic WFH Workstation", True, True, 8),
-                # Pattern 5: Keyboard + Mouse + Mat (Desk setup ~ 60%)
-                (["P104", "P102", "P110"], 450.0, "Tactile Desk Master Bundle", True, True, 9),
-                # Pattern 6: Single Product orders
-                (["P101"], 0.0, None, False, False, 5),
-                (["P111"], 0.0, None, False, False, 4),
-                (["P109"], 0.0, None, False, False, 6),
-                (["P105"], 0.0, None, False, False, 4),
+                # Smart Accessories Frequent Patterns:
+                # Pattern 1: USB Cable (₹120) + Phone Cover (₹100) -> ₹220, discount ₹20 -> ₹200 (18 orders)
+                (["ACC_USB_01", "ACC_COV_04"], 20.0, "Cable & Cover Combo", True, True, 18),
+                # Pattern 2: Earphones (₹220) + USB Cable (₹120) -> ₹340, discount ₹30 -> ₹310 (14 orders)
+                (["ACC_EAR_03", "ACC_USB_01"], 30.0, "Commuter Audio Bundle", True, True, 14),
+                # Pattern 3: Wireless Mouse (₹350) + Mouse Pad (₹80) -> ₹430, discount ₹30 -> ₹400 (12 orders)
+                (["ACC_MOU_02", "ACC_PAD_06"], 30.0, "Ergonomic Desk Duo", True, True, 12),
+                # Pattern 4: Phone Cover (₹100) + Screen Protector (₹100) -> ₹200, discount ₹20 -> ₹180 (15 orders)
+                (["ACC_COV_04", "ACC_SCR_07"], 20.0, "360 Full Phone Shield", True, True, 15),
+                # Pattern 5: Mobile Stand (₹150) + USB Cable (₹120) + Earphones (₹220) -> ₹490, discount ₹40 -> ₹450 (10 orders)
+                (["ACC_STA_05", "ACC_USB_01", "ACC_EAR_03"], 40.0, "Work & Call Trio", True, True, 10),
+                # Accessories Singles:
+                (["ACC_USB_01"], 0.0, None, False, False, 8),
+                (["ACC_MOU_02"], 0.0, None, False, False, 6),
+                (["ACC_EAR_03"], 0.0, None, False, False, 5),
+                (["ACC_COV_04"], 0.0, None, False, False, 7),
+                (["ACC_STA_05"], 0.0, None, False, False, 4),
+                (["ACC_PAD_06"], 0.0, None, False, False, 5),
+                (["ACC_SCR_07"], 0.0, None, False, False, 6),
+                (["ACC_ADA_08"], 0.0, None, False, False, 5),
+                (["ACC_ORG_09"], 0.0, None, False, False, 6),
+                (["ACC_HOL_10"], 0.0, None, False, False, 4),
+                # Legacy Patterns for backward test compatibility:
+                (["P101", "P102"], 501.0, "Developer Starter Kit", True, True, 10),
+                (["P101", "P103"], 300.0, "Mobile Pro Bundle", True, True, 5),
+                (["P107", "P108"], 1501.0, "Content Creator Pro Kit", True, True, 6),
+                (["P105", "P106"], 1001.0, "Ergonomic WFH Workstation", True, True, 4),
+                (["P104", "P102", "P110"], 450.0, "Tactile Desk Master Bundle", True, True, 4),
+                (["P101"], 0.0, None, False, False, 3),
             ]
 
-            order_counter = 1000
+            order_counter = 5000
             for item_ids, discount, b_name, is_ai, is_bundle, freq in basket_templates:
                 for f in range(freq):
                     order_counter += 1
                     ord_id = f"ord_seed_{order_counter}"
-                    days_ago = random.randint(1, 60)
+                    days_ago = random.randint(1, 45)
                     ord_date = datetime.utcnow() - timedelta(days=days_ago, hours=random.randint(1, 23), minutes=random.randint(1, 59))
                     
-                    subtotal = sum(prod_lookup[pid]["price"] for pid in item_ids)
+                    subtotal = sum(all_prods_lookup[pid]["price"] for pid in item_ids)
                     final_amt = max(0.0, subtotal - discount)
                     cust = random.choice(customers)
                     
@@ -490,6 +691,8 @@ def seed_database(db: Session = None):
                         is_ai_assisted=is_ai,
                         is_bundle=is_bundle,
                         bundle_name=b_name,
+                        sales_channel="ONLINE",
+                        payment_method="RAZORPAY",
                         policy_approval_token=f"appr_seed_{order_counter}" if discount > 0 else None,
                         created_at=ord_date,
                         updated_at=ord_date
@@ -497,7 +700,8 @@ def seed_database(db: Session = None):
                     db.add(order_rec)
 
                     for pid in item_ids:
-                        p_info = prod_lookup[pid]
+                        p_info = all_prods_lookup[pid]
+                        cost_val = p_info.get("cost_price", round(p_info["price"] * 0.65, 2))
                         item_rec = OrderItem(
                             id=f"item_seed_{order_counter}_{pid}",
                             order_id=ord_id,
@@ -505,6 +709,7 @@ def seed_database(db: Session = None):
                             product_name=p_info["name"],
                             quantity=1,
                             unit_price=p_info["price"],
+                            unit_cost=cost_val,
                             total_price=p_info["price"]
                         )
                         db.add(item_rec)

@@ -113,6 +113,7 @@ class CatalogService:
         terms = [t.strip().lower() for t in query_text.split() if len(t.strip()) > 1]
         products = db.query(Product).filter(Product.is_active == True).all()
         
+        stopwords = {"suggest", "useful", "product", "combination", "items", "item", "accessories", "accessory", "under", "below", "need", "want", "looking", "for", "the", "and", "with", "can", "you", "show", "give", "me"}
         scored_products = []
         for p in products:
             if max_budget is not None and p.price > max_budget:
@@ -120,18 +121,20 @@ class CatalogService:
             if category and category.lower() not in p.category.lower():
                 continue
                 
-            score = 0
+            score = 1 if max_budget is not None else 0
             searchable_blob = f"{p.name} {p.category} {p.description} {' '.join(p.tags or [])} {str(p.specs or {})}".lower()
             
             for term in terms:
+                if term in stopwords:
+                    continue
                 if term in p.name.lower():
-                    score += 10
+                    score += 15
                 if any(term == tag.lower() for tag in (p.tags or [])):
-                    score += 8
+                    score += 10
                 if term in p.category.lower():
-                    score += 5
+                    score += 8
                 if term in searchable_blob:
-                    score += 2
+                    score += 3
                     
             if score > 0 or not terms:
                 scored_products.append((score, p))

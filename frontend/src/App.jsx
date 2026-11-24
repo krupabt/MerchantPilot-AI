@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import MerchantSidebar from './components/MerchantSidebar';
+import LandingPage from './pages/LandingPage';
 import Shop from './pages/Shop';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
@@ -47,6 +48,8 @@ function MainLayout() {
 
   // Storefront demo paths that render full-width without merchant sidebar
   const isStorefrontDemo = [
+    '/landing',
+    '/about',
     '/shop',
     '/store',
     '/cart',
@@ -148,6 +151,8 @@ function MainLayout() {
             />
 
             {/* Authentication Routes */}
+            <Route path="/landing" element={<LandingPage />} />
+            <Route path="/about" element={<Navigate to="/landing" replace />} />
             <Route path="/login" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
 

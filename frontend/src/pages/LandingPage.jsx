@@ -1,538 +1,311 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  ArrowRight, 
-  Sparkles, 
-  ShieldCheck, 
-  BarChart3, 
-  ShoppingCart, 
-  Store, 
-  Layers, 
-  Cpu, 
-  Zap, 
-  Lock, 
+import {
+  ArrowRight,
+  Sparkles,
+  ShieldCheck,
+  BarChart3,
+  ShoppingCart,
+  Store,
+  Layers,
+  Cpu,
+  Lock,
   TrendingUp,
   CheckCircle2,
   Box,
-  Truck
+  Bot,
+  Database,
+  FileSpreadsheet,
+  Receipt,
+  Search,
+  Sliders,
+  DollarSign,
+  Activity
 } from 'lucide-react';
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-[#0B0F14] text-[#F8FAFC]">
+    <div className="min-h-screen bg-[#F6F5F1] text-[#202923]">
       {/* 1. Hero Section */}
-      <section className="relative pt-12 pb-20 md:pt-20 md:pb-32 overflow-hidden border-b border-[#2A3441]/50">
-        {/* Subtle Background Glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-gradient-to-b from-[#F5A524]/10 to-transparent blur-3xl pointer-events-none -z-10" />
-
+      <section className="relative pt-12 pb-16 md:pt-16 md:pb-24 overflow-hidden border-b border-[#DEE3DC]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1C222B] border border-[#2A3441] text-xs text-[#F5A524] mb-8 font-mono">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>AI-Native Autonomous Commerce Engine</span>
+          {/* Brand Badge */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#EAF4EE] border border-[#B8D4C4] text-xs font-semibold text-[#234E42] mb-6">
+            <span className="font-mono uppercase tracking-wider text-[11px]">merchantpilot</span>
+            <span className="text-[#6B746E]">•</span>
+            <span>AI Business Copilot for Small Merchants</span>
           </div>
 
-          {/* Headline & Subtitle */}
-          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#F8FAFC] max-w-4xl mx-auto leading-tight font-sans">
-            Smarter Commerce. <br className="hidden sm:inline" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F5A524] via-[#FDE68A] to-[#D97706]">
-              Better Business.
+          {/* Headline & Slogan */}
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[#202923] max-w-4xl mx-auto leading-tight font-sans">
+            Smarter commerce.{' '}
+            <span className="text-[#234E42] underline decoration-[#B8D4C4] underline-offset-8">
+              Better business decisions.
             </span>
           </h1>
 
-          <p className="mt-6 text-lg sm:text-xl text-[#94A3B8] max-w-2xl mx-auto leading-relaxed">
-            An intelligent commerce platform connecting seamless shopping experiences with powerful merchant management and AI-driven insights.
+          <p className="mt-5 text-base sm:text-lg text-[#6B746E] max-w-2xl mx-auto leading-relaxed">
+            The intelligent business management platform that connects customer AI shopping discovery with real-time gross profit tracking, Apriori market basket analytics, stock replenishment alerts, and an AI Business Copilot.
           </p>
 
-          {/* Action Buttons */}
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+          {/* Three Clear Entry Points (Section 5) */}
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
-              to="/shop"
-              className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#F5A524] hover:bg-[#D97706] text-black font-semibold text-sm transition-all duration-200 shadow-amber-glow flex items-center justify-center gap-2"
+              to="/store"
+              className="w-full sm:w-auto px-6 py-3 rounded-lg bg-white hover:bg-[#EAEDE7] border border-[#DEE3DC] text-[#202923] font-semibold text-xs transition shadow-xs flex items-center justify-center gap-2"
             >
-              <ShoppingCart className="w-4 h-4" />
-              Explore Store
+              <ShoppingCart className="w-4 h-4 text-[#234E42]" />
+              <span>Explore Store</span>
             </Link>
             <Link
-              to="/signup?role=merchant"
-              className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#1C222B] hover:bg-[#242D38] border border-[#2A3441] text-[#F8FAFC] font-semibold text-sm transition flex items-center justify-center gap-2"
+              to="/login"
+              className="w-full sm:w-auto px-6 py-3 rounded-lg bg-white hover:bg-[#EAEDE7] border border-[#DEE3DC] text-[#202923] font-semibold text-xs transition shadow-xs flex items-center justify-center gap-2"
             >
-              <Store className="w-4 h-4 text-[#F5A524]" />
-              Start Selling
+              <Store className="w-4 h-4 text-[#234E42]" />
+              <span>Merchant Login</span>
+            </Link>
+            <Link
+              to="/"
+              className="w-full sm:w-auto px-7 py-3 rounded-lg bg-[#234E42] hover:bg-[#1B3D34] text-white font-semibold text-xs transition shadow-xs flex items-center justify-center gap-2"
+            >
+              <Sparkles className="w-4 h-4 text-[#B8D4C4]" />
+              <span>Try Demo Workspace</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          {/* Interactive Live Architecture Highlights */}
-          <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-            <div className="p-4 rounded-xl bg-[#151A21] border border-[#2A3441] text-left">
-              <div className="flex items-center gap-2 text-[#F5A524] mb-1">
-                <Store className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase font-mono">Dual-Portal</span>
+          {/* Architecture Highlights Pill Grid */}
+          <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto">
+            <div className="p-3.5 rounded-lg bg-white border border-[#DEE3DC] text-left shadow-xs">
+              <div className="flex items-center gap-2 text-[#234E42] mb-1 font-semibold text-xs">
+                <Bot className="w-4 h-4" />
+                <span>AI Copilot</span>
               </div>
-              <p className="text-xs text-[#94A3B8]">Customer store & isolated merchant management</p>
+              <p className="text-[11px] text-[#6B746E]">Deterministic SQL analytics; no hallucinated financial figures</p>
             </div>
 
-            <div className="p-4 rounded-xl bg-[#151A21] border border-[#2A3441] text-left">
-              <div className="flex items-center gap-2 text-[#F5A524] mb-1">
-                <ShieldCheck className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase font-mono">Non-Trust Boundary</span>
-              </div>
-              <p className="text-xs text-[#94A3B8]">Deterministic discount caps; no LLM hallucinations</p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-[#151A21] border border-[#2A3441] text-left">
-              <div className="flex items-center gap-2 text-[#F5A524] mb-1">
-                <Lock className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase font-mono">Razorpay HMAC</span>
-              </div>
-              <p className="text-xs text-[#94A3B8]">Paise price calculation with cryptographic signatures</p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-[#151A21] border border-[#2A3441] text-left">
-              <div className="flex items-center gap-2 text-[#F5A524] mb-1">
+            <div className="p-3.5 rounded-lg bg-white border border-[#DEE3DC] text-left shadow-xs">
+              <div className="flex items-center gap-2 text-[#234E42] mb-1 font-semibold text-xs">
                 <TrendingUp className="w-4 h-4" />
-                <span className="text-xs font-bold uppercase font-mono">Apriori Mining</span>
+                <span>Apriori Mining</span>
               </div>
-              <p className="text-xs text-[#94A3B8]">Real market basket statistics & bundle discovery</p>
+              <p className="text-[11px] text-[#6B746E]">Verified support, confidence, and lift for cross-sell bundles</p>
+            </div>
+
+            <div className="p-3.5 rounded-lg bg-white border border-[#DEE3DC] text-left shadow-xs">
+              <div className="flex items-center gap-2 text-[#234E42] mb-1 font-semibold text-xs">
+                <Lock className="w-4 h-4" />
+                <span>Razorpay HMAC</span>
+              </div>
+              <p className="text-[11px] text-[#6B746E]">Cryptographic SHA256 signature verification and idempotency</p>
+            </div>
+
+            <div className="p-3.5 rounded-lg bg-white border border-[#DEE3DC] text-left shadow-xs">
+              <div className="flex items-center gap-2 text-[#234E42] mb-1 font-semibold text-xs">
+                <ShieldCheck className="w-4 h-4" />
+                <span>Gross Profit</span>
+              </div>
+              <p className="text-[11px] text-[#6B746E]">True unit economics: Revenue minus COGS and applied discounts</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. Platform Features */}
-      <section id="features" className="py-20 bg-[#151A21]/40 border-b border-[#2A3441]/50">
+      {/* 2. Merchant Capabilities Section */}
+      <section className="py-14 border-b border-[#DEE3DC] bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-xs uppercase font-mono text-[#F5A524] tracking-wider mb-2">Engineered for Reliability</h2>
-            <p className="text-3xl sm:text-4xl font-bold text-[#F8FAFC]">Comprehensive Commerce Architecture</p>
-            <p className="mt-4 text-[#94A3B8] text-sm">
-              Built on production-proven patterns with zero synthetic placeholders. Everything runs on real database records and verified APIs.
+          <div className="max-w-3xl mb-10">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#234E42] font-mono">Operations & Intelligence</span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#202923] mt-1">
+              Purpose-built for small merchant profitability
+            </h2>
+            <p className="text-xs sm:text-sm text-[#6B746E] mt-2">
+              Unlike generic e-commerce templates, MerchantPilot AI focuses on the back-office decisions that make or break small retail businesses.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-6 rounded-2xl bg-[#1C222B] border border-[#2A3441] hover:border-[#F5A524]/40 transition">
-              <div className="w-12 h-12 rounded-xl bg-[#F5A524]/10 border border-[#F5A524]/30 flex items-center justify-center text-[#F5A524] mb-5">
-                <Layers className="w-6 h-6" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-5 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC]">
+              <div className="w-8 h-8 rounded-md bg-[#EAF4EE] text-[#234E42] flex items-center justify-center mb-3">
+                <Bot className="w-4 h-4" />
               </div>
-              <h3 className="text-lg font-bold text-[#F8FAFC] mb-2">Dual-Portal Separation</h3>
-              <p className="text-sm text-[#94A3B8] leading-relaxed">
-                Dedicated interfaces for buyers and store owners. Customers browse products and track deliveries, while merchants manage inventory, fulfill orders, and monitor revenue trends.
+              <h3 className="text-sm font-semibold text-[#202923]">AI Business Copilot</h3>
+              <p className="text-xs text-[#6B746E] mt-1.5 leading-relaxed">
+                Ask conversational questions in plain English: "Which product sold the most?", "What is my gross profit?", and receive grounded, accurate calculations.
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-[#1C222B] border border-[#2A3441] hover:border-[#F5A524]/40 transition">
-              <div className="w-12 h-12 rounded-xl bg-[#F5A524]/10 border border-[#F5A524]/30 flex items-center justify-center text-[#F5A524] mb-5">
-                <ShieldCheck className="w-6 h-6" />
+            <div className="p-5 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC]">
+              <div className="w-8 h-8 rounded-md bg-[#EAF4EE] text-[#234E42] flex items-center justify-center mb-3">
+                <BarChart3 className="w-4 h-4" />
               </div>
-              <h3 className="text-lg font-bold text-[#F8FAFC] mb-2">Deterministic Policy Engine</h3>
-              <p className="text-sm text-[#94A3B8] leading-relaxed">
-                The Non-Trust AI boundary ensures the LLM cannot manipulate financial parameters. Server-enforced rules guarantee maximum 10% discounts and caps on order reductions.
+              <h3 className="text-sm font-semibold text-[#202923]">Sales & Profit Analytics</h3>
+              <p className="text-xs text-[#6B746E] mt-1.5 leading-relaxed">
+                Filter by Today, 7 Days, 30 Days, or All-Time. Track total revenue, gross margin percentage, order volume, and average order value.
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-[#1C222B] border border-[#2A3441] hover:border-[#F5A524]/40 transition">
-              <div className="w-12 h-12 rounded-xl bg-[#F5A524]/10 border border-[#F5A524]/30 flex items-center justify-center text-[#F5A524] mb-5">
-                <Lock className="w-6 h-6" />
+            <div className="p-5 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC]">
+              <div className="w-8 h-8 rounded-md bg-[#EAF4EE] text-[#234E42] flex items-center justify-center mb-3">
+                <Box className="w-4 h-4" />
               </div>
-              <h3 className="text-lg font-bold text-[#F8FAFC] mb-2">Cryptographic Settlement</h3>
-              <p className="text-sm text-[#94A3B8] leading-relaxed">
-                Integrated with Razorpay Test Mode. All transactions calculate order values in paise server-side, verifying HMAC-SHA256 signatures before confirming orders or decrementing inventory.
+              <h3 className="text-sm font-semibold text-[#202923]">Inventory Intelligence</h3>
+              <p className="text-xs text-[#6B746E] mt-1.5 leading-relaxed">
+                Monitor stock runway in days based on 30-day sales velocity. Receive automated low-stock warnings and reorder recommendations.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC]">
+              <div className="w-8 h-8 rounded-md bg-[#EAF4EE] text-[#234E42] flex items-center justify-center mb-3">
+                <TrendingUp className="w-4 h-4" />
+              </div>
+              <h3 className="text-sm font-semibold text-[#202923]">Apriori Market Basket</h3>
+              <p className="text-xs text-[#6B746E] mt-1.5 leading-relaxed">
+                Mines real transactions for frequent pairs (e.g., USB Cable → Phone Cover). Generates high-converting bundles with positive lift values.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC]">
+              <div className="w-8 h-8 rounded-md bg-[#EAF4EE] text-[#234E42] flex items-center justify-center mb-3">
+                <Receipt className="w-4 h-4" />
+              </div>
+              <h3 className="text-sm font-semibold text-[#202923]">In-Store POS & Billing</h3>
+              <p className="text-xs text-[#6B746E] mt-1.5 leading-relaxed">
+                Record counter sales via Cash, UPI, or Card. Instant stock decrement, live profit margin calculation, and printable receipt generation.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC]">
+              <div className="w-8 h-8 rounded-md bg-[#EAF4EE] text-[#234E42] flex items-center justify-center mb-3">
+                <FileSpreadsheet className="w-4 h-4" />
+              </div>
+              <h3 className="text-sm font-semibold text-[#202923]">CSV Data Migration</h3>
+              <p className="text-xs text-[#6B746E] mt-1.5 leading-relaxed">
+                Import legacy products, stock adjustments, and sales history. SHA256 duplicate detection and transactional database commits.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC]">
+              <div className="w-8 h-8 rounded-md bg-[#EAF4EE] text-[#234E42] flex items-center justify-center mb-3">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+              <h3 className="text-sm font-semibold text-[#202923]">Action Center</h3>
+              <p className="text-xs text-[#6B746E] mt-1.5 leading-relaxed">
+                One-click human-in-the-loop review for AI restock suggestions, promotion bundles, and commercial discount approvals.
+              </p>
+            </div>
+
+            <div className="p-5 rounded-lg bg-[#F6F5F1] border border-[#DEE3DC]">
+              <div className="w-8 h-8 rounded-md bg-[#EAF4EE] text-[#234E42] flex items-center justify-center mb-3">
+                <Activity className="w-4 h-4" />
+              </div>
+              <h3 className="text-sm font-semibold text-[#202923]">Immutable Audit Trail</h3>
+              <p className="text-xs text-[#6B746E] mt-1.5 leading-relaxed">
+                Every policy evaluation, payment signature check, stock adjustment, and merchant action is recorded in an immutable ledger.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3. Customer Shopping Experience */}
-      <section className="py-20 border-b border-[#2A3441]/50">
+      {/* 3. Customer Shopping Highlights Section */}
+      <section className="py-14 border-b border-[#DEE3DC]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <span className="text-xs font-mono uppercase text-[#F5A524] tracking-wider">For Customers</span>
-              <h2 className="text-3xl sm:text-4xl font-bold text-[#F8FAFC] mt-2 mb-6">
-                Frictionless Hardware & Tech Storefront
-              </h2>
-              <p className="text-[#94A3B8] text-sm leading-relaxed mb-6">
-                Browse authentic developer workstations, displays, and accessories with detailed hardware specifications, compatibility graphs, and live inventory availability.
-              </p>
+          <div className="max-w-3xl mb-10">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[#234E42] font-mono">Customer Experience</span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#202923] mt-1">
+              Natural-language shopping with strict budget guardrails
+            </h2>
+            <p className="text-xs sm:text-sm text-[#6B746E] mt-2">
+              Customers don't just browse static catalogs — they consult an intelligent assistant that finds compliant product bundles within their exact budget.
+            </p>
+          </div>
 
-              <div className="space-y-3.5 mb-8">
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-[#10B981] shrink-0 mt-0.5" />
-                  <span className="text-sm text-[#94A3B8]">
-                    <strong className="text-[#F8FAFC]">Live Relational Database Records:</strong> Accurate stock indicators, pricing in INR, and comprehensive hardware spec sheets.
-                  </span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-[#10B981] shrink-0 mt-0.5" />
-                  <span className="text-sm text-[#94A3B8]">
-                    <strong className="text-[#F8FAFC]">Persistent Database Cart:</strong> Add items across sessions with automatic out-of-stock and inventory ceiling enforcement.
-                  </span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-[#10B981] shrink-0 mt-0.5" />
-                  <span className="text-sm text-[#94A3B8]">
-                    <strong className="text-[#F8FAFC]">Isolated Order History:</strong> Instant access to past orders, item breakdown, payment status, and shipment tracking.
-                  </span>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="p-5 rounded-lg bg-white border border-[#DEE3DC] shadow-xs">
+              <div className="w-8 h-8 rounded-md bg-[#EAF4EE] text-[#234E42] flex items-center justify-center mb-3">
+                <Sparkles className="w-4 h-4" />
               </div>
-
-              <Link
-                to="/shop"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#F5A524] hover:bg-[#D97706] text-black font-semibold text-sm transition"
-              >
-                Browse Hardware Catalog
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              <h3 className="text-sm font-semibold text-[#202923]">Natural-Language Search</h3>
+              <p className="text-xs text-[#6B746E] mt-1 leading-relaxed">
+                Understands natural requests: "Suggest mobile accessories under ₹300", "I need earphones and a charging cable", filtering out unavailable items.
+              </p>
             </div>
 
-            {/* Visual Storefront Card Preview */}
-            <div className="rounded-2xl bg-[#1C222B] border border-[#2A3441] p-6 shadow-2xl">
-              <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#2A3441]">
-                <div className="flex items-center gap-2">
-                  <Box className="w-4 h-4 text-[#F5A524]" />
-                  <span className="text-xs font-bold text-[#F8FAFC]">Live Catalog Preview</span>
-                </div>
-                <span className="text-[11px] font-mono text-[#10B981] bg-[#10B981]/10 px-2 py-0.5 rounded">
-                  13 Active Products
-                </span>
+            <div className="p-5 rounded-lg bg-white border border-[#DEE3DC] shadow-xs">
+              <div className="w-8 h-8 rounded-md bg-[#EAF4EE] text-[#234E42] flex items-center justify-center mb-3">
+                <ShieldCheck className="w-4 h-4" />
               </div>
+              <h3 className="text-sm font-semibold text-[#202923]">Commercial Discount Policy</h3>
+              <p className="text-xs text-[#6B746E] mt-1 leading-relaxed">
+                Discounts are capped at the merchant's configured maximum (e.g. 10%). Requests for 20% or unauthorized price overrides are instantly blocked.
+              </p>
+            </div>
 
-              <div className="space-y-3">
-                <div className="p-3.5 rounded-xl bg-[#151A21] border border-[#2A3441]/80 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-[#2A3441] flex items-center justify-center text-xs font-mono text-[#F5A524]">
-                      P101
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-[#F8FAFC]">Apex ProBook 15 Developer Edition</p>
-                      <p className="text-[11px] text-[#94A3B8]">Intel Core i7 14-Core • 32GB RAM • 1TB SSD</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs font-bold text-[#F5A524]">₹60,000.00</p>
-                    <span className="text-[10px] text-[#10B981]">18 In Stock</span>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-[#151A21] border border-[#2A3441]/80 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-[#2A3441] flex items-center justify-center text-xs font-mono text-[#F5A524]">
-                      P102
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-[#F8FAFC]">Apex Precision Wireless Mouse</p>
-                      <p className="text-[11px] text-[#94A3B8]">4000 DPI • Bluetooth 5.2 • 70-day Battery</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs font-bold text-[#F5A524]">₹1,000.00</p>
-                    <span className="text-[10px] text-[#10B981]">85 In Stock</span>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-[#151A21] border border-[#2A3441]/80 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-[#2A3441] flex items-center justify-center text-xs font-mono text-[#F5A524]">
-                      P104
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-[#F8FAFC]">Apex 4K Creator Monitor 27"</p>
-                      <p className="text-[11px] text-[#94A3B8]">3840x2160 • 99% DCI-P3 • 90W USB-C PD</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs font-bold text-[#F5A524]">₹32,000.00</p>
-                    <span className="text-[10px] text-[#F59E0B]">4 Low Stock</span>
-                  </div>
-                </div>
+            <div className="p-5 rounded-lg bg-white border border-[#DEE3DC] shadow-xs">
+              <div className="w-8 h-8 rounded-md bg-[#EAF4EE] text-[#234E42] flex items-center justify-center mb-3">
+                <Lock className="w-4 h-4" />
               </div>
+              <h3 className="text-sm font-semibold text-[#202923]">Razorpay Test Checkout</h3>
+              <p className="text-xs text-[#6B746E] mt-1 leading-relaxed">
+                Full-funnel test mode payment with HMAC-SHA256 signature verification. Real order confirmation, stock decrement, and customer order history.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 4. Merchant Business Tools */}
-      <section className="py-20 bg-[#151A21]/40 border-b border-[#2A3441]/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Visual Analytics Preview */}
-            <div className="order-2 lg:order-1 rounded-2xl bg-[#1C222B] border border-[#2A3441] p-6 shadow-2xl">
-              <div className="flex items-center justify-between pb-4 mb-4 border-b border-[#2A3441]">
-                <div className="flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-[#F5A524]" />
-                  <span className="text-xs font-bold text-[#F8FAFC]">Merchant Analytics Engine</span>
-                </div>
-                <span className="text-[11px] font-mono text-[#F5A524] bg-[#F5A524]/10 px-2 py-0.5 rounded">
-                  Live Database SQL
-                </span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="p-3.5 rounded-xl bg-[#151A21] border border-[#2A3441]/60">
-                  <span className="text-[10px] uppercase font-mono text-[#94A3B8]">Total Revenue</span>
-                  <p className="text-lg font-bold text-[#F8FAFC] mt-0.5">₹4,671,102.00</p>
-                  <span className="text-[10px] text-[#10B981] flex items-center gap-1 mt-1">
-                    <TrendingUp className="w-3 h-3" />
-                    Verified Settlements
-                  </span>
-                </div>
-                <div className="p-3.5 rounded-xl bg-[#151A21] border border-[#2A3441]/60">
-                  <span className="text-[10px] uppercase font-mono text-[#94A3B8]">Average Order Value</span>
-                  <p className="text-lg font-bold text-[#F8FAFC] mt-0.5">₹48,657.31</p>
-                  <span className="text-[10px] text-[#94A3B8] mt-1 block">From 110 real orders</span>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-xl bg-[#151A21] border border-[#2A3441]/60">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-[#F8FAFC]">Operational Capabilities</span>
-                  <span className="text-[10px] text-[#94A3B8] font-mono">Real-time sync</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-[11px] text-[#94A3B8]">
-                  <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981]" />
-                    Product CRUD & Spec Sheets
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981]" />
-                    Fulfillment Status Updates
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981]" />
-                    Instant Stock Adjustments
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#10B981]" />
-                    Tamper-Evident Audit Logs
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="order-1 lg:order-2">
-              <span className="text-xs font-mono uppercase text-[#F5A524] tracking-wider">For Store Owners</span>
-              <h2 className="text-3xl sm:text-4xl font-bold text-[#F8FAFC] mt-2 mb-6">
-                Enterprise Operations & Inventory Control
-              </h2>
-              <p className="text-[#94A3B8] text-sm leading-relaxed mb-6">
-                Scale your store with structured inventory tracking, automated low-stock warnings, multi-state order fulfillment, and genuine business intelligence.
-              </p>
-
-              <div className="space-y-3.5 mb-8">
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-[#10B981] shrink-0 mt-0.5" />
-                  <span className="text-sm text-[#94A3B8]">
-                    <strong className="text-[#F8FAFC]">Inventory & Low-Stock Alerts:</strong> Real-time thresholds highlight items requiring immediate reorder to prevent stockouts.
-                  </span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-[#10B981] shrink-0 mt-0.5" />
-                  <span className="text-sm text-[#94A3B8]">
-                    <strong className="text-[#F8FAFC]">Complete Fulfillment Pipeline:</strong> Transition orders through Unfulfilled, Processing, Shipped, and Delivered with audit timestamps.
-                  </span>
-                </div>
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-[#10B981] shrink-0 mt-0.5" />
-                  <span className="text-sm text-[#94A3B8]">
-                    <strong className="text-[#F8FAFC]">Tenant Isolation:</strong> Merchant data, catalog entries, and financial analytics are isolated at the database level.
-                  </span>
-                </div>
-              </div>
-
-              <Link
-                to="/merchant/dashboard"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1C222B] hover:bg-[#242D38] border border-[#2A3441] text-[#F8FAFC] font-semibold text-sm transition"
-              >
-                Access Merchant Dashboard
-                <ArrowRight className="w-4 h-4 text-[#F5A524]" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. AI-Powered Intelligence */}
-      <section className="py-20 border-b border-[#2A3441]/50">
+      {/* 4. Technology Stack Section */}
+      <section className="py-14 bg-white border-b border-[#DEE3DC]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <span className="text-xs font-mono uppercase text-[#F5A524] tracking-wider">Intelligent Agents</span>
-          <h2 className="text-3xl sm:text-4xl font-bold text-[#F8FAFC] mt-2 mb-4">
-            Zero-Hallucination AI Commerce
+          <span className="text-[11px] font-bold uppercase tracking-wider text-[#234E42] font-mono">Architecture & Technology</span>
+          <h2 className="text-2xl font-bold text-[#202923] mt-1">
+            Built with modern, production-grade engineering
           </h2>
-          <p className="text-[#94A3B8] text-sm max-w-2xl mx-auto mb-16">
-            Our AI assistants never make up inventory, prices, or revenue numbers. Every response is dynamically grounded in SQL queries and policy boundaries.
+          <p className="text-xs sm:text-sm text-[#6B746E] mt-2 max-w-2xl mx-auto">
+            100% genuine full-stack implementation with clean architectural separation between customer commerce and merchant operations.
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
-            <div className="p-6 rounded-2xl bg-[#1C222B] border border-[#2A3441]">
-              <div className="w-10 h-10 rounded-xl bg-[#F5A524]/10 border border-[#F5A524]/30 flex items-center justify-center text-[#F5A524] mb-4">
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-bold text-[#F8FAFC] mb-2">AI Shopping Assistant</h3>
-              <p className="text-xs text-[#94A3B8] leading-relaxed mb-4">
-                Natural language shopping queries ("Suggest a laptop under ₹60,000 for programming") are parsed for budget and specs, matched against active database records, and recommended with clear explanations.
-              </p>
-              <div className="p-3 rounded-lg bg-[#151A21] border border-[#2A3441] font-mono text-[11px] text-[#F5A524]">
-                "Intent: Laptops • Budget: ₹60,000 • Result: P101 Apex ProBook"
-              </div>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-[#1C222B] border border-[#2A3441]">
-              <div className="w-10 h-10 rounded-xl bg-[#F5A524]/10 border border-[#F5A524]/30 flex items-center justify-center text-[#F5A524] mb-4">
-                <Cpu className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-bold text-[#F8FAFC] mb-2">Merchant AI Business Assistant</h3>
-              <p className="text-xs text-[#94A3B8] leading-relaxed mb-4">
-                Merchants ask operational questions like "Which items are low in stock?" or "What were my top sellers?" and receive answers computed via authentic SQL aggregations.
-              </p>
-              <div className="p-3 rounded-lg bg-[#151A21] border border-[#2A3441] font-mono text-[11px] text-[#10B981]">
-                "SQL: Aggregated 110 transactions • Revenue: ₹4.67M"
-              </div>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-[#1C222B] border border-[#2A3441]">
-              <div className="w-10 h-10 rounded-xl bg-[#F5A524]/10 border border-[#F5A524]/30 flex items-center justify-center text-[#F5A524] mb-4">
-                <TrendingUp className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-bold text-[#F8FAFC] mb-2">Apriori Market Basket Analysis</h3>
-              <p className="text-xs text-[#94A3B8] leading-relaxed mb-4">
-                Mines completed multi-item order baskets for Support, Confidence, and Lift metrics to uncover cross-sell bundles and lift Average Order Value safely.
-              </p>
-              <div className="p-3 rounded-lg bg-[#151A21] border border-[#2A3441] font-mono text-[11px] text-[#F5A524]">
-                "Rule: P101 → P102 • Support: 35% • Lift: 1.82"
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. How It Works */}
-      <section id="how-it-works" className="py-20 bg-[#151A21]/40 border-b border-[#2A3441]/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <span className="text-xs font-mono uppercase text-[#F5A524] tracking-wider">End-to-End Flow</span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-[#F8FAFC] mt-2">How MerchantPilot AI Operates</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="p-5 rounded-2xl bg-[#1C222B] border border-[#2A3441] relative">
-              <span className="text-2xl font-black text-[#F5A524]/40 font-mono mb-3 block">01</span>
-              <h4 className="text-sm font-bold text-[#F8FAFC] mb-1.5">Catalog & Guardrails</h4>
-              <p className="text-xs text-[#94A3B8]">
-                Merchants configure hardware products, specs, and non-negotiable discount ceilings.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-[#1C222B] border border-[#2A3441] relative">
-              <span className="text-2xl font-black text-[#F5A524]/40 font-mono mb-3 block">02</span>
-              <h4 className="text-sm font-bold text-[#F8FAFC] mb-1.5">Agentic Search & Cart</h4>
-              <p className="text-xs text-[#94A3B8]">
-                Shoppers search or use AI to discover hardware and add to a persistent database cart.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-[#1C222B] border border-[#2A3441] relative">
-              <span className="text-2xl font-black text-[#F5A524]/40 font-mono mb-3 block">03</span>
-              <h4 className="text-sm font-bold text-[#F8FAFC] mb-1.5">Razorpay Settlement</h4>
-              <p className="text-xs text-[#94A3B8]">
-                Server-side pricing in paise, HMAC verification, and concurrency-safe inventory deduction.
-              </p>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-[#1C222B] border border-[#2A3441] relative">
-              <span className="text-2xl font-black text-[#F5A524]/40 font-mono mb-3 block">04</span>
-              <h4 className="text-sm font-bold text-[#F8FAFC] mb-1.5">Fulfillment & Insights</h4>
-              <p className="text-xs text-[#94A3B8]">
-                Merchants ship orders while Apriori algorithms mine basket patterns to lift future revenue.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 7. Call to Action */}
-      <section className="py-20 relative overflow-hidden">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl bg-gradient-to-br from-[#1C222B] to-[#151A21] border border-[#2A3441] p-8 md:p-14 text-center shadow-2xl relative">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5A524]/10 text-[#F5A524] border border-[#F5A524]/30 text-xs font-mono mb-6">
-              Production Verified • 48 Automated Tests Passing
-            </div>
-
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-[#F8FAFC] tracking-tight">
-              Ready to Experience AI-Native Commerce?
-            </h2>
-
-            <p className="mt-4 text-[#94A3B8] text-sm sm:text-base max-w-xl mx-auto">
-              Start shopping developer gear today or set up your merchant portal to tap into intelligent inventory and basket analytics.
-            </p>
-
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                to="/shop"
-                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#F5A524] hover:bg-[#D97706] text-black font-semibold text-sm transition shadow-amber-glow"
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-2 max-w-4xl mx-auto">
+            {[
+              'Python 3.12',
+              'FastAPI',
+              'React.js 18',
+              'Vite',
+              'PostgreSQL',
+              'SQLAlchemy ORM',
+              'Pydantic v2',
+              'Tailwind CSS',
+              'Recharts',
+              'Apriori Association Mining',
+              'Razorpay Test Mode',
+              'HMAC-SHA256 Signatures',
+              'Gemini 1.5 Pro / Flash',
+              'Vercel Serverless'
+            ].map((tech) => (
+              <span
+                key={tech}
+                className="px-3 py-1.5 rounded-md bg-[#F6F5F1] border border-[#DEE3DC] text-xs font-medium text-[#202923]"
               >
-                Browse Customer Store
-              </Link>
-              <Link
-                to="/signup?role=merchant"
-                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#151A21] hover:bg-[#242D38] border border-[#2A3441] text-[#F8FAFC] font-semibold text-sm transition"
-              >
-                Create Merchant Account
-              </Link>
-            </div>
+                {tech}
+              </span>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* 8. Footer */}
-      <footer id="about" className="bg-[#0B0F14] border-t border-[#2A3441] py-12 text-[#94A3B8] text-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-7 h-7 rounded-lg bg-[#F5A524] flex items-center justify-center text-black font-bold text-xs">
-                MP
-              </div>
-              <span className="text-sm font-bold text-[#F8FAFC]">MerchantPilot AI</span>
-            </div>
-            <p className="text-[#94A3B8] text-xs leading-relaxed mb-4">
-              Production-grade AI-native commerce and revenue intelligence platform with deterministic safety guardrails.
-            </p>
-            <div className="flex items-center gap-2 text-[11px] text-[#10B981]">
-              <span className="w-2 h-2 rounded-full bg-[#10B981] animate-pulse" />
-              Razorpay Test Mode Verified
-            </div>
+      {/* 5. Footer */}
+      <footer className="py-8 bg-[#EAEDE7] border-t border-[#DEE3DC] text-xs text-[#6B746E]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-[#202923]">merchantpilot</span>
+            <span>—</span>
+            <span>AI Business Copilot for Small Merchants</span>
           </div>
-
-          <div>
-            <h4 className="text-xs uppercase font-mono text-[#F8FAFC] mb-3">Customer Store</h4>
-            <ul className="space-y-2">
-              <li><Link to="/shop" className="hover:text-[#F5A524] transition">Browse Hardware</Link></li>
-              <li><Link to="/ai-assistant" className="hover:text-[#F5A524] transition">AI Shopping Assistant</Link></li>
-              <li><Link to="/cart" className="hover:text-[#F5A524] transition">Shopping Cart</Link></li>
-              <li><Link to="/orders" className="hover:text-[#F5A524] transition">Track Orders</Link></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-xs uppercase font-mono text-[#F8FAFC] mb-3">Merchant Operations</h4>
-            <ul className="space-y-2">
-              <li><Link to="/merchant/dashboard" className="hover:text-[#F5A524] transition">Overview Analytics</Link></li>
-              <li><Link to="/merchant/products" className="hover:text-[#F5A524] transition">Product Management</Link></li>
-              <li><Link to="/merchant/inventory" className="hover:text-[#F5A524] transition">Inventory Tracking</Link></li>
-              <li><Link to="/merchant/orders" className="hover:text-[#F5A524] transition">Order Fulfillment</Link></li>
-              <li><Link to="/merchant/ai-assistant" className="hover:text-[#F5A524] transition">Merchant AI Assistant</Link></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-xs uppercase font-mono text-[#F8FAFC] mb-3">Architecture & Security</h4>
-            <p className="leading-relaxed mb-2 text-[#94A3B8]">
-              Non-Trust AI Boundary, server-side paise calculation, PBKDF2 salting, and HMAC-SHA256 signature verification.
-            </p>
-            <p className="text-[11px] text-[#64748B] mt-4 font-mono">
-              © 2026 MerchantPilot AI. All rights reserved.
-            </p>
+          <div className="flex items-center gap-4">
+            <Link to="/store" className="hover:text-[#202923]">Demo Storefront</Link>
+            <Link to="/login" className="hover:text-[#202923]">Sign In</Link>
+            <Link to="/" className="text-[#234E42] font-semibold hover:underline">Executive Dashboard</Link>
           </div>
         </div>
       </footer>

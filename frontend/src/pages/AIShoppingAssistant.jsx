@@ -28,14 +28,24 @@ import { useCart } from '../context/CartContext';
 
 const QUICK_PRESETS = [
   {
-    label: 'Laptop for programming under ₹60k',
-    query: 'Suggest a laptop under ₹60,000 for programming.',
-    badge: 'Hardware Search'
+    label: 'Mobile accessories under ₹300',
+    query: 'Suggest mobile accessories under ₹300.',
+    badge: 'Budget Discovery'
   },
   {
-    label: 'Compliant Bundle (Laptop + Mouse)',
-    query: 'I need a laptop for programming under ₹65,000 and a mouse.',
-    badge: 'Affinity Bundle'
+    label: 'Useful combo under ₹500',
+    query: 'Suggest a useful product combination under ₹500.',
+    badge: 'Apriori Bundle'
+  },
+  {
+    label: 'Earphones and charging cable',
+    query: 'I need earphones and a charging cable.',
+    badge: 'Co-occurrence'
+  },
+  {
+    label: 'Cheapest available mouse',
+    query: 'What is the cheapest available mouse?',
+    badge: 'Catalog Search'
   },
   {
     label: 'Policy Violation Block Demo',
@@ -43,14 +53,9 @@ const QUICK_PRESETS = [
     badge: 'Guardrail Intercept'
   },
   {
-    label: 'Studio Audio Headphones',
-    query: 'Suggest high-end wireless headphones under ₹60,000.',
-    badge: 'Audio Search'
-  },
-  {
-    label: '4K Display & Peripherals',
-    query: 'Looking for a 4K monitor and ergonomic mouse under ₹40,000.',
-    badge: 'Workstation Setup'
+    label: 'Developer Laptop under ₹65k',
+    query: 'I need a laptop for programming under ₹65,000 and a mouse.',
+    badge: 'Affinity Bundle'
   }
 ];
 
@@ -58,7 +63,7 @@ export default function AIShoppingAssistant() {
   const { isAuthenticated } = useAuth();
   const { addItem } = useCart();
 
-  const [inputQuery, setInputQuery] = useState('Suggest a laptop under ₹60,000 for programming.');
+  const [inputQuery, setInputQuery] = useState('Suggest mobile accessories under ₹300.');
   const [loading, setLoading] = useState(false);
   const [chatResponse, setChatResponse] = useState(null);
   const [error, setError] = useState(null);

@@ -91,17 +91,33 @@ class AgentService:
             detected_categories.append("Cameras")
         if any(w in lower_msg for w in ["monitor", "display", "screen"]):
             detected_categories.append("Monitors")
-        if any(w in lower_msg for w in ["headphone", "audio", "earphone", "sound"]):
+        if any(w in lower_msg for w in ["headphone", "audio", "earphone", "earphones", "sound", "earbuds"]):
             detected_categories.append("Audio")
         if any(w in lower_msg for w in ["keyboard", "mechanical keyboard"]):
             detected_categories.append("Keyboards")
-        if any(w in lower_msg for w in ["mouse", "wireless mouse"]):
+        if any(w in lower_msg for w in ["mouse", "wireless mouse", "mouse pad", "pad"]):
+            detected_categories.append("Peripherals")
+        if any(w in lower_msg for w in ["phone cover", "cover", "case", "screen protector", "tempered glass"]):
+            detected_categories.append("Protection")
+        if any(w in lower_msg for w in ["accessory", "accessories", "cable", "usb", "charger", "charging", "stand", "holder", "adapter", "organizer", "mobile"]):
             detected_categories.append("Accessories")
 
         requested_accessories = []
         if "mouse" in lower_msg:
             requested_accessories.append("mouse")
-        if "bag" in lower_msg or "case" in lower_msg or "sleeve" in lower_msg:
+        if "cable" in lower_msg or "charging" in lower_msg or "usb" in lower_msg:
+            requested_accessories.append("cable")
+        if "cover" in lower_msg or "case" in lower_msg:
+            requested_accessories.append("cover")
+        if "stand" in lower_msg or "holder" in lower_msg:
+            requested_accessories.append("stand")
+        if "pad" in lower_msg:
+            requested_accessories.append("pad")
+        if "protector" in lower_msg or "screen" in lower_msg:
+            requested_accessories.append("protector")
+        if "earphone" in lower_msg or "headphone" in lower_msg:
+            requested_accessories.append("earphone")
+        if "bag" in lower_msg or "sleeve" in lower_msg:
             requested_accessories.append("bag")
         if "tripod" in lower_msg:
             requested_accessories.append("tripod")
@@ -138,8 +154,13 @@ class AgentService:
         )
 
         if not candidate_products:
-            # Fallback to all products or generic search
-            candidate_products = db.query(Product).filter(Product.is_active == True).limit(3).all()
+            # Fallback to products respecting budget if specified
+            fallback_q = db.query(Product).filter(Product.is_active == True)
+            if extracted_budget is not None:
+                fallback_q = fallback_q.filter(Product.price <= extracted_budget)
+            candidate_products = fallback_q.order_by(Product.rating.desc(), Product.price.desc()).limit(3).all()
+            if not candidate_products:
+                candidate_products = db.query(Product).filter(Product.is_active == True).limit(3).all()
 
         primary_product = candidate_products[0] if candidate_products else None
 
@@ -163,7 +184,7 @@ class AgentService:
         # -------------------------------------------------------------
         # STEP 4: REVENUE INTELLIGENCE (CROSS-SELL & UPSELL DISCOVERY)
         # -------------------------------------------------------------
-        cross_sells = RevenueService.get_cross_sell_recommendations(db, primary_product.id, limit=2)
+        cross_sells = RevenueService.get_cross_sell_recommendations(db, primary_product.id, limit=3)
         upsells = RevenueService.get_upsell_recommendations(db, primary_product.id)
 
         action_trace.append(ActionItem(
@@ -193,7 +214,11 @@ class AgentService:
                     break
         
         if not selected_cross_sell and cross_sells:
-            selected_cross_sell = cross_sells[0]
+            if extracted_budget is not None:
+                budget_fitting = [cs for cs in cross_sells if (primary_product.price + cs.get("price", 0)) <= extracted_budget * 1.15]
+                selected_cross_sell = budget_fitting[0] if budget_fitting else (cross_sells[0] if primary_product.price < extracted_budget else None)
+            else:
+                selected_cross_sell = cross_sells[0]
 
         # -------------------------------------------------------------
         # STEP 5: GENERATE BOUNDED OFFER & BUNDLE
