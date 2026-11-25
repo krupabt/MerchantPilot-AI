@@ -33,7 +33,7 @@ def run_qa():
         # Assert Headline
         headline_text = page.locator("h1").inner_text()
         print("H1 text:", repr(headline_text))
-        assert "Better shopping." in headline_text and "Smarter business." in headline_text, "Headline mismatch!"
+        assert "Better essentials." in headline_text and "Smarter commerce." in headline_text, "Headline mismatch!"
 
         # Assert Navigation Links
         nav_text = page.locator("header").inner_text()
@@ -49,10 +49,10 @@ def run_qa():
         print(f"✅ Captured Desktop Homepage: {ss_home}")
 
         # -----------------------------------------------------------------
-        # TEST 3 & 4: Click Explore the Store -> Redirects to /signin
+        # TEST 3 & 4: Click Explore Store -> Redirects to /signin
         # -----------------------------------------------------------------
-        print("\n--- STEP 3 & 4: Click 'Explore the Store' -> /signin ---")
-        explore_btn = page.locator("button:has-text('Explore the Store')").first
+        print("\n--- STEP 3 & 4: Click 'Explore Store' -> /signin ---")
+        explore_btn = page.locator("button:has-text('Explore Store')").first
         explore_btn.click()
         page.wait_for_url("**/signin", timeout=8000)
         time.sleep(1)

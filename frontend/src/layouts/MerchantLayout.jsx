@@ -12,9 +12,9 @@ export default function MerchantLayout() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F6F5F3] space-y-3">
-        <div className="w-8 h-8 border-2 border-[#783F45]/20 border-t-[#783F45] rounded-full animate-spin" />
-        <p className="text-xs text-[#6B6560] font-medium">Verifying merchant authorization...</p>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F5F3EE] space-y-3">
+        <div className="w-8 h-8 border-2 border-[#252722]/20 border-t-[#252722] rounded-full animate-spin" />
+        <p className="text-xs text-[#777B70] font-medium">Verifying merchant authorization...</p>
       </div>
     );
   }
@@ -27,27 +27,27 @@ export default function MerchantLayout() {
   // Authenticated as Customer -> Strict Role Separation Access Denial
   if (!isMerchant) {
     return (
-      <div className="min-h-screen bg-[#F6F5F3] flex items-center justify-center p-6 text-center">
-        <div className="max-w-md w-full bg-white border border-[#E8E2DA] rounded-2xl p-8 shadow-sm space-y-4">
+      <div className="min-h-screen bg-[#F5F3EE] flex items-center justify-center p-6 text-center font-sans">
+        <div className="max-w-md w-full bg-white border border-[#E5E2DB] rounded-2xl p-8 shadow-sm space-y-4">
           <div className="w-14 h-14 rounded-full bg-rose-50 border border-rose-200 text-[#B84040] mx-auto flex items-center justify-center">
             <ShieldAlert className="w-7 h-7" />
           </div>
-          <h2 className="font-heading text-xl font-bold text-[#242424]">Merchant Workspace Access Denied</h2>
-          <p className="text-xs sm:text-sm text-[#6B6560] leading-relaxed">
-            You are signed in as a customer (<span className="font-semibold text-[#242424]">{user?.email}</span>). 
+          <h2 className="font-heading text-xl font-bold text-[#20211F]">Merchant Workspace Access Denied</h2>
+          <p className="text-xs sm:text-sm text-[#777B70] leading-relaxed">
+            You are signed in as a customer (<span className="font-semibold text-[#20211F]">{user?.email}</span>). 
             Access to financial registers, COGS profit margins, and merchant controls requires merchant credentials.
           </p>
           <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               to="/shop"
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#783F45] text-white text-xs font-semibold hover:bg-[#603137] transition flex items-center justify-center gap-2 shadow-sm"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#252722] text-white text-xs font-semibold hover:bg-[#41453C] transition flex items-center justify-center gap-2 shadow-sm"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Return to Customer Store</span>
             </Link>
             <Link
               to="/merchant/signin"
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white border border-[#E8E2DA] text-[#242424] text-xs font-semibold hover:bg-[#F8F4EE] transition"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white border border-[#E5E2DB] text-[#20211F] text-xs font-semibold hover:bg-[#F5F3EE] transition"
             >
               Sign In as Merchant
             </Link>

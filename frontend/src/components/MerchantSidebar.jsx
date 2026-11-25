@@ -69,21 +69,21 @@ export default function MerchantSidebar({ mobile = false, onClose }) {
       className={`${
         mobile
           ? 'w-full h-full flex flex-col justify-between p-4 bg-white'
-          : 'w-64 bg-white border-r border-[#E8E2DA] flex flex-col justify-between p-4 shrink-0 min-h-[calc(100vh-56px)] hidden lg:flex sticky top-14'
+          : 'w-64 bg-white border-r border-[#E5E2DB] flex flex-col justify-between p-4 shrink-0 min-h-[calc(100vh-56px)] hidden lg:flex sticky top-14'
       }`}
     >
       <div className="space-y-5 overflow-y-auto pr-1">
         {/* MerchantPilot Brand & Store Info */}
-        <div className="flex items-center justify-between pb-3.5 border-b border-[#E8E2DA]">
+        <div className="flex items-center justify-between pb-3.5 border-b border-[#E5E2DB]">
           <NavLink to="/merchant/overview" onClick={onClose} className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-xl bg-[#783F45] text-white flex items-center justify-center font-bold text-sm shadow-sm transition-transform group-hover:scale-105">
+            <div className="w-8 h-8 rounded-xl bg-[#252722] text-white flex items-center justify-center font-bold text-sm shadow-sm transition-transform group-hover:scale-105">
               MP
             </div>
             <div>
-              <span className="font-heading font-bold text-sm tracking-tight text-[#242424] block leading-none">
+              <span className="font-heading font-bold text-sm tracking-tight text-[#20211F] block leading-none">
                 MerchantPilot
               </span>
-              <span className="text-[11px] text-[#6B6560] block mt-1 truncate max-w-[140px]">
+              <span className="text-[11px] text-[#777B70] block mt-1 truncate max-w-[140px]">
                 {user?.store_name || user?.name || 'Smart Accessories Store'}
               </span>
             </div>
@@ -94,7 +94,7 @@ export default function MerchantSidebar({ mobile = false, onClose }) {
         <div className="space-y-4">
           {NAV_GROUPS.map((group) => (
             <div key={group.title} className="space-y-1">
-              <span className="text-[10px] font-bold text-[#6B6560] px-3 uppercase tracking-wider block font-heading">
+              <span className="text-[10px] font-bold text-[#777B70] px-3 uppercase tracking-wider block font-heading">
                 {group.title}
               </span>
               <nav className="space-y-0.5">
@@ -108,21 +108,21 @@ export default function MerchantSidebar({ mobile = false, onClose }) {
                       className={({ isActive }) =>
                         `flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                           isActive
-                            ? 'bg-[#F8F4EE] text-[#783F45] font-semibold border border-[#E8E2DA] shadow-2xs'
+                            ? 'bg-[#F5F3EE] text-[#252722] font-semibold border border-[#E5E2DB] shadow-2xs'
                             : item.isPos
-                            ? 'text-[#783F45] hover:bg-[#F8F4EE] font-semibold'
-                            : 'text-[#6B6560] hover:text-[#242424] hover:bg-[#F8F4EE]'
+                            ? 'text-[#252722] hover:bg-[#F5F3EE] font-semibold'
+                            : 'text-[#777B70] hover:text-[#20211F] hover:bg-[#F5F3EE]'
                         }`
                       }
                     >
                       <Icon
                         className={`w-4 h-4 shrink-0 ${
-                          item.isPos ? 'text-[#783F45]' : ''
+                          item.isPos ? 'text-[#252722]' : ''
                         }`}
                       />
                       <span className="truncate">{item.name}</span>
                       {item.isPos && (
-                        <span className="ml-auto text-[9px] bg-[#783F45] text-white px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                        <span className="ml-auto text-[9px] bg-[#252722] text-white px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
                           POS
                         </span>
                       )}
@@ -136,23 +136,23 @@ export default function MerchantSidebar({ mobile = false, onClose }) {
       </div>
 
       {/* Footer Navigation: Customer Store Link & Sign Out */}
-      <div className="pt-3.5 border-t border-[#E8E2DA] space-y-1 mt-4">
+      <div className="pt-3.5 border-t border-[#E5E2DB] space-y-1 mt-4">
         <NavLink
           to="/shop"
           target="_blank"
           rel="noreferrer"
-          className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-[#6B6560] hover:text-[#242424] hover:bg-[#F8F4EE] transition"
+          className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-[#777B70] hover:text-[#20211F] hover:bg-[#F5F3EE] transition"
         >
           <div className="flex items-center gap-2">
-            <Store className="w-4 h-4 text-[#783F45]" />
+            <Store className="w-4 h-4 text-[#252722]" />
             <span>Customer Store</span>
           </div>
-          <ExternalLink className="w-3.5 h-3.5 text-[#6B6560]" />
+          <ExternalLink className="w-3.5 h-3.5 text-[#777B70]" />
         </NavLink>
 
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-[#B84040] hover:bg-rose-50 transition"
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-[#B84040] hover:bg-rose-50 transition cursor-pointer"
         >
           <LogOut className="w-4 h-4" />
           <span>Sign Out</span>

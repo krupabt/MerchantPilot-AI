@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Store, Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, AlertCircle, CheckCircle2, Tag } from 'lucide-react';
+import { User, Store, Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, AlertCircle, Tag } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const BUSINESS_CATEGORIES = [
@@ -76,16 +76,15 @@ export default function MerchantSignUp() {
     try {
       await signup({
         name: name.trim(),
+        business_name: businessName.trim(),
+        business_category: businessCategory,
         email: email.trim(),
         password,
-        role: 'merchant',
-        store_name: businessName.trim(),
-        business_category: businessCategory
+        role: 'merchant'
       });
-      // Redirect new merchant to workspace overview
       navigate('/merchant/overview', { replace: true });
     } catch (err) {
-      const msg = err.response?.data?.detail || 'Registration failed. An account with this email may already exist.';
+      const msg = err.response?.data?.detail || 'Store registration failed. An account with this email may already exist.';
       setGeneralError(msg);
     } finally {
       setSubmitting(false);
@@ -93,331 +92,291 @@ export default function MerchantSignUp() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F6F5F3] flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans selection:bg-[#783F45] selection:text-white">
-      <div className="max-w-5xl w-full bg-white border border-[#E8E2DA] rounded-3xl overflow-hidden shadow-sm grid grid-cols-1 lg:grid-cols-12 min-h-[660px]">
-        {/* Left Panel: Deep Charcoal Executive Showcase (#292628) */}
-        <div className="hidden lg:flex lg:col-span-5 bg-[#292628] text-white p-10 flex-col justify-between relative overflow-hidden">
-          {/* Top Brand Tag */}
-          <div className="space-y-4">
-            <Link to="/" className="inline-flex items-center gap-2.5 group">
-              <div className="w-7 h-7 rounded-lg bg-[#D8C3A5] text-[#242424] flex items-center justify-center font-heading font-bold text-xs shadow-xs transition-transform group-hover:scale-105">
-                MP
-              </div>
-              <span className="font-heading font-bold text-base text-white tracking-tight">
-                MerchantPilot Business
-              </span>
-            </Link>
+    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-white font-sans selection:bg-[#252722] selection:text-white animate-fade-in">
+      {/* LEFT SIDE — 55% Width: Executive Business Presentation */}
+      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-[#252722] text-white flex-col justify-between p-12 xl:p-16 border-r border-[#E5E2DB]">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#252722] via-[#2F322B] to-[#1E201B] opacity-95" />
 
-            <div className="pt-6 space-y-2">
-              <h2 className="font-heading text-2xl font-bold text-white tracking-tight leading-snug">
-                Grow your retail business.
+        {/* Top Branding */}
+        <div className="relative z-10">
+          <Link to="/" className="inline-flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-lg bg-[#D9D1C2] text-[#20211F] flex items-center justify-center font-heading font-bold text-xs shadow-xs transition-transform duration-200 group-hover:scale-105">
+              MP
+            </div>
+            <span className="font-heading font-bold text-lg tracking-tight text-white">
+              MerchantPilot <span className="text-[#D9D1C2] font-normal text-sm">Business</span>
+            </span>
+          </Link>
+        </div>
+
+        {/* Center: Workspace Onboarding Highlights */}
+        <div className="relative z-10 my-auto py-8 flex flex-col items-center justify-center">
+          <div className="relative max-w-md w-full space-y-6">
+            <div className="space-y-2">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#D9D1C2]">
+                Merchant Onboarding
+              </span>
+              <h2 className="font-heading font-extrabold text-2xl sm:text-3xl text-white tracking-tight leading-tight">
+                Open your intelligent store workspace.
               </h2>
-              <p className="text-sm text-stone-300 leading-relaxed">
-                Start managing inventory, transactions, and revenue intelligence in minutes.
+              <p className="text-xs text-stone-300 leading-relaxed">
+                Each registration creates an isolated merchant workspace with dedicated in-store POS, private inventory, and customized basket recommendations.
               </p>
             </div>
-          </div>
 
-          {/* Business Highlights */}
-          <div className="space-y-3.5 py-6">
-            <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 flex items-start gap-3 shadow-xs">
-              <CheckCircle2 className="w-4 h-4 text-[#D8C3A5] shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-bold text-white">Isolated Store Workspace</p>
-                <p className="text-[11px] text-stone-300 mt-0.5 leading-relaxed">
-                  Every store receives a private tenant database with dedicated catalog, POS register and policy guardrails.
-                </p>
+            <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-3xl p-6 shadow-lg space-y-3.5">
+              <div className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-[#D9D1C2] text-[#20211F] flex items-center justify-center flex-shrink-0 text-xs font-bold mt-0.5">
+                  1
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-white">Isolated Catalog & Storefront</p>
+                  <p className="text-[11px] text-stone-300">Clean database workspace with zero cross-tenant interference.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-[#D9D1C2] text-[#20211F] flex items-center justify-center flex-shrink-0 text-xs font-bold mt-0.5">
+                  2
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-white">Real-Time Gross Margin Tracking</p>
+                  <p className="text-[11px] text-stone-300">Automated COGS and net profitability calculation on every sale.</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-5 h-5 rounded-full bg-[#D9D1C2] text-[#20211F] flex items-center justify-center flex-shrink-0 text-xs font-bold mt-0.5">
+                  3
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-white">Integrated POS Register</p>
+                  <p className="text-[11px] text-stone-300">Keyboard shortcuts and instant receipt generation for physical walk-ins.</p>
+                </div>
               </div>
             </div>
-
-            <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 flex items-start gap-3 shadow-xs">
-              <CheckCircle2 className="w-4 h-4 text-[#D8C3A5] shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-bold text-white">Zero Starting Clutter</p>
-                <p className="text-[11px] text-stone-300 mt-0.5 leading-relaxed">
-                  Start fresh with clean inventory, 0 orders, and upload your CSV or add items in seconds.
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 flex items-start gap-3 shadow-xs">
-              <CheckCircle2 className="w-4 h-4 text-[#D8C3A5] shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-bold text-white">Full Financial Control</p>
-                <p className="text-[11px] text-stone-300 mt-0.5 leading-relaxed">
-                  Track purchase COGS, gross margins, and configure commercial discount limits that protect your profits.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer note */}
-          <div className="text-[11px] text-stone-400 border-t border-white/10 pt-4 flex items-center justify-between">
-            <span>Commercial Store Setup</span>
-            <span>Instant Activation</span>
           </div>
         </div>
 
-        {/* Right Panel: Merchant Registration Form */}
-        <div className="lg:col-span-7 p-6 sm:p-10 lg:p-12 flex flex-col justify-between">
-          <div>
-            {/* Top Navigation */}
-            <div className="flex items-center justify-between mb-6">
-              <Link
-                to="/"
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-[#6B6560] hover:text-[#242424] transition-colors"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Back to homepage</span>
-              </Link>
+        {/* Bottom Tag */}
+        <div className="relative z-10 pt-6 border-t border-white/10 flex items-center justify-between text-xs text-stone-400">
+          <p>© 2026 MerchantPilot Operating System</p>
+          <span className="font-mono text-[11px] text-[#D9D1C2]">Merchant Pilot SaaS</span>
+        </div>
+      </div>
 
-              <Link
-                to="/signup"
-                className="text-xs font-medium text-[#783F45] hover:text-[#603137] transition-colors"
-              >
-                Shopper registration →
-              </Link>
-            </div>
+      {/* RIGHT SIDE — 45% Width: Form */}
+      <div className="w-full lg:w-[45%] min-h-screen flex items-center justify-center bg-white p-6 sm:p-10 lg:p-14 relative">
+        <div className="w-full max-w-[420px] space-y-5 my-8">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-[#777B70] hover:text-[#20211F] transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back to Home</span>
+          </Link>
 
-            {/* Header */}
-            <div className="space-y-1 mb-5">
-              <span className="inline-block text-[11px] font-bold uppercase tracking-wider text-[#783F45] bg-[#F8F4EE] px-2.5 py-1 rounded-md border border-[#E8E2DA]">
-                Merchant Registration
-              </span>
-              <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#242424] tracking-tight">
-                Register your store
-              </h1>
-              <p className="text-sm text-[#6B6560]">
-                Create a merchant account to manage products, sales, and AI analytics.
-              </p>
-            </div>
-
-            {/* General Error Alert */}
-            {generalError && (
-              <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-[#B84040] flex items-start gap-2.5">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>{generalError}</span>
-              </div>
-            )}
-
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-3.5" noValidate>
-              {/* Row 1: Owner Name & Business Name */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div>
-                  <label
-                    htmlFor="merchant-owner-name"
-                    className="block text-xs font-semibold text-[#242424] mb-1.5"
-                  >
-                    Owner name
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="merchant-owner-name"
-                      type="text"
-                      value={name}
-                      onChange={(e) => {
-                        setName(e.target.value);
-                        if (errors.name) setErrors({ ...errors, name: null });
-                      }}
-                      placeholder="Vikram Mehta"
-                      className={`w-full px-3.5 py-2.5 text-sm rounded-xl border bg-[#FAF9F6] text-[#242424] placeholder-[#A09A94] transition-all duration-150 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#783F45]/20 ${
-                        errors.name ? 'border-rose-300 focus:border-rose-500' : 'border-[#E8E2DA] focus:border-[#783F45]'
-                      }`}
-                    />
-                    <User className="w-4 h-4 text-[#A09A94] absolute right-3.5 top-3 pointer-events-none" />
-                  </div>
-                  {errors.name && (
-                    <p className="text-xs text-[#B84040] mt-1 font-medium">{errors.name}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="merchant-business-name"
-                    className="block text-xs font-semibold text-[#242424] mb-1.5"
-                  >
-                    Business name
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="merchant-business-name"
-                      type="text"
-                      value={businessName}
-                      onChange={(e) => {
-                        setBusinessName(e.target.value);
-                        if (errors.businessName) setErrors({ ...errors, businessName: null });
-                      }}
-                      placeholder="Apex Tech Store"
-                      className={`w-full px-3.5 py-2.5 text-sm rounded-xl border bg-[#FAF9F6] text-[#242424] placeholder-[#A09A94] transition-all duration-150 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#783F45]/20 ${
-                        errors.businessName ? 'border-rose-300 focus:border-rose-500' : 'border-[#E8E2DA] focus:border-[#783F45]'
-                      }`}
-                    />
-                    <Store className="w-4 h-4 text-[#A09A94] absolute right-3.5 top-3 pointer-events-none" />
-                  </div>
-                  {errors.businessName && (
-                    <p className="text-xs text-[#B84040] mt-1 font-medium">{errors.businessName}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Row 2: Category & Email */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div>
-                  <label
-                    htmlFor="merchant-category"
-                    className="block text-xs font-semibold text-[#242424] mb-1.5"
-                  >
-                    Business category
-                  </label>
-                  <div className="relative">
-                    <select
-                      id="merchant-category"
-                      value={businessCategory}
-                      onChange={(e) => setBusinessCategory(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-[#E8E2DA] bg-[#FAF9F6] text-[#242424] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#783F45]/20 focus:border-[#783F45] transition-all duration-150"
-                    >
-                      {BUSINESS_CATEGORIES.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="merchant-email"
-                    className="block text-xs font-semibold text-[#242424] mb-1.5"
-                  >
-                    Business email
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="merchant-email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        if (errors.email) setErrors({ ...errors, email: null });
-                      }}
-                      placeholder="owner@store.com"
-                      className={`w-full px-3.5 py-2.5 text-sm rounded-xl border bg-[#FAF9F6] text-[#242424] placeholder-[#A09A94] transition-all duration-150 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#783F45]/20 ${
-                        errors.email ? 'border-rose-300 focus:border-rose-500' : 'border-[#E8E2DA] focus:border-[#783F45]'
-                      }`}
-                    />
-                    <Mail className="w-4 h-4 text-[#A09A94] absolute right-3.5 top-3 pointer-events-none" />
-                  </div>
-                  {errors.email && (
-                    <p className="text-xs text-[#B84040] mt-1 font-medium">{errors.email}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Row 3: Password & Confirm Password */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                <div>
-                  <label
-                    htmlFor="merchant-password"
-                    className="block text-xs font-semibold text-[#242424] mb-1.5"
-                  >
-                    Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="merchant-password"
-                      type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        if (errors.password) setErrors({ ...errors, password: null });
-                      }}
-                      placeholder="At least 6 characters"
-                      className={`w-full px-3.5 py-2.5 text-sm rounded-xl border bg-[#FAF9F6] text-[#242424] placeholder-[#A09A94] transition-all duration-150 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#783F45]/20 ${
-                        errors.password ? 'border-rose-300 focus:border-rose-500' : 'border-[#E8E2DA] focus:border-[#783F45]'
-                      }`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-2.5 text-[#6B6560] hover:text-[#242424] transition p-0.5"
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                  {errors.password && (
-                    <p className="text-xs text-[#B84040] mt-1 font-medium">{errors.password}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="merchant-confirm-password"
-                    className="block text-xs font-semibold text-[#242424] mb-1.5"
-                  >
-                    Confirm password
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="merchant-confirm-password"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      value={confirmPassword}
-                      onChange={(e) => {
-                        setConfirmPassword(e.target.value);
-                        if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: null });
-                      }}
-                      placeholder="Re-enter password"
-                      className={`w-full px-3.5 py-2.5 text-sm rounded-xl border bg-[#FAF9F6] text-[#242424] placeholder-[#A09A94] transition-all duration-150 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#783F45]/20 ${
-                        errors.confirmPassword ? 'border-rose-300 focus:border-rose-500' : 'border-[#E8E2DA] focus:border-[#783F45]'
-                      }`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3.5 top-2.5 text-[#6B6560] hover:text-[#242424] transition p-0.5"
-                      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                    >
-                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                  {errors.confirmPassword && (
-                    <p className="text-xs text-[#B84040] mt-1 font-medium">{errors.confirmPassword}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full py-3 px-4 rounded-xl bg-[#783F45] hover:bg-[#603137] text-white text-sm font-semibold transition-all duration-150 shadow-xs hover:shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 mt-3 cursor-pointer active:scale-99"
-              >
-                {submitting ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                    <span>Creating merchant workspace...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Create Merchant Account</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            </form>
+          <div className="space-y-1.5">
+            <h1 className="font-heading font-extrabold text-2xl sm:text-3xl text-[#20211F] tracking-tight">
+              Create business account
+            </h1>
+            <p className="text-xs sm:text-sm text-[#777B70]">
+              Register your retail store to access register controls and inventory intelligence.
+            </p>
           </div>
 
-          {/* Bottom Link: Already have an account */}
-          <div className="pt-5 border-t border-[#E8E2DA] mt-5 flex items-center justify-between text-xs text-[#6B6560]">
-            <span>Already have a merchant account?</span>
-            <Link
-              to="/merchant/signin"
-              className="font-semibold text-[#783F45] hover:text-[#603137] hover:underline"
+          {generalError && (
+            <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl text-xs flex items-start gap-2.5 animate-fade-in">
+              <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+              <span>{generalError}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-3" noValidate>
+            {/* Owner Name */}
+            <div className="space-y-1">
+              <label htmlFor="merchant-owner-name" className="block text-xs font-semibold text-[#20211F]">
+                Owner full name
+              </label>
+              <input
+                id="merchant-owner-name"
+                type="text"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (errors.name) setErrors({ ...errors, name: null });
+                }}
+                placeholder="Aarav Gupta"
+                autoComplete="name"
+                className={`w-full h-[50px] px-3.5 rounded-xl border bg-white text-xs sm:text-sm text-[#20211F] placeholder:text-[#777B70]/60 focus:outline-hidden focus:ring-1 transition-all ${
+                  errors.name
+                    ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20'
+                    : 'border-[#E5E2DB] focus:border-[#252722] focus:ring-[#252722]'
+                }`}
+              />
+              {errors.name && <p className="text-[11px] text-rose-600">{errors.name}</p>}
+            </div>
+
+            {/* Business Name */}
+            <div className="space-y-1">
+              <label htmlFor="merchant-business-name" className="block text-xs font-semibold text-[#20211F]">
+                Store / Business name
+              </label>
+              <input
+                id="merchant-business-name"
+                type="text"
+                value={businessName}
+                onChange={(e) => {
+                  setBusinessName(e.target.value);
+                  if (errors.businessName) setErrors({ ...errors, businessName: null });
+                }}
+                placeholder="Gupta Electronics & Accessories"
+                className={`w-full h-[50px] px-3.5 rounded-xl border bg-white text-xs sm:text-sm text-[#20211F] placeholder:text-[#777B70]/60 focus:outline-hidden focus:ring-1 transition-all ${
+                  errors.businessName
+                    ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20'
+                    : 'border-[#E5E2DB] focus:border-[#252722] focus:ring-[#252722]'
+                }`}
+              />
+              {errors.businessName && <p className="text-[11px] text-rose-600">{errors.businessName}</p>}
+            </div>
+
+            {/* Business Category */}
+            <div className="space-y-1">
+              <label htmlFor="merchant-business-category" className="block text-xs font-semibold text-[#20211F]">
+                Business category
+              </label>
+              <select
+                id="merchant-business-category"
+                value={businessCategory}
+                onChange={(e) => setBusinessCategory(e.target.value)}
+                className="w-full h-[50px] px-3.5 rounded-xl border border-[#E5E2DB] bg-white text-xs sm:text-sm text-[#20211F] focus:outline-hidden focus:border-[#252722] focus:ring-1 focus:ring-[#252722] transition-all"
+              >
+                {BUSINESS_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Business Email */}
+            <div className="space-y-1">
+              <label htmlFor="merchant-email" className="block text-xs font-semibold text-[#20211F]">
+                Business email
+              </label>
+              <input
+                id="merchant-email"
+                type="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) setErrors({ ...errors, email: null });
+                }}
+                placeholder="store@example.com"
+                autoComplete="email"
+                className={`w-full h-[50px] px-3.5 rounded-xl border bg-white text-xs sm:text-sm text-[#20211F] placeholder:text-[#777B70]/60 focus:outline-hidden focus:ring-1 transition-all ${
+                  errors.email
+                    ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20'
+                    : 'border-[#E5E2DB] focus:border-[#252722] focus:ring-[#252722]'
+                }`}
+              />
+              {errors.email && <p className="text-[11px] text-rose-600">{errors.email}</p>}
+            </div>
+
+            {/* Password */}
+            <div className="space-y-1">
+              <label htmlFor="merchant-password" className="block text-xs font-semibold text-[#20211F]">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  id="merchant-password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (errors.password) setErrors({ ...errors, password: null });
+                  }}
+                  placeholder="At least 6 characters"
+                  autoComplete="new-password"
+                  className={`w-full h-[50px] px-3.5 pr-11 rounded-xl border bg-white text-xs sm:text-sm text-[#20211F] placeholder:text-[#777B70]/60 focus:outline-hidden focus:ring-1 transition-all ${
+                    errors.password
+                      ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20'
+                      : 'border-[#E5E2DB] focus:border-[#252722] focus:ring-[#252722]'
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#777B70] hover:text-[#20211F] cursor-pointer"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {errors.password && <p className="text-[11px] text-rose-600">{errors.password}</p>}
+            </div>
+
+            {/* Confirm Password */}
+            <div className="space-y-1">
+              <label htmlFor="merchant-confirm-password" className="block text-xs font-semibold text-[#20211F]">
+                Confirm password
+              </label>
+              <div className="relative">
+                <input
+                  id="merchant-confirm-password"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={confirmPassword}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: null });
+                  }}
+                  placeholder="Confirm your password"
+                  autoComplete="new-password"
+                  className={`w-full h-[50px] px-3.5 pr-11 rounded-xl border bg-white text-xs sm:text-sm text-[#20211F] placeholder:text-[#777B70]/60 focus:outline-hidden focus:ring-1 transition-all ${
+                    errors.confirmPassword
+                      ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/20'
+                      : 'border-[#E5E2DB] focus:border-[#252722] focus:ring-[#252722]'
+                  }`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#777B70] hover:text-[#20211F] cursor-pointer"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {errors.confirmPassword && (
+                <p className="text-[11px] text-rose-600">{errors.confirmPassword}</p>
+              )}
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full h-[50px] mt-2 rounded-xl bg-[#252722] hover:bg-[#41453C] disabled:opacity-60 text-white font-medium text-xs sm:text-sm transition-all duration-200 cursor-pointer shadow-xs hover:-translate-y-0.5 flex items-center justify-center gap-2"
             >
-              Sign in to store
-            </Link>
+              {submitting ? (
+                <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  <span>Register Store Workspace</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="pt-2 text-center text-xs text-[#777B70]">
+            <p>
+              Already registered?{' '}
+              <Link to="/merchant/signin" className="font-semibold text-[#20211F] hover:underline">
+                Sign In to Workspace
+              </Link>
+            </p>
           </div>
         </div>
       </div>

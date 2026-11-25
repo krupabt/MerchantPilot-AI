@@ -7,22 +7,27 @@ export default {
   theme: {
     extend: {
       colors: {
-        // MerchantPilot Editorial Retail Palette
-        mainBg: '#F5F1EB',
-        customerBg: '#F5F1EB',
-        merchantBg: '#F6F5F3',
-        merchantPanel: '#292628',
+        // MerchantPilot Editorial Palette
+        mainBg: '#F5F3EE',
+        customerBg: '#F5F3EE',
+        merchantBg: '#F5F3EE',
+        merchantPanel: '#252722',
         card: '#FFFFFF',
-        textPrimary: '#242424',
-        textSecondary: '#6B6560',
+        formBg: '#FFFFFF',
+        primaryBtn: '#252722',
+        primaryHover: '#41453C',
+        softBeige: '#D9D1C2',
+        mutedOlive: '#777B70',
+        textPrimary: '#20211F',
+        textSecondary: '#777B70',
+        borderBase: '#E5E2DB',
         brand: {
-          primary: '#783F45',   // Deep plum / wine
-          hover: '#603137',     // Darker plum
-          accent: '#D8C3A5',    // Soft beige/wheat accent
-          soft: '#F8F4EE',      // Pale brand surface
-          border: '#E8E2DA',
+          primary: '#252722',
+          hover: '#41453C',
+          accent: '#D9D1C2',
+          soft: '#F5F3EE',
+          border: '#E5E2DB',
         },
-        borderBase: '#E8E2DA',
         status: {
           success: '#32734D',
           warning: '#B77932',
@@ -30,9 +35,9 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['DM Sans', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
-        body: ['DM Sans', 'system-ui', 'sans-serif'],
-        heading: ['Manrope', 'DM Sans', 'sans-serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        body: ['Inter', 'system-ui', 'sans-serif'],
+        heading: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
       borderRadius: {
