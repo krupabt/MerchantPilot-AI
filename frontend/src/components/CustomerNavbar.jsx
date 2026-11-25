@@ -26,7 +26,7 @@ export default function CustomerNavbar() {
   const handleLogout = async () => {
     setUserDropdownOpen(false);
     await logout();
-    navigate('/shop');
+    navigate('/');
   };
 
   const navLinks = [

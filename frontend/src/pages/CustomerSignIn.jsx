@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Mail, Eye, EyeOff, ArrowRight, AlertCircle, ShoppingBag, ShieldCheck } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff, ArrowRight, ArrowLeft, AlertCircle, ShoppingBag, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function CustomerSignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
+  const [generalError, setGeneralError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
 
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -16,191 +18,294 @@ export default function CustomerSignIn() {
 
   const redirectPath = location.state?.from?.pathname || '/shop';
 
-  const validateForm = () => {
+  const validate = () => {
+    const errs = {};
     if (!email.trim()) {
-      setError('Please enter your email address.');
-      return false;
+      errs.email = 'Email address is required.';
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        errs.email = 'Please enter a valid email address.';
+      }
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
-      setError('Please enter a valid email address.');
-      return false;
-    }
+
     if (!password) {
-      setError('Please enter your password.');
-      return false;
+      errs.password = 'Password is required.';
     }
-    return true;
+
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setGeneralError('');
 
-    if (!validateForm()) return;
+    if (!validate() || submitting) return;
 
     setSubmitting(true);
     try {
-      const data = await login(email.trim(), password);
-      // Strictly redirect customer to shop
+      await login(email.trim(), password);
       navigate(redirectPath === '/' ? '/shop' : redirectPath, { replace: true });
     } catch (err) {
-      console.error('Customer login error:', err);
       const msg = err.response?.data?.detail || 'Invalid email or password. Please try again.';
-      setError(msg);
+      setGeneralError(msg);
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleUseDemoCustomer = () => {
-    setEmail('customer@merchantpilot.ai');
-    setPassword('Customer@123456');
-    setError('');
+  const handleTryCustomerDemo = async () => {
+    if (demoLoading || submitting) return;
+    setGeneralError('');
+    setDemoLoading(true);
+    try {
+      await login('customer@merchantpilot.ai', 'Customer@123456');
+      navigate(redirectPath === '/' ? '/shop' : redirectPath, { replace: true });
+    } catch (err) {
+      const msg = err.response?.data?.detail || 'Unable to authenticate demo customer account.';
+      setGeneralError(msg);
+    } finally {
+      setDemoLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#F3EFE9] flex items-center justify-center p-4 sm:p-6 lg:p-8">
-      <div className="max-w-4xl w-full bg-white border border-[#E8E2DA] rounded-2xl shadow-card overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-[580px]">
-        {/* Left Side: Editorial Brand Presentation & Accessory Visual */}
-        <div className="md:col-span-5 bg-[#F8F4EE] border-b md:border-b-0 md:border-r border-[#E8E2DA] p-8 flex flex-col justify-between">
+    <div className="min-h-screen bg-[#F3EFE9] flex items-center justify-center p-4 sm:p-6 lg:p-8 font-sans selection:bg-[#783F45] selection:text-white">
+      <div className="max-w-5xl w-full bg-white border border-[#E8E2DA] rounded-3xl overflow-hidden shadow-sm grid grid-cols-1 lg:grid-cols-12 min-h-[620px]">
+        {/* Left Panel: Warm Editorial Accessory Presentation */}
+        <div className="hidden lg:flex lg:col-span-5 bg-[#F3EFE9] border-r border-[#E8E2DA] p-10 flex-col justify-between relative overflow-hidden">
+          {/* Top Brand Tag */}
           <div className="space-y-4">
-            <Link to="/" className="flex items-center gap-2 group inline-flex">
-              <div className="w-8 h-8 rounded-lg bg-[#783F45] text-white flex items-center justify-center font-heading font-bold text-sm tracking-tight">
+            <Link to="/" className="inline-flex items-center gap-2 group">
+              <div className="w-7 h-7 rounded-lg bg-[#783F45] text-white flex items-center justify-center font-heading font-bold text-xs shadow-xs transition-transform group-hover:scale-105">
                 MP
               </div>
-              <span className="font-heading font-bold text-sm text-[#242424]">
-                MerchantPilot Store
+              <span className="font-heading font-bold text-base text-[#242424] tracking-tight">
+                MerchantPilot
               </span>
             </Link>
 
-            <div className="pt-6 space-y-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#783F45]">
-                Customer Account
-              </span>
-              <h2 className="text-2xl font-heading font-bold text-[#242424] leading-snug">
-                Everyday essentials, thoughtfully selected.
+            <div className="pt-8 space-y-2">
+              <h2 className="font-heading text-2xl font-bold text-[#242424] tracking-tight leading-snug">
+                Find your everyday essentials.
               </h2>
-              <p className="text-xs text-[#6B6560] leading-relaxed">
-                Sign in to view your cart, track past orders, and get tailored hardware recommendations.
+              <p className="text-sm text-[#6B6560] leading-relaxed">
+                A simpler, smarter shopping experience.
               </p>
             </div>
           </div>
 
-          <div className="space-y-4 pt-6">
-            <div className="p-3.5 rounded-xl bg-white border border-[#E8E2DA] flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-[#F8F4EE] p-1 flex items-center justify-center shrink-0">
+          {/* Curated Product Visuals on Warm Linen */}
+          <div className="py-6 space-y-3">
+            <div className="bg-white/80 backdrop-blur-xs border border-[#E8E2DA] rounded-2xl p-4 flex items-center gap-4 shadow-xs">
+              <div className="w-14 h-14 rounded-xl bg-[#FAF9F6] border border-[#E8E2DA] flex items-center justify-center p-1.5 shrink-0">
                 <img
-                  src="/images/products/acc_usb_01.webp"
-                  alt="Product preview"
-                  className="max-h-full max-w-full object-contain"
+                  src="/images/products/acc_mou_02.webp"
+                  alt="Wireless Mouse"
+                  className="w-full h-full object-contain"
                 />
               </div>
-              <div className="text-xs">
-                <p className="font-semibold text-[#242424]">15 Everyday Accessories</p>
-                <p className="text-[#6B6560] text-[11px]">Fair prices from ₹60 to ₹350</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-[#242424] truncate">Wireless Mouse</p>
+                <p className="text-[11px] text-[#6B6560]">Computer Accessories</p>
+                <p className="text-xs font-semibold text-[#783F45] mt-0.5">₹350</p>
               </div>
+              <span className="text-[10px] font-medium text-[#32734D] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                In Stock
+              </span>
             </div>
 
-            <div className="text-[11px] text-[#6B6560] flex items-center gap-2">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#32734D]" />
-              <span>Razorpay Test Mode Enabled</span>
+            <div className="bg-white/80 backdrop-blur-xs border border-[#E8E2DA] rounded-2xl p-4 flex items-center gap-4 shadow-xs">
+              <div className="w-14 h-14 rounded-xl bg-[#FAF9F6] border border-[#E8E2DA] flex items-center justify-center p-1.5 shrink-0">
+                <img
+                  src="/images/products/acc_ear_03.webp"
+                  alt="Earphones"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-[#242424] truncate">Earphones</p>
+                <p className="text-[11px] text-[#6B6560]">Audio & Acoustics</p>
+                <p className="text-xs font-semibold text-[#783F45] mt-0.5">₹220</p>
+              </div>
+              <span className="text-[10px] font-medium text-[#32734D] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                In Stock
+              </span>
             </div>
+          </div>
+
+          {/* Footer note */}
+          <div className="text-[11px] text-[#6B6560] flex items-center gap-2 border-t border-[#E8E2DA] pt-4">
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#32734D]" />
+            <span>Curated tech accessories • Fast dispatch</span>
           </div>
         </div>
 
-        {/* Right Side: Clean Authentication Form */}
-        <div className="md:col-span-7 p-8 sm:p-10 flex flex-col justify-between">
+        {/* Right Panel: Clean Customer Authentication Form */}
+        <div className="lg:col-span-7 p-6 sm:p-10 lg:p-12 flex flex-col justify-between">
           <div>
-            <div className="pb-6 space-y-1">
-              <h1 className="text-2xl font-heading font-bold text-[#242424]">
-                Customer Sign In
+            {/* Top Back Link */}
+            <div className="flex items-center justify-between mb-8">
+              <Link
+                to="/"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-[#6B6560] hover:text-[#242424] transition-colors"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Back to homepage</span>
+              </Link>
+
+              <Link
+                to="/merchant/signin"
+                className="text-xs font-medium text-[#783F45] hover:text-[#603137] transition-colors"
+              >
+                Store owner? Merchant portal →
+              </Link>
+            </div>
+
+            {/* Header */}
+            <div className="space-y-1.5 mb-6">
+              <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#242424] tracking-tight">
+                Welcome back
               </h1>
-              <p className="text-xs text-[#6B6560]">
-                Enter your details below to access your shopping account.
+              <p className="text-sm text-[#6B6560]">
+                Sign in to your customer account
               </p>
             </div>
 
-            {error && (
-              <div className="mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-start gap-2 animate-in fade-in">
+            {/* General Alert */}
+            {generalError && (
+              <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-[#B84040] flex items-start gap-2.5">
                 <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>{error}</span>
+                <span>{generalError}</span>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+              {/* Email Address */}
               <div>
-                <label className="block text-xs font-medium text-[#6B6560] mb-1">Email Address</label>
+                <label
+                  htmlFor="customer-email"
+                  className="block text-xs font-semibold text-[#242424] mb-1.5"
+                >
+                  Email address
+                </label>
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-[#6B6560] absolute left-3 top-3" />
                   <input
+                    id="customer-email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (errors.email) setErrors({ ...errors, email: null });
+                    }}
                     placeholder="name@example.com"
-                    autoComplete="email"
-                    className="w-full bg-[#FFFFFF] border border-[#E8E2DA] rounded-lg pl-9 pr-3 py-2.5 text-xs text-[#242424] placeholder-[#6B6560]/60 focus:border-[#783F45] focus:outline-none transition"
-                    disabled={submitting}
+                    className={`w-full px-3.5 py-2.5 text-sm rounded-xl border bg-[#FAF9F6] text-[#242424] placeholder-[#A09A94] transition-all duration-150 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#783F45]/20 ${
+                      errors.email ? 'border-rose-300 focus:border-rose-500' : 'border-[#E8E2DA] focus:border-[#783F45]'
+                    }`}
                   />
+                  <Mail className="w-4 h-4 text-[#A09A94] absolute right-3.5 top-3 pointer-events-none" />
                 </div>
+                {errors.email && (
+                  <p className="text-xs text-[#B84040] mt-1.5 font-medium">{errors.email}</p>
+                )}
               </div>
 
+              {/* Password */}
               <div>
-                <label className="block text-xs font-medium text-[#6B6560] mb-1">Password</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label
+                    htmlFor="customer-password"
+                    className="block text-xs font-semibold text-[#242424]"
+                  >
+                    Password
+                  </label>
+                </div>
                 <div className="relative">
-                  <Lock className="w-4 h-4 text-[#6B6560] absolute left-3 top-3" />
                   <input
+                    id="customer-password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    autoComplete="current-password"
-                    className="w-full bg-[#FFFFFF] border border-[#E8E2DA] rounded-lg pl-9 pr-10 py-2.5 text-xs text-[#242424] placeholder-[#6B6560]/60 focus:border-[#783F45] focus:outline-none transition"
-                    disabled={submitting}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errors.password) setErrors({ ...errors, password: null });
+                    }}
+                    placeholder="Enter your password"
+                    className={`w-full px-3.5 py-2.5 text-sm rounded-xl border bg-[#FAF9F6] text-[#242424] placeholder-[#A09A94] transition-all duration-150 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#783F45]/20 ${
+                      errors.password ? 'border-rose-300 focus:border-rose-500' : 'border-[#E8E2DA] focus:border-[#783F45]'
+                    }`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-[#6B6560] hover:text-[#242424]"
-                    tabIndex={-1}
+                    className="absolute right-3.5 top-2.5 text-[#6B6560] hover:text-[#242424] transition p-0.5"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="text-xs text-[#B84040] mt-1.5 font-medium">{errors.password}</p>
+                )}
               </div>
 
+              {/* Sign In Submit Button */}
               <button
                 type="submit"
-                disabled={submitting}
-                className="w-full py-2.5 px-4 rounded-lg bg-[#783F45] hover:bg-[#603137] text-white text-xs font-semibold transition shadow-xs flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
+                disabled={submitting || demoLoading}
+                className="w-full py-3 px-4 rounded-xl bg-[#783F45] hover:bg-[#603137] text-white text-sm font-semibold transition-all duration-150 shadow-xs hover:shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 mt-2 cursor-pointer active:scale-99"
               >
-                <span>{submitting ? 'Signing in...' : 'Sign In'}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                {submitting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    <span>Signing in...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Sign In</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </form>
 
-            <div className="pt-4 border-t border-[#E8E2DA] mt-5 space-y-3">
-              <button
-                type="button"
-                onClick={handleUseDemoCustomer}
-                className="w-full py-2 px-3 rounded-lg bg-[#F8F4EE] hover:bg-[#E8E2DA] text-[#783F45] text-xs font-medium transition border border-[#E8E2DA] flex items-center justify-center gap-1.5"
-              >
-                <span>⚡ Fill Demo Customer Credentials</span>
-              </button>
-
-              <div className="flex items-center justify-between text-xs text-[#6B6560] pt-1">
-                <span>Don't have an account?</span>
-                <Link to="/signup" className="text-[#783F45] font-semibold hover:underline">
-                  Create Customer Account
-                </Link>
+            {/* Divider */}
+            <div className="relative my-6 text-center">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-[#E8E2DA]" />
               </div>
+              <span className="relative bg-white px-3 text-xs text-[#6B6560] uppercase tracking-wider font-medium">
+                or
+              </span>
             </div>
+
+            {/* Try Customer Demo Button */}
+            <button
+              type="button"
+              onClick={handleTryCustomerDemo}
+              disabled={submitting || demoLoading}
+              className="w-full py-2.5 px-4 rounded-xl bg-[#F8F4EE] hover:bg-[#E8E2DA] text-[#783F45] text-xs font-semibold transition-all duration-150 border border-[#E8E2DA] flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+            >
+              {demoLoading ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-[#783F45]/30 border-t-[#783F45] rounded-full animate-spin" />
+                  <span>Loading Customer Demo...</span>
+                </>
+              ) : (
+                <span>Try Customer Demo</span>
+              )}
+            </button>
           </div>
 
-          <div className="pt-6 border-t border-[#E8E2DA] flex items-center justify-between text-[11px] text-[#6B6560]">
-            <span>Are you a store owner?</span>
-            <Link to="/merchant/signin" className="text-[#783F45] font-semibold hover:underline">
-              Merchant Login →
+          {/* Bottom Link: Create Account */}
+          <div className="pt-6 border-t border-[#E8E2DA] mt-6 flex items-center justify-between text-xs text-[#6B6560]">
+            <span>Don't have an account?</span>
+            <Link
+              to="/signup"
+              className="font-semibold text-[#783F45] hover:text-[#603137] hover:underline"
+            >
+              Create an account
             </Link>
           </div>
         </div>

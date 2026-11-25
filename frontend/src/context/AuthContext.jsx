@@ -38,8 +38,21 @@ export function AuthProvider({ children }) {
     return res.data;
   };
 
-  const signup = async (name, email, password, role = 'customer', storeName = undefined) => {
-    const res = await apiSignUp({ name, email, password, role, store_name: storeName });
+  const signup = async (param1, email, password, role = 'customer', storeName = undefined, businessCategory = undefined) => {
+    let payload;
+    if (typeof param1 === 'object' && param1 !== null) {
+      payload = param1;
+    } else {
+      payload = {
+        name: param1,
+        email,
+        password,
+        role,
+        store_name: storeName,
+        business_category: businessCategory
+      };
+    }
+    const res = await apiSignUp(payload);
     const { token: newToken, user: newUser } = res.data;
     localStorage.setItem('mp_auth_token', newToken);
     setToken(newToken);

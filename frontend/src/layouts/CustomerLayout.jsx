@@ -1,8 +1,26 @@
 import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, Navigate, useLocation } from 'react-router-dom';
 import CustomerNavbar from '../components/CustomerNavbar';
+import { useAuth } from '../context/AuthContext';
 
 export default function CustomerLayout() {
+  const { isAuthenticated, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#F3EFE9] space-y-3">
+        <div className="w-8 h-8 border-2 border-[#783F45]/20 border-t-[#783F45] rounded-full animate-spin" />
+        <p className="text-xs text-[#6B6560] font-medium">Verifying store access...</p>
+      </div>
+    );
+  }
+
+  // Enforce customer sign in requirement before entering customer storefront
+  if (!isAuthenticated) {
+    return <Navigate to="/signin" state={{ from: location }} replace />;
+  }
+
   return (
     <div className="min-h-screen bg-[#F3EFE9] text-[#242424] flex flex-col font-sans">
       <CustomerNavbar />
