@@ -198,17 +198,18 @@ def run_qa():
         context.clear_cookies()
         page.evaluate("() => localStorage.clear()")
 
-        page.goto(f"{PROD_URL}/login", wait_until="networkidle")
+        page.goto(f"{PROD_URL}/merchant/signin", wait_until="networkidle")
         time.sleep(1)
         demo_merch_btn = page.locator("button:has-text('Demo Merchant')").first
         if demo_merch_btn.is_visible():
             demo_merch_btn.click()
+            time.sleep(0.5)
         else:
             page.fill("input[type='email']", "merchant@merchantpilot.ai")
             page.fill("input[type='password']", "Admin@123456")
 
         page.click("button[type='submit']")
-        page.wait_for_url("**/merchant/overview", timeout=10000)
+        page.wait_for_url("**/merchant/overview", timeout=15000)
         time.sleep(3)
         print("Merchant signed in. Current URL:", page.url)
 
