@@ -20,8 +20,8 @@ export default function Policies() {
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Guardrail Simulator State
-  const [simOriginal, setSimOriginal] = useState(60000);
-  const [simDiscount, setSimDiscount] = useState(500);
+  const [simOriginal, setSimOriginal] = useState(1000);
+  const [simDiscount, setSimDiscount] = useState(100);
   const [simResult, setSimResult] = useState(null);
   const [simTesting, setSimTesting] = useState(false);
 

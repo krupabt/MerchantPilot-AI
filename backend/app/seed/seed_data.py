@@ -24,23 +24,23 @@ DEMO_CATEGORIES = [
     {"name": "Laptops", "slug": "laptops", "description": "Developer workstations (legacy test fixture)"}
 ]
 
-# EXACT 15 DEMO PRODUCTS AS REQUIRED IN TASK 3
+# EXACT 15 DEMO PRODUCTS WITH LOCAL STATIC OPTIMIZED ASSETS
 DEMO_ACCESSORIES_15 = [
-    ("ACC_USB_01", "ACC-USB-01", "USB Cable", "cat_cables", "Cables", "Braided 60W USB-C fast charging cable (1.5m)", 80.0, 120.0, 30, 8, "https://images.unsplash.com/photo-1608755728617-aefab37d2edd?auto=format&fit=crop&w=600&q=80"),
-    ("ACC_MOU_02", "ACC-MOU-02", "Wireless Mouse", "cat_peripherals", "Peripherals", "Ergonomic 2.4GHz optical wireless mouse with silent clicks", 250.0, 350.0, 20, 5, "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&w=600&q=80"),
-    ("ACC_EAR_03", "ACC-EAR-03", "Earphones", "cat_audio", "Audio", "In-ear wired earphones with dynamic bass and inline HD mic", 150.0, 220.0, 25, 6, "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=600&q=80"),
-    ("ACC_COV_04", "ACC-COV-04", "Phone Cover", "cat_protection", "Protection", "Shockproof matte TPU protective phone case with raised camera bezel", 60.0, 100.0, 30, 8, "https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?auto=format&fit=crop&w=600&q=80"),
-    ("ACC_STA_05", "ACC-STA-05", "Mobile Stand", "cat_stands", "Stands", "Adjustable solid aluminum desktop mobile stand with anti-slip silicone", 100.0, 150.0, 20, 5, "https://images.unsplash.com/photo-1586105251261-72a756497a11?auto=format&fit=crop&w=600&q=80"),
-    ("ACC_PAD_06", "ACC-PAD-06", "Mouse Pad", "cat_peripherals", "Peripherals", "Smooth speed-weave fabric mouse pad with non-slip natural rubber base", 40.0, 80.0, 25, 6, "https://images.unsplash.com/photo-1616440347437-b1c73416efc2?auto=format&fit=crop&w=600&q=80"),
-    ("ACC_SCR_07", "ACC-SCR-07", "Screen Protector", "cat_protection", "Protection", "9H tempered glass screen protector with oleophobic coating", 50.0, 100.0, 30, 8, "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?auto=format&fit=crop&w=600&q=80"),
-    ("ACC_ADA_08", "ACC-ADA-08", "USB Adapter", "cat_accessories", "Accessories", "Compact aluminum OTG Type-C to USB 3.0 high-speed adapter", 70.0, 130.0, 20, 5, "https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=600&q=80"),
-    ("ACC_ORG_09", "ACC-ORG-09", "Cable Organizer", "cat_accessories", "Accessories", "5-channel flexible silicone desk cable management clips", 30.0, 60.0, 25, 6, "https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&w=600&q=80"),
-    ("ACC_HOL_10", "ACC-HOL-10", "Phone Holder", "cat_stands", "Stands", "Universal 360-degree magnetic car air vent phone holder mount", 120.0, 180.0, 20, 5, "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fit=crop&w=600&q=80"),
-    ("ACC_CHG_11", "ACC-CHG-11", "Wall Charger", "cat_cables", "Cables", "Dual-port 20W fast charging wall adapter with surge protection", 170.0, 250.0, 3, 4, "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=600&q=80"),
-    ("ACC_LED_12", "ACC-LED-12", "USB LED Light", "cat_accessories", "Accessories", "Flexible mini USB portable LED reading lamp for laptops and powerbanks", 50.0, 90.0, 20, 5, "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=600&q=80"),
-    ("ACC_CLN_13", "ACC-CLN-13", "Cleaning Kit", "cat_accessories", "Accessories", "Multi-function 7-in-1 screen cleaner spray, brush and keycap puller", 90.0, 150.0, 15, 4, "https://images.unsplash.com/photo-1585421514284-efb74c2b69ba?auto=format&fit=crop&w=600&q=80"),
-    ("ACC_AUX_14", "ACC-AUX-14", "AUX Cable", "cat_audio", "Audio", "Gold-plated 3.5mm male-to-male nylon braided audio aux cord (1m)", 60.0, 110.0, 20, 5, "https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fit=crop&w=600&q=80"),
-    ("ACC_HUB_15", "ACC-HUB-15", "USB Hub", "cat_accessories", "Accessories", "4-port USB 3.0 high-speed data splitter hub with LED indicator", 200.0, 299.0, 2, 4, "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80")
+    ("ACC_USB_01", "ACC-USB-01", "USB Cable", "cat_cables", "Cables", "Braided 60W USB-C fast charging cable (1.5m)", 80.0, 120.0, 30, 8, "/images/products/acc_usb_01.webp"),
+    ("ACC_MOU_02", "ACC-MOU-02", "Wireless Mouse", "cat_peripherals", "Peripherals", "Ergonomic 2.4GHz optical wireless mouse with silent clicks", 250.0, 350.0, 20, 5, "/images/products/acc_mou_02.webp"),
+    ("ACC_EAR_03", "ACC-EAR-03", "Earphones", "cat_audio", "Audio", "In-ear wired earphones with dynamic bass and inline HD mic", 150.0, 220.0, 25, 6, "/images/products/acc_ear_03.webp"),
+    ("ACC_COV_04", "ACC-COV-04", "Phone Cover", "cat_protection", "Protection", "Shockproof matte TPU protective phone case with raised camera bezel", 60.0, 100.0, 30, 8, "/images/products/acc_cov_04.webp"),
+    ("ACC_STA_05", "ACC-STA-05", "Mobile Stand", "cat_stands", "Stands", "Adjustable solid aluminum desktop mobile stand with anti-slip silicone", 100.0, 150.0, 20, 5, "/images/products/acc_sta_05.webp"),
+    ("ACC_PAD_06", "ACC-PAD-06", "Mouse Pad", "cat_peripherals", "Peripherals", "Smooth speed-weave fabric mouse pad with non-slip natural rubber base", 40.0, 80.0, 25, 6, "/images/products/acc_pad_06.webp"),
+    ("ACC_SCR_07", "ACC-SCR-07", "Screen Protector", "cat_protection", "Protection", "9H tempered glass screen protector with oleophobic coating", 50.0, 100.0, 30, 8, "/images/products/acc_scr_07.webp"),
+    ("ACC_ADA_08", "ACC-ADA-08", "USB Adapter", "cat_accessories", "Accessories", "Compact aluminum OTG Type-C to USB 3.0 high-speed adapter", 70.0, 130.0, 20, 5, "/images/products/acc_ada_08.webp"),
+    ("ACC_ORG_09", "ACC-ORG-09", "Cable Organizer", "cat_accessories", "Accessories", "5-channel flexible silicone desk cable management clips", 30.0, 60.0, 25, 6, "/images/products/acc_org_09.webp"),
+    ("ACC_HOL_10", "ACC-HOL-10", "Phone Holder", "cat_stands", "Stands", "Universal 360-degree magnetic car air vent phone holder mount", 120.0, 180.0, 20, 5, "/images/products/acc_hol_10.webp"),
+    ("ACC_CHG_11", "ACC-CHG-11", "Wall Charger", "cat_cables", "Cables", "Dual-port 20W fast charging wall adapter with surge protection", 170.0, 250.0, 3, 4, "/images/products/acc_chg_11.webp"),
+    ("ACC_LED_12", "ACC-LED-12", "USB LED Light", "cat_accessories", "Accessories", "Flexible mini USB portable LED reading lamp for laptops and powerbanks", 50.0, 90.0, 20, 5, "/images/products/acc_led_12.webp"),
+    ("ACC_CLN_13", "ACC-CLN-13", "Cleaning Kit", "cat_accessories", "Accessories", "Multi-function 7-in-1 screen cleaner spray, brush and keycap puller", 90.0, 150.0, 15, 4, "/images/products/acc_cln_13.webp"),
+    ("ACC_AUX_14", "ACC-AUX-14", "AUX Cable", "cat_audio", "Audio", "Gold-plated 3.5mm male-to-male nylon braided audio aux cord (1m)", 60.0, 110.0, 20, 5, "/images/products/acc_aux_14.webp"),
+    ("ACC_HUB_15", "ACC-HUB-15", "USB Hub", "cat_accessories", "Accessories", "4-port USB 3.0 high-speed data splitter hub with LED indicator", 200.0, 299.0, 2, 4, "/images/products/acc_hub_15.webp")
 ]
 DEMO_PRODUCTS = DEMO_ACCESSORIES_15
 

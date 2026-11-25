@@ -2,14 +2,16 @@ from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.orm import Session
 from backend.app.database import get_db
 from backend.app.models.policy import Policy
+from backend.app.models.user import User
+from backend.app.api.deps import get_current_merchant
 from backend.app.schemas.policy import PolicyConfig, PolicyValidationRequest, PolicyValidationResponse
 from backend.app.services.policy_service import PolicyService
 
 router = APIRouter(prefix="/policies", tags=["Merchant Policies & Guardrails"])
 
 @router.get("", response_model=PolicyConfig)
-def get_policy(db: Session = Depends(get_db)):
-    pol = PolicyService.get_active_policy(db)
+def get_policy(current_merchant: User = Depends(get_current_merchant), db: Session = Depends(get_db)):
+    pol = PolicyService.get_active_policy(db, current_merchant.merchant_id)
     return PolicyConfig(
         id=pol.id,
         merchant_id=pol.merchant_id,
@@ -24,8 +26,8 @@ def get_policy(db: Session = Depends(get_db)):
     )
 
 @router.put("", response_model=PolicyConfig)
-def update_policy(config: PolicyConfig, db: Session = Depends(get_db)):
-    pol = PolicyService.get_active_policy(db)
+def update_policy(config: PolicyConfig, current_merchant: User = Depends(get_current_merchant), db: Session = Depends(get_db)):
+    pol = PolicyService.get_active_policy(db, current_merchant.merchant_id)
     pol.name = config.name
     pol.max_discount_percentage = config.max_discount_percentage
     pol.max_discount_amount = config.max_discount_amount

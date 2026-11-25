@@ -119,10 +119,10 @@ export default function Dashboard() {
 
           {/* New Sale Button (TASK 6) */}
           <Link
-            to="/sales"
-            className="px-3.5 py-1.5 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white font-semibold text-xs transition shadow-xs flex items-center gap-1.5"
+            to="/merchant/sales"
+            className="px-3.5 py-1.5 rounded-lg bg-[#252525] hover:bg-[#3a3a3a] text-white font-semibold text-xs transition shadow-xs flex items-center gap-1.5"
           >
-            <PlusCircle className="w-3.5 h-3.5" />
+            <PlusCircle className="w-3.5 h-3.5 text-[#B85C40]" />
             <span>New Sale</span>
           </Link>
         </div>
@@ -320,18 +320,18 @@ export default function Dashboard() {
 
           <div className="pt-3 border-t border-[#E5E5E5] space-y-2">
             <Link
-              to="/inventory"
+              to="/merchant/inventory"
               className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-[#222222] bg-[#F7F7F5] hover:bg-[#EFEFEF] border border-[#E5E5E5] transition"
             >
               <span>Manage Inventory</span>
               <ArrowRight className="w-3.5 h-3.5 text-[#71717A]" />
             </Link>
             <Link
-              to="/copilot"
-              className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-white bg-[#C65D3B] hover:bg-[#b04f30] transition shadow-xs"
+              to="/merchant/assistant"
+              className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-white bg-[#252525] hover:bg-[#3a3a3a] transition shadow-xs"
             >
               <div className="flex items-center gap-1.5">
-                <MessageSquare className="w-3.5 h-3.5" />
+                <MessageSquare className="w-3.5 h-3.5 text-[#B85C40]" />
                 <span>Ask AI Assistant</span>
               </div>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -346,7 +346,7 @@ export default function Dashboard() {
         <div className="surface-card p-5 space-y-3">
           <div className="flex items-center justify-between border-b border-[#E5E5E5] pb-3">
             <h2 className="text-sm font-semibold text-[#222222]">Top Selling Products</h2>
-            <Link to="/catalog" className="text-xs text-[#C65D3B] hover:underline font-medium">
+            <Link to="/merchant/products" className="text-xs text-[#B85C40] hover:underline font-medium">
               View catalog →
             </Link>
           </div>
@@ -379,7 +379,7 @@ export default function Dashboard() {
         <div className="surface-card p-5 space-y-3">
           <div className="flex items-center justify-between border-b border-[#E5E5E5] pb-3">
             <h2 className="text-sm font-semibold text-[#222222]">Recent Transactions</h2>
-            <Link to="/orders" className="text-xs text-[#C65D3B] hover:underline font-medium">
+            <Link to="/merchant/orders" className="text-xs text-[#B85C40] hover:underline font-medium">
               All orders →
             </Link>
           </div>

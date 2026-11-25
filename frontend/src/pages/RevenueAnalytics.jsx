@@ -108,11 +108,11 @@ export default function RevenueAnalytics() {
             <span>Refresh</span>
           </button>
           <Link
-            to="/copilot"
+            to="/merchant/assistant"
             state={{ prefilledQuery: 'Compare our sales performance over the last 7 days' }}
-            className="px-3.5 py-1.5 rounded-md bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition-colors shadow-xs flex items-center gap-1.5"
+            className="px-3.5 py-1.5 rounded-md bg-[#252525] hover:bg-[#3a3a3a] text-white font-medium text-xs transition-colors shadow-xs flex items-center gap-1.5"
           >
-            <MessageSquare className="w-3.5 h-3.5" />
+            <MessageSquare className="w-3.5 h-3.5 text-[#B85C40]" />
             <span>Ask Copilot</span>
           </Link>
         </div>

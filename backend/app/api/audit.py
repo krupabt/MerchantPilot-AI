@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from typing import Optional
 from backend.app.database import get_db
+from backend.app.models.user import User
+from backend.app.api.deps import get_current_merchant
 from backend.app.schemas.audit import AuditLogListResponse, AuditLogItem
 from backend.app.services.audit_service import AuditService
 
@@ -14,6 +16,7 @@ def get_audit_logs(
     policy_result: Optional[str] = None,
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
+    current_merchant: User = Depends(get_current_merchant),
     db: Session = Depends(get_db)
 ):
     total, logs = AuditService.get_logs(
@@ -21,6 +24,7 @@ def get_audit_logs(
         session_id=session_id,
         actor=actor,
         policy_result=policy_result,
+        merchant_id=current_merchant.merchant_id,
         limit=limit,
         offset=offset
     )

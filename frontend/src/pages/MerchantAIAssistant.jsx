@@ -219,8 +219,8 @@ export default function MerchantAIAssistant() {
                   <div
                     className={`max-w-[85%] rounded-lg p-3.5 text-xs space-y-3 leading-relaxed ${
                       isUser
-                        ? 'bg-[#C65D3B] text-white shadow-xs'
-                        : 'bg-[#F7F7F5] text-[#222222] border border-[#E5E5E5]'
+                        ? 'bg-[#252525] text-white shadow-xs'
+                        : 'bg-white text-[#222222] border border-[#E5E7EB]'
                     }`}
                   >
                     {/* Message Text */}
@@ -270,11 +270,11 @@ export default function MerchantAIAssistant() {
                     {msg.query_type === 'MERCHANT_ACTIONS' && (
                       <div className="pt-1">
                         <Link
-                          to="/actions"
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#C65D3B] hover:bg-[#b04f30] text-white text-xs font-medium transition-colors shadow-xs"
+                          to="/merchant/actions"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#252525] hover:bg-[#3a3a3a] text-white text-xs font-medium transition-colors shadow-xs"
                         >
                           <span>Review & Execute in Action Center</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
+                          <ArrowRight className="w-3.5 h-3.5 text-[#B85C40]" />
                         </Link>
                       </div>
                     )}
@@ -352,10 +352,10 @@ export default function MerchantAIAssistant() {
               <button
                 type="submit"
                 disabled={!query.trim() || loading}
-                className="px-4 py-2.5 rounded-md bg-[#C65D3B] hover:bg-[#b04f30] disabled:opacity-40 text-white font-medium text-xs flex items-center gap-1.5 transition-colors shadow-xs"
+                className="px-4 py-2.5 rounded-md bg-[#252525] hover:bg-[#3a3a3a] disabled:opacity-40 text-white font-medium text-xs flex items-center gap-1.5 transition-colors shadow-xs"
               >
                 <span>Send</span>
-                <Send className="w-3.5 h-3.5" />
+                <Send className="w-3.5 h-3.5 text-[#B85C40]" />
               </button>
             </form>
             <p className="text-[11px] text-[#71717A] mt-1.5">

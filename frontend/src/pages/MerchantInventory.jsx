@@ -189,10 +189,10 @@ export default function MerchantInventory() {
             <span>Sync inventory</span>
           </button>
           <Link
-            to="/catalog"
-            className="px-3.5 py-1.5 rounded-md bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition-colors shadow-xs flex items-center gap-1.5"
+            to="/merchant/products"
+            className="px-3.5 py-1.5 rounded-md bg-[#252525] hover:bg-[#3a3a3a] text-white font-medium text-xs transition-colors shadow-xs flex items-center gap-1.5"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-3.5 h-3.5 text-[#B85C40]" />
             <span>Add product</span>
           </Link>
         </div>

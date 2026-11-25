@@ -298,10 +298,11 @@ export default function SalesManagement() {
                         <img
                           src={p.image_url}
                           alt={p.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain p-1"
                           loading="lazy"
                           onError={(e) => {
-                            e.target.style.display = 'none';
+                            e.target.onerror = null;
+                            e.target.src = '/images/products/placeholder.webp';
                           }}
                         />
                       ) : (

@@ -61,7 +61,7 @@ export default function SignUp() {
     try {
       await signup(name.trim(), email.trim(), password, role, storeName.trim() || undefined);
       if (role === 'merchant') {
-        navigate('/merchant/dashboard', { replace: true });
+        navigate('/merchant/overview', { replace: true });
       } else {
         navigate('/shop', { replace: true });
       }

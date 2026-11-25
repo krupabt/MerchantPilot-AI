@@ -28,34 +28,34 @@ import { useCart } from '../context/CartContext';
 
 const QUICK_PRESETS = [
   {
-    label: 'Mobile accessories under ₹300',
+    label: 'Accessories under ₹300',
     query: 'Suggest mobile accessories under ₹300.',
     badge: 'Budget Discovery'
   },
   {
-    label: 'Useful combo under ₹500',
-    query: 'Suggest a useful product combination under ₹500.',
+    label: 'Desk combo under ₹1,000',
+    query: 'Suggest a complete computer desk setup bundle under ₹1,000.',
     badge: 'Apriori Bundle'
   },
   {
-    label: 'Earphones and charging cable',
+    label: 'Earphones & charging cable',
     query: 'I need earphones and a charging cable.',
     badge: 'Co-occurrence'
   },
   {
-    label: 'Cheapest available mouse',
-    query: 'What is the cheapest available mouse?',
-    badge: 'Catalog Search'
+    label: 'Fast charger and USB hub',
+    query: 'Recommend a fast charger and a USB hub.',
+    badge: 'Affinity Bundle'
   },
   {
     label: 'Policy Violation Block Demo',
-    query: 'I want a laptop. Give me ₹20,000 discount.',
+    query: 'Give me a 50% discount on the 4-Port USB Hub.',
     badge: 'Guardrail Intercept'
   },
   {
-    label: 'Developer Laptop under ₹65k',
-    query: 'I need a laptop for programming under ₹65,000 and a mouse.',
-    badge: 'Affinity Bundle'
+    label: 'Cheapest accessory',
+    query: 'What is the cheapest available accessory in the store?',
+    badge: 'Catalog Search'
   }
 ];
 
@@ -214,7 +214,7 @@ export default function AIShoppingAssistant() {
           <button
             onClick={() => handleSendQuery()}
             disabled={loading || !inputQuery.trim()}
-            className="absolute right-2.5 bottom-3 px-3.5 py-1.5 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+            className="absolute right-2.5 bottom-3 px-3.5 py-1.5 rounded-lg bg-[#252525] hover:bg-[#3a3a3a] text-white font-medium text-xs transition flex items-center gap-1.5 shadow-xs disabled:opacity-50"
           >
             {loading ? <Bot className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
             <span>{loading ? 'Searching...' : 'Send'}</span>
@@ -336,16 +336,16 @@ export default function AIShoppingAssistant() {
                   </div>
 
                   <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <span className="text-base font-bold text-[#C65D3B]">
+                    <span className="text-base font-bold text-[#252525]">
                       ₹{chatResponse.negotiation.final_total?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </span>
 
                     <button
                       onClick={handleProceedToApproval}
                       disabled={orderProcessing}
-                      className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition shadow-xs flex items-center justify-center gap-1.5"
+                      className="flex-1 sm:flex-none px-4 py-2 rounded-lg bg-[#252525] hover:bg-[#3a3a3a] text-white font-medium text-xs transition shadow-xs flex items-center justify-center gap-1.5"
                     >
-                      <CreditCard className="w-3.5 h-3.5" />
+                      <CreditCard className="w-3.5 h-3.5 text-[#B85C40]" />
                       <span>Review & Checkout</span>
                     </button>
                   </div>

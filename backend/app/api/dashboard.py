@@ -8,18 +8,18 @@ from backend.app.models.audit import AuditLog
 from backend.app.models.user import User
 from backend.app.services.revenue_service import RevenueService
 from backend.app.services.merchant_service import MerchantService
-from backend.app.api.deps import get_optional_user
+from backend.app.api.deps import get_current_merchant
 
 router = APIRouter(prefix="/dashboard", tags=["Merchant Dashboard"])
 
 @router.get("/stats", summary="Overview Metrics for Merchant Fintech Dashboard")
 def get_dashboard_stats(
     date_range: Optional[str] = Query(default="all"),
-    current_user: Optional[User] = Depends(get_optional_user),
+    current_merchant: User = Depends(get_current_merchant),
     db: Session = Depends(get_db)
 ):
-    # Resolve merchant_id from token if available, fallback to demo store "m_1001"
-    merchant_id = current_user.merchant_id if (current_user and current_user.merchant_id) else "m_1001"
+    # Strictly require authenticated merchant role
+    merchant_id = current_merchant.merchant_id
     
     # 1. Real database-derived statistics via MerchantService
     merchant_stats = MerchantService.get_merchant_stats(db, merchant_id=merchant_id, date_range=date_range or "all")
@@ -65,10 +65,10 @@ def get_dashboard_stats(
 
 @router.get("/transactions", summary="List All Merchant Transactions")
 def get_transactions(
-    current_user: Optional[User] = Depends(get_optional_user),
+    current_merchant: User = Depends(get_current_merchant),
     db: Session = Depends(get_db)
 ):
-    merchant_id = current_user.merchant_id if (current_user and current_user.merchant_id) else "m_1001"
+    merchant_id = current_merchant.merchant_id
     orders = (
         db.query(Order)
         .filter(Order.merchant_id == merchant_id)

@@ -49,7 +49,7 @@ export default function CustomerOrders() {
         </p>
         <Link
           to="/login"
-          className="inline-block px-4 py-2 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition shadow-xs"
+          className="inline-block px-4 py-2 rounded-lg bg-[#252525] hover:bg-[#3a3a3a] text-white font-medium text-xs transition shadow-xs"
         >
           Sign In
         </Link>
@@ -95,10 +95,10 @@ export default function CustomerOrders() {
           </div>
           <Link
             to="/shop"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition shadow-xs"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#252525] hover:bg-[#3a3a3a] text-white font-medium text-xs transition shadow-xs"
           >
             <Store className="w-3.5 h-3.5" />
-            <span>Start Shopping</span>
+            <span>Explore Products</span>
           </Link>
         </div>
       ) : (

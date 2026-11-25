@@ -82,7 +82,7 @@ export default function Cart() {
         <div className="flex justify-center gap-2.5">
           <Link
             to="/login"
-            className="px-4 py-2 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition shadow-xs"
+            className="px-4 py-2 rounded-lg bg-[#252525] hover:bg-[#3a3a3a] text-white font-medium text-xs transition shadow-xs"
           >
             Sign In
           </Link>
@@ -90,7 +90,7 @@ export default function Cart() {
             to="/shop"
             className="px-4 py-2 rounded-lg bg-white hover:bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] font-medium text-xs transition"
           >
-            Browse Hardware
+            Browse Products
           </Link>
         </div>
       </div>
@@ -145,10 +145,10 @@ export default function Cart() {
           </div>
           <Link
             to="/shop"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition shadow-xs mt-2"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#252525] hover:bg-[#3a3a3a] text-white font-medium text-xs transition shadow-xs mt-2"
           >
             <Store className="w-3.5 h-3.5" />
-            Explore Hardware Catalog
+            Explore Products
           </Link>
         </div>
       ) : (
@@ -240,7 +240,7 @@ export default function Cart() {
               </div>
               <div className="pt-2.5 border-t border-[#E5E5E5] flex justify-between items-baseline">
                 <span className="text-xs font-semibold text-[#222222]">Total Amount</span>
-                <span className="text-lg font-bold text-[#C65D3B]">
+                <span className="text-lg font-bold text-[#252525]">
                   ₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                 </span>
               </div>
@@ -255,16 +255,16 @@ export default function Cart() {
             </div>
 
             <button
-              onClick={() => navigate('/checkout')}
-              className="w-full py-2.5 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition shadow-xs flex items-center justify-center gap-2"
+              onClick={() => navigate('/shop/checkout')}
+              className="w-full py-2.5 rounded-lg bg-[#252525] hover:bg-[#3a3a3a] text-white font-medium text-xs transition shadow-xs flex items-center justify-center gap-2"
             >
               <span>Proceed to Checkout</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-3.5 h-3.5 text-[#B85C40]" />
             </button>
 
             <Link
               to="/shop"
-              className="block text-center text-xs text-[#71717A] hover:text-[#C65D3B] transition"
+              className="block text-center text-xs text-[#71717A] hover:text-[#252525] transition"
             >
               ← Continue Shopping
             </Link>

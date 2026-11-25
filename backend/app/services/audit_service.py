@@ -58,10 +58,13 @@ class AuditService:
         session_id: Optional[str] = None,
         actor: Optional[str] = None,
         policy_result: Optional[str] = None,
+        merchant_id: Optional[str] = None,
         limit: int = 100,
         offset: int = 0
     ):
         query = db.query(AuditLog)
+        if merchant_id:
+            query = query.filter((AuditLog.merchant_id == merchant_id) | (AuditLog.merchant_id == None))
         if session_id:
             query = query.filter(AuditLog.session_id == session_id)
         if actor:

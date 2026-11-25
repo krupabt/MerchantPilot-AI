@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Lock, Mail, ArrowRight, AlertCircle, Bot, CheckCircle2, Store, User } from 'lucide-react';
+import { Lock, Mail, ArrowRight, AlertCircle, Store, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function SignIn() {
@@ -42,7 +42,7 @@ export default function SignIn() {
     try {
       const data = await login(email.trim(), password);
       if (data.user?.role === 'merchant') {
-        navigate('/merchant/dashboard', { replace: true });
+        navigate('/merchant/overview', { replace: true });
       } else {
         navigate(redirectPath === '/' ? '/shop' : redirectPath, { replace: true });
       }
@@ -68,23 +68,23 @@ export default function SignIn() {
   };
 
   return (
-    <div className="min-h-[75vh] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#FAF9F6] flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-5">
         {/* Header */}
         <div className="text-center space-y-1.5">
-          <div className="inline-flex h-11 w-11 rounded-lg bg-[#C65D3B] text-white items-center justify-center font-bold text-lg mb-1 shadow-xs">
-            M
-          </div>
-          <h2 className="text-xl font-semibold text-[#222222] tracking-tight">Sign In to MerchantPilot AI</h2>
+          <Link to="/" className="inline-flex h-10 w-10 rounded-lg bg-[#252525] text-white items-center justify-center font-bold text-sm mb-1 shadow-xs">
+            MP
+          </Link>
+          <h1 className="text-xl font-bold text-[#252525] tracking-tight">Sign In to MerchantPilot</h1>
           <p className="text-xs text-[#71717A]">
-            Access merchant operations workspace or customer demonstration store
+            Select your account type to access your dedicated workspace
           </p>
         </div>
 
         {/* Card */}
-        <div className="surface-card p-6 space-y-4">
+        <div className="bg-white border border-[#E5E7EB] rounded-xl p-6 sm:p-7 shadow-xs space-y-4">
           {error && (
-            <div className="p-3 rounded-lg bg-[#FDF4F4] border border-[#E5E5E5] text-xs text-[#B94A48] flex items-start gap-2 animate-in fade-in">
+            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-start gap-2">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
@@ -99,8 +99,8 @@ export default function SignIn() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@example.com"
-                  className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-lg pl-9 pr-3 py-2 text-xs text-[#222222] placeholder-[#71717A] focus:border-[#C65D3B] focus:outline-none transition"
+                  placeholder="name@company.com"
+                  className="w-full pl-9 pr-3 py-2 bg-[#FAF9F6] border border-[#E5E7EB] rounded-lg text-xs text-[#252525] focus:outline-none focus:border-[#252525] transition"
                   disabled={submitting}
                 />
               </div>
@@ -115,7 +115,7 @@ export default function SignIn() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-lg pl-9 pr-3 py-2 text-xs text-[#222222] placeholder-[#71717A] focus:border-[#C65D3B] focus:outline-none transition"
+                  className="w-full pl-9 pr-3 py-2 bg-[#FAF9F6] border border-[#E5E7EB] rounded-lg text-xs text-[#252525] focus:outline-none focus:border-[#252525] transition"
                   disabled={submitting}
                 />
               </div>
@@ -124,57 +124,56 @@ export default function SignIn() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-2.5 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs shadow-xs flex items-center justify-center gap-2 transition disabled:opacity-50"
+              className="w-full py-2.5 px-4 rounded-lg bg-[#252525] hover:bg-[#3a3a3a] text-white text-xs font-semibold transition flex items-center justify-center gap-2 shadow-xs disabled:opacity-50"
             >
-              {submitting ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  <span>Sign In</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </>
-              )}
+              <span>{submitting ? 'Signing in...' : 'Sign In'}</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </form>
 
-          {/* Quick Demo Logins */}
-          <div className="space-y-2 pt-2 border-t border-[#E5E5E5]">
-            <span className="text-[10px] uppercase font-mono text-[#71717A] block">
-              1-Click Demo Accounts:
+          {/* Separate Demo Accounts Section */}
+          <div className="pt-3 border-t border-[#E5E7EB] space-y-2">
+            <span className="text-[11px] font-medium text-[#71717A] block text-center">
+              Quick Demonstration Accounts
             </span>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={handleUseDemoMerchant}
-                className="p-2.5 rounded-lg bg-[#F7F7F5] hover:bg-[#FAF5F2] border border-[#E5E5E5] text-left transition"
+                className="p-2 rounded-lg border border-[#E5E7EB] bg-[#FAF9F6] hover:bg-[#EFEFEF] text-left transition"
               >
-                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#C65D3B]">
-                  <Store className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#252525]">
+                  <Store className="w-3.5 h-3.5 text-emerald-600" />
                   <span>Merchant</span>
                 </div>
-                <span className="text-[10px] text-[#71717A] font-mono block truncate">Admin@123456</span>
+                <div className="text-[10px] text-[#71717A] mt-0.5">Admin & POS</div>
               </button>
 
               <button
                 type="button"
                 onClick={handleUseDemoCustomer}
-                className="p-2.5 rounded-lg bg-[#F7F7F5] hover:bg-[#FAF5F2] border border-[#E5E5E5] text-left transition"
+                className="p-2 rounded-lg border border-[#E5E7EB] bg-[#FAF9F6] hover:bg-[#EFEFEF] text-left transition"
               >
-                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-[#347A52]">
-                  <User className="w-3.5 h-3.5" />
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#252525]">
+                  <User className="w-3.5 h-3.5 text-[#B85C40]" />
                   <span>Customer</span>
                 </div>
-                <span className="text-[10px] text-[#71717A] font-mono block truncate">Customer@123456</span>
+                <div className="text-[10px] text-[#71717A] mt-0.5">Shop & AI Buyer</div>
               </button>
             </div>
           </div>
+        </div>
 
-          <div className="text-center pt-2 text-xs text-[#71717A]">
-            Don't have an account?{' '}
-            <Link to="/signup" className="text-[#C65D3B] font-semibold hover:underline">
-              Create an Account
-            </Link>
-          </div>
+        {/* Footer Links */}
+        <div className="text-center text-xs text-[#71717A] space-x-3">
+          <span>Don't have an account?</span>
+          <Link to="/signup" className="text-[#252525] font-semibold hover:underline">
+            Register here
+          </Link>
+          <span>•</span>
+          <Link to="/shop" className="text-[#71717A] hover:text-[#252525]">
+            Browse Store
+          </Link>
         </div>
       </div>
     </div>

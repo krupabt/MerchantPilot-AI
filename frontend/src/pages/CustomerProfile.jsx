@@ -132,7 +132,7 @@ export default function CustomerProfile() {
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition shadow-xs disabled:opacity-50"
+            className="px-4 py-2 rounded-lg bg-[#252525] hover:bg-[#3a3a3a] text-white font-medium text-xs transition shadow-xs disabled:opacity-50"
           >
             {loading ? 'Saving Changes...' : 'Save Profile'}
           </button>

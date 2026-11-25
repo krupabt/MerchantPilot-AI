@@ -65,18 +65,18 @@ export default function Checkout() {
             setItems(mapped);
           } else {
             setItems([
-              { product_id: 'P101', product_name: 'Apex ProBook 15 Developer Edition', quantity: 1, unit_price: 60000.0 }
+              { product_id: 'acc_usb_01', product_name: 'USB Type-C Fast Charging Cable (1m)', quantity: 1, unit_price: 299.0 }
             ]);
           }
         })
         .catch(() => {
           setItems([
-            { product_id: 'P101', product_name: 'Apex ProBook 15 Developer Edition', quantity: 1, unit_price: 60000.0 }
+            { product_id: 'acc_usb_01', product_name: 'USB Type-C Fast Charging Cable (1m)', quantity: 1, unit_price: 299.0 }
           ]);
         });
     } else {
       setItems([
-        { product_id: 'P101', product_name: 'Apex ProBook 15 Developer Edition', quantity: 1, unit_price: 60000.0 }
+        { product_id: 'acc_usb_01', product_name: 'USB Type-C Fast Charging Cable (1m)', quantity: 1, unit_price: 299.0 }
       ]);
     }
   }, [isAuthenticated, user]);
@@ -180,8 +180,8 @@ export default function Checkout() {
 
         <div className="flex justify-center gap-2.5 pt-2">
           <Link
-            to="/orders"
-            className="px-4 py-2 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white font-medium text-xs transition shadow-xs"
+            to="/shop/orders"
+            className="px-4 py-2 rounded-lg bg-[#252525] hover:bg-[#3a3a3a] text-white font-medium text-xs transition shadow-xs"
           >
             View in My Orders
           </Link>
