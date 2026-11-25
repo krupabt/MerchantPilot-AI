@@ -32,7 +32,7 @@ export default function MerchantLayout() {
           <div className="w-14 h-14 rounded-full bg-rose-50 border border-rose-200 text-[#B84040] mx-auto flex items-center justify-center">
             <ShieldAlert className="w-7 h-7" />
           </div>
-          <h2 className="font-heading text-xl font-bold text-[#242424]">Merchant Access Restricted</h2>
+          <h2 className="font-heading text-xl font-bold text-[#242424]">Merchant Workspace Access Denied</h2>
           <p className="text-xs sm:text-sm text-[#6B6560] leading-relaxed">
             You are signed in as a customer (<span className="font-semibold text-[#242424]">{user?.email}</span>). 
             Access to financial registers, COGS profit margins, and merchant controls requires merchant credentials.

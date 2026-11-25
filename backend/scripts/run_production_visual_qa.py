@@ -183,7 +183,7 @@ def run_qa():
         
         # Verify access is blocked
         body_text = page.locator("body").inner_text()
-        assert "Merchant Workspace Access Denied" in body_text, "CRITICAL ERROR: Role separation failed! Customer was able to view merchant overview!"
+        assert any(phrase in body_text for phrase in ["Merchant Workspace Access Denied", "Merchant Access Restricted"]), "CRITICAL ERROR: Role separation failed! Customer was able to view merchant overview!"
         print("✅ VERIFIED: Customer access to /merchant/overview was strictly BLOCKED with Access Denied!")
 
         step8_blocked_path = os.path.join(OUTPUT_DIR, "08_role_separation_access_blocked.png")
