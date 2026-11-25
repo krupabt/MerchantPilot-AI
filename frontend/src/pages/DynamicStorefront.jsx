@@ -75,8 +75,10 @@ export default function DynamicStorefront() {
           ? productsRes.data
           : (productsRes.data?.products || []);
         setProducts(fetchedProducts);
-        const apiCats = catsRes.data?.categories || [];
-        setCategories(['ALL', ...apiCats]);
+
+        const apiCats = catsRes.data?.categories || profileRes.data?.categories || [];
+        const stringCats = apiCats.map((c) => (typeof c === 'string' ? c : c.name)).filter(Boolean);
+        setCategories(['ALL', ...Array.from(new Set(stringCats))]);
 
         // Initialize AI assistant greeting for this specific store
         setAiMessages([
@@ -273,19 +275,22 @@ export default function DynamicStorefront() {
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 mb-8 pb-6 border-b border-[#E5E2DB]">
           {/* Categories */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-                  selectedCategory === cat
-                    ? 'bg-[#252722] text-white'
-                    : 'bg-white border border-[#E5E2DB] text-[#777B70] hover:text-[#20211F]'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+            {categories.map((cat) => {
+              const catName = typeof cat === 'string' ? cat : (cat?.name || 'Category');
+              return (
+                <button
+                  key={catName}
+                  onClick={() => setSelectedCategory(catName)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                    selectedCategory === catName
+                      ? 'bg-[#252722] text-white'
+                      : 'bg-white border border-[#E5E2DB] text-[#777B70] hover:text-[#20211F]'
+                  }`}
+                >
+                  {catName}
+                </button>
+              );
+            })}
           </div>
 
           {/* Search Box */}
