@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, MapPin, Check, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Check, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { updateCurrentUser } from '../services/api';
 
@@ -44,95 +44,95 @@ export default function CustomerProfile() {
   return (
     <div className="space-y-6 max-w-2xl mx-auto pb-16">
       {/* Header */}
-      <div className="border-b border-[#E5E5E5] pb-4">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#FAF5F2] text-[#C65D3B] border border-[#E5E5E5] font-mono">
+      <div className="border-b border-[#E8E2DA] pb-4">
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#F8F4EE] text-[#783F45] border border-[#E8E2DA]">
             ACCOUNT PROFILE
           </span>
-          <span className="text-xs text-[#71717A] font-mono">Personal & Delivery Details</span>
+          <span className="text-xs text-[#6B6560]">Personal & Delivery Details</span>
         </div>
-        <h2 className="text-xl font-semibold text-[#222222] tracking-tight">Customer Profile</h2>
+        <h2 className="font-heading text-2xl font-bold text-[#242424] tracking-tight">Customer Profile</h2>
       </div>
 
       {statusMsg.text && (
         <div
-          className={`p-3 rounded-lg border text-xs flex items-center gap-2 ${
+          className={`p-3.5 rounded-xl border text-xs flex items-center gap-2 ${
             statusMsg.type === 'error'
-              ? 'bg-[#FDF4F4] border-[#E5E5E5] text-[#B94A48]'
-              : 'bg-[#FAF5F2] border-[#E5E5E5] text-[#347A52]'
+              ? 'bg-rose-50 border-rose-200 text-[#B84040]'
+              : 'bg-emerald-50 border-emerald-200 text-[#32734D]'
           }`}
         >
           {statusMsg.type === 'error' ? (
-            <AlertTriangle className="w-4 h-4 text-[#B94A48] shrink-0" />
+            <AlertTriangle className="w-4 h-4 text-[#B84040] shrink-0" />
           ) : (
-            <Check className="w-4 h-4 text-[#347A52] shrink-0" />
+            <Check className="w-4 h-4 text-[#32734D] shrink-0" />
           )}
           <span className="font-medium">{statusMsg.text}</span>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="surface-card p-5 space-y-4">
+      <form onSubmit={handleSubmit} className="bg-white border border-[#E8E2DA] rounded-2xl p-6 space-y-4 shadow-sm">
         <div>
-          <label className="block text-[#71717A] text-xs font-medium mb-1">Full Name</label>
+          <label className="block text-[#6B6560] text-xs font-medium mb-1">Full Name</label>
           <div className="relative">
-            <User className="w-4 h-4 text-[#71717A] absolute left-3 top-2.5" />
+            <User className="w-4 h-4 text-[#6B6560] absolute left-3.5 top-3" />
             <input
               type="text"
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full pl-9 pr-3 py-2 bg-[#F7F7F5] border border-[#E5E5E5] rounded-lg text-xs text-[#222222] focus:outline-none focus:border-[#C65D3B] transition"
+              className="w-full pl-10 pr-3.5 py-2.5 bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl text-xs sm:text-sm text-[#242424] focus:outline-none focus:border-[#783F45] transition"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-[#71717A] text-xs font-medium mb-1">Email Address</label>
+          <label className="block text-[#6B6560] text-xs font-medium mb-1">Email Address</label>
           <div className="relative">
-            <Mail className="w-4 h-4 text-[#71717A] absolute left-3 top-2.5" />
+            <Mail className="w-4 h-4 text-[#6B6560] absolute left-3.5 top-3" />
             <input
               type="email"
               disabled
               value={formData.email}
-              className="w-full pl-9 pr-3 py-2 bg-[#FAF5F2]/50 border border-[#E5E5E5] rounded-lg text-xs text-[#71717A] cursor-not-allowed"
+              className="w-full pl-10 pr-3.5 py-2.5 bg-[#F8F4EE]/50 border border-[#E8E2DA] rounded-xl text-xs sm:text-sm text-[#6B6560] cursor-not-allowed"
             />
           </div>
-          <span className="text-[10px] text-[#71717A] mt-1 block">Account email cannot be modified.</span>
+          <span className="text-[11px] text-[#6B6560] mt-1 block">Account email cannot be modified.</span>
         </div>
 
         <div>
-          <label className="block text-[#71717A] text-xs font-medium mb-1">Phone Number</label>
+          <label className="block text-[#6B6560] text-xs font-medium mb-1">Phone Number</label>
           <div className="relative">
-            <Phone className="w-4 h-4 text-[#71717A] absolute left-3 top-2.5" />
+            <Phone className="w-4 h-4 text-[#6B6560] absolute left-3.5 top-3" />
             <input
               type="tel"
               placeholder="+91 98765 43210"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full pl-9 pr-3 py-2 bg-[#F7F7F5] border border-[#E5E5E5] rounded-lg text-xs text-[#222222] focus:outline-none focus:border-[#C65D3B] transition"
+              className="w-full pl-10 pr-3.5 py-2.5 bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl text-xs sm:text-sm text-[#242424] focus:outline-none focus:border-[#783F45] transition"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-[#71717A] text-xs font-medium mb-1">Delivery Address</label>
+          <label className="block text-[#6B6560] text-xs font-medium mb-1">Delivery Address</label>
           <div className="relative">
-            <MapPin className="w-4 h-4 text-[#71717A] absolute left-3 top-2.5" />
+            <MapPin className="w-4 h-4 text-[#6B6560] absolute left-3.5 top-3" />
             <textarea
               rows="3"
               placeholder="Apartment, Street Address, City, State, PIN Code"
               value={formData.shipping_address}
               onChange={(e) => setFormData({ ...formData, shipping_address: e.target.value })}
-              className="w-full pl-9 pr-3 py-2 bg-[#F7F7F5] border border-[#E5E5E5] rounded-lg text-xs text-[#222222] focus:outline-none focus:border-[#C65D3B] transition"
+              className="w-full pl-10 pr-3.5 py-2.5 bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl text-xs sm:text-sm text-[#242424] focus:outline-none focus:border-[#783F45] transition"
             />
           </div>
         </div>
 
-        <div className="pt-3 border-t border-[#E5E5E5] flex justify-end">
+        <div className="pt-3 border-t border-[#E8E2DA] flex justify-end">
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2 rounded-lg bg-[#252525] hover:bg-[#3a3a3a] text-white font-medium text-xs transition shadow-xs disabled:opacity-50"
+            className="px-5 py-2.5 rounded-xl bg-[#783F45] hover:bg-[#603137] text-white font-semibold text-xs transition shadow-sm disabled:opacity-50"
           >
             {loading ? 'Saving Changes...' : 'Save Profile'}
           </button>

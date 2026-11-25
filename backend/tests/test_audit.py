@@ -13,7 +13,14 @@ def test_audit_logging_and_filtering(client, db_session):
         decision="PERMITTED"
     )
 
-    response = client.get("/api/audit/logs?session_id=sess_test_99")
+    from backend.app.models.user import User
+    from backend.app.services.auth_service import generate_token
+
+    merchant = db_session.query(User).filter(User.email == "merchant@merchantpilot.ai").first()
+    token = generate_token(merchant.id, merchant.email, merchant.role, merchant.merchant_id)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    response = client.get("/api/audit/logs?session_id=sess_test_99", headers=headers)
     assert response.status_code == 200
     data = response.json()
     

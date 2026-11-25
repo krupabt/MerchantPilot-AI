@@ -33,7 +33,14 @@ def test_upsell_recommendations(db_session):
 
 def test_revenue_insights_endpoint(client, db_session):
     """Test /api/revenue/insights API."""
-    response = client.get("/api/revenue/insights")
+    from backend.app.models.user import User
+    from backend.app.services.auth_service import generate_token
+
+    merchant = db_session.query(User).filter(User.email == "merchant@merchantpilot.ai").first()
+    token = generate_token(merchant.id, merchant.email, merchant.role, merchant.merchant_id)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    response = client.get("/api/revenue/insights", headers=headers)
     assert response.status_code == 200
     data = response.json()
     

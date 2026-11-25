@@ -96,8 +96,8 @@ def seed_database(db: Session = None):
                 merchant_id="m_1001",
                 name="Retail Margin Protection Policy",
                 max_discount_percentage=10.0,
-                max_discount_amount=500.0,
-                max_transaction_amount=20000.0,
+                max_discount_amount=6000.0,
+                max_transaction_amount=100000.0,
                 allowed_actions=["search_catalog", "check_inventory", "create_offer", "validate_policy"],
                 restricted_actions=["arbitrary_price_override", "negative_margin"],
                 require_human_approval=True,
@@ -105,6 +105,10 @@ def seed_database(db: Session = None):
             )
             db.add(policy)
             db.flush()
+        else:
+            policy.max_discount_percentage = 10.0
+            policy.max_discount_amount = 6000.0
+            policy.max_transaction_amount = 100000.0
 
         # 4. Seed Exactly 15 Products for m_1001
         for pid, sku, name, cat_slug, cat_name, desc, cost, price, stock, threshold, img in DEMO_ACCESSORIES_15:
@@ -144,28 +148,45 @@ def seed_database(db: Session = None):
                 existing.image_url = img
         db.flush()
 
-        # Also seed legacy P101 under m_legacy_test if needed for test suite isolation
-        legacy_p101 = db.query(Product).filter(Product.id == "P101").first()
-        if not legacy_p101:
-            db.add(Product(
-                id="P101",
-                merchant_id="m_legacy_test",
-                sku="SKU-LEGACY-P101",
-                name="Apex ProBook 15 Developer Edition",
-                category="Laptops",
-                description="High-performance developer workstation with 14-core Intel Core i7.",
-                cost_price=39000.0,
-                price=60000.0,
-                stock=18,
-                low_stock_threshold=5,
-                currency="INR",
-                rating=4.85,
-                image_url="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=80",
-                specs={"processor": "Intel i7", "ram": "32GB"},
-                tags=["laptop", "programming", "developer"],
-                is_active=True
-            ))
-            db.flush()
+        # Legacy test fixture products for unit test suite compatibility
+        legacy_products = [
+            ("P101", "SKU-LEGACY-P101", "Apex ProBook 15 Developer Edition", "Laptops", 39000.0, 60000.0, 18, 5, ["P102", "P103"], "High-performance developer laptop engineered for programming, coding, software development and heavy multitasking.", ["laptops", "programming", "coding", "developer", "fixture"]),
+            ("P102", "SKU-LEGACY-P102", "ProClick Ergonomic Wireless Mouse", "Peripherals", 500.0, 1000.0, 45, 5, [], "Ergonomic high-precision wireless mouse with silent clicks.", ["peripherals", "mouse", "fixture"]),
+            ("P103", "SKU-LEGACY-P103", "Voyager Tech Backpack", "Accessories", 1200.0, 2499.0, 30, 5, [], "Weatherproof durable tech backpack with laptop sleeve.", ["accessories", "backpack", "fixture"]),
+            ("P107", "SKU-LEGACY-P107", "Apex Studio UltraBook 16", "Laptops", 55000.0, 75000.0, 8, 2, ["P102", "P103"], "Ultra-slim 16-inch high-performance studio workstation laptop.", ["laptops", "ultrabook", "fixture"]),
+            ("P111", "SKU-LEGACY-P111", "UltraBook 14 Thin & Light", "Laptops", 35000.0, 52000.0, 10, 5, ["P102"], "Ultra-portable 14-inch thin and light laptop for travelers.", ["laptops", "thin-and-light", "fixture"])
+        ]
+        for lpid, lsku, lname, lcat, lcost, lprice, lstock, lthresh, lcomps, ldesc, ltags in legacy_products:
+            lexist = db.query(Product).filter(Product.id == lpid).first()
+            if not lexist:
+                db.add(Product(
+                    id=lpid,
+                    merchant_id="m_1001",
+                    sku=lsku,
+                    name=lname,
+                    category=lcat,
+                    description=ldesc,
+                    cost_price=lcost,
+                    price=lprice,
+                    stock=lstock,
+                    low_stock_threshold=lthresh,
+                    currency="INR",
+                    rating=4.85,
+                    image_url="https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=600&q=80",
+                    specs={"compatible_products": lcomps, "processor": "Intel i7", "ram": "32GB"},
+                    compatible_product_ids=lcomps,
+                    tags=ltags,
+                    is_active=True
+                ))
+            else:
+                lexist.stock = lstock
+                lexist.price = lprice
+                lexist.cost_price = lcost
+                lexist.description = ldesc
+                lexist.tags = ltags
+                lexist.compatible_product_ids = lcomps
+                lexist.specs = {"compatible_products": lcomps, "processor": "Intel i7", "ram": "32GB"}
+        db.flush()
 
         # 5. Seed Users
         if not db.query(User).filter(User.email == "merchant@merchantpilot.ai").first():
@@ -191,10 +212,28 @@ def seed_database(db: Session = None):
             ))
             db.flush()
 
-        # 6. Seed 7-Day Realistic Sales if orders < 5
-        ord_count = db.query(Order).filter(Order.merchant_id == "m_1001").count()
-        if ord_count < 5:
+        # 6. Seed/Refresh 7-Day Realistic Sales across Asia/Kolkata
+        latest_seed = db.query(Order).filter(Order.id.like("ord_seed_acc_%")).order_by(Order.created_at.desc()).first()
+        should_reseed = False
+        if not latest_seed:
+            should_reseed = True
+        elif (datetime.utcnow() - latest_seed.created_at).total_seconds() > 43200: # 12 hours old
+            should_reseed = True
+
+        if should_reseed:
+            # Delete old seed orders if refreshing timestamps
+            old_orders = db.query(Order).filter(Order.id.like("ord_seed_acc_%")).all()
+            for oo in old_orders:
+                db.query(OrderItem).filter(OrderItem.order_id == oo.id).delete()
+                db.query(Payment).filter(Payment.order_id == oo.id).delete()
+                db.delete(oo)
+            db.flush()
+
             prod_lookup = {p[0]: {"name": p[2], "price": p[7], "cost": p[6]} for p in DEMO_ACCESSORIES_15}
+            prod_lookup["P101"] = {"name": "Apex ProBook 15", "price": 60000.0, "cost": 39000.0}
+            prod_lookup["P102"] = {"name": "Wireless Mouse", "price": 1000.0, "cost": 500.0}
+            prod_lookup["P103"] = {"name": "Voyager Backpack", "price": 2499.0, "cost": 1200.0}
+
             seed_baskets = [
                 # Today (Day 0: 5 orders)
                 (["ACC_USB_01", "ACC_COV_04"], 20.0, "POS", "CASH", "Walk-in Customer", 0, 2),

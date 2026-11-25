@@ -136,7 +136,10 @@ class RevenueService:
         # Fallback to catalog compatibility graph if transaction data is sparse
         if not results and product_id in prod_map:
             primary_p = prod_map[product_id]
-            for compat_id in (primary_p.compatible_product_ids or [])[:limit]:
+            compat_ids = list(primary_p.compatible_product_ids or [])
+            if not compat_ids and isinstance(primary_p.specs, dict):
+                compat_ids = primary_p.specs.get("compatible_products", []) or []
+            for compat_id in (compat_ids or [])[:limit]:
                 if compat_id in prod_map:
                     compat_prod = prod_map[compat_id]
                     results.append({

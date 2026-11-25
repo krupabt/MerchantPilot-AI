@@ -7,40 +7,30 @@ export default {
   theme: {
     extend: {
       colors: {
-        // MerchantPilot Clean Off-White & Terracotta Design System
-        bg: {
-          main: '#F7F7F5',
-          surface: '#FFFFFF',
-          sidebar: '#FFFFFF',
-          hover: '#F0F0EE',
-        },
+        // MerchantPilot Editorial Retail Palette
+        customerBg: '#F3EFE9',
+        merchantBg: '#F6F5F3',
+        card: '#FFFFFF',
+        textPrimary: '#242424',
+        textSecondary: '#6B6560',
         brand: {
-          primary: '#C65D3B',   // Terracotta accent
-          hover: '#B24F2F',     // Darker terracotta
-          accent: '#EAD6CF',    // Soft terracotta wash
-          light: '#FBF4F1',     // Pale terracotta tinted surface
+          primary: '#783F45',   // Deep plum / wine
+          hover: '#603137',     // Darker plum
+          accent: '#D8C3A5',    // Soft beige/wheat accent
+          soft: '#F8F4EE',      // Pale brand surface
+          border: '#E8E2DA',
         },
-        content: {
-          primary: '#222222',   // Dark charcoal primary text
-          secondary: '#71717A', // Neutral slate secondary text
-          muted: '#A1A1AA',     // Supporting/tertiary text
-        },
-        border: {
-          DEFAULT: '#E5E5E5',   // Subtle clean border
-          subtle: '#EFEFEF',
-          strong: '#D4D4D4',
-        },
+        borderBase: '#E8E2DA',
         status: {
-          success: '#39805A',
-          successBg: '#EEF7F2',
-          warning: '#B7791F',
-          warningBg: '#FEF9EE',
-          error: '#C24141',
-          errorBg: '#FDF2F2',
+          success: '#32734D',
+          warning: '#B77932',
+          error: '#B84040',
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans: ['DM Sans', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        body: ['DM Sans', 'system-ui', 'sans-serif'],
+        heading: ['Manrope', 'DM Sans', 'sans-serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
       borderRadius: {
@@ -50,13 +40,18 @@ export default {
         'md': '8px',
         'lg': '10px',
         'xl': '12px',
+        '2xl': '16px',
       },
       boxShadow: {
-        'xs': '0 1px 2px rgba(0, 0, 0, 0.03)',
-        'sm': '0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03)',
-        'card': '0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)',
-        'card-hover': '0 4px 12px rgba(198, 93, 59, 0.08), 0 1px 3px rgba(0, 0, 0, 0.03)',
-        'modal': '0 12px 32px -4px rgba(34, 34, 34, 0.15), 0 4px 12px -2px rgba(34, 34, 34, 0.08)',
+        'xs': '0 1px 2px rgba(36, 36, 36, 0.04)',
+        'card': '0 2px 6px rgba(36, 36, 36, 0.04), 0 1px 2px rgba(36, 36, 36, 0.02)',
+        'card-hover': '0 6px 16px rgba(36, 36, 36, 0.08), 0 2px 4px rgba(36, 36, 36, 0.04)',
+        'dropdown': '0 8px 24px rgba(36, 36, 36, 0.10)',
+      },
+      transitionDuration: {
+        DEFAULT: '180ms',
+        'fast': '150ms',
+        'normal': '200ms',
       }
     },
   },

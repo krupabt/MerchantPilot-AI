@@ -77,41 +77,41 @@ export default function Policies() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <p className="text-xs text-[#71717A]">Loading commercial policies...</p>
+        <p className="text-xs text-[#6B6560]">Loading commercial policies...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E5E5E5]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E8E2DA]">
         <div>
-          <h1 className="text-2xl sm:text-[28px] font-bold text-[#222222] tracking-tight">
-            Business settings & commercial guardrails
+          <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#242424] tracking-tight">
+            Discount Rules & Margin Limits
           </h1>
-          <p className="text-sm text-[#71717A] mt-0.5">
-            Configure discount limits, order settlement caps, and restricted operations.
+          <p className="text-xs sm:text-sm text-[#6B6560] mt-1">
+            Configure commercial margin guardrails, max discount thresholds, and restricted transaction rules.
           </p>
         </div>
 
-        <span className="text-xs text-[#347A52] font-semibold px-2.5 py-1 rounded-md bg-[#FAF5F2] border border-[#F0D5CB] flex items-center gap-1.5 self-start sm:self-auto">
+        <span className="text-xs text-[#32734D] font-semibold px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 flex items-center gap-1.5 self-start sm:self-auto">
           <CheckCircle2 className="w-3.5 h-3.5" />
-          <span>Policies active</span>
+          <span>Policies Active</span>
         </span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Merchant Policy Form */}
         <div className="lg:col-span-2 space-y-6">
-          <form onSubmit={handleSave} className="surface-card p-5 space-y-5">
-            <div className="flex items-center justify-between border-b border-[#E5E5E5] pb-3">
+          <form onSubmit={handleSave} className="bg-white border border-[#E8E2DA] rounded-2xl p-6 space-y-5 shadow-sm">
+            <div className="flex items-center justify-between border-b border-[#E8E2DA] pb-3">
               <div className="flex items-center gap-2">
-                <Sliders className="w-4 h-4 text-[#C65D3B]" />
-                <h2 className="text-sm font-semibold text-[#222222]">Configured commercial boundaries</h2>
+                <Sliders className="w-4 h-4 text-[#783F45]" />
+                <h2 className="font-heading text-sm font-bold text-[#242424]">Configured Commercial Boundaries</h2>
               </div>
               {saveSuccess && (
-                <span className="text-xs text-[#347A52] font-medium flex items-center gap-1">
+                <span className="text-xs text-[#32734D] font-semibold flex items-center gap-1">
                   <Check className="w-3.5 h-3.5" /> Policy updated
                 </span>
               )}
@@ -120,9 +120,9 @@ export default function Policies() {
             {/* Numeric Thresholds */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
               {/* Max Discount % */}
-              <div className="space-y-1">
-                <label className="text-xs text-[#222222] font-medium flex items-center gap-1">
-                  <Percent className="w-3.5 h-3.5 text-[#C65D3B]" />
+              <div className="space-y-1.5">
+                <label className="text-xs text-[#242424] font-medium flex items-center gap-1">
+                  <Percent className="w-3.5 h-3.5 text-[#783F45]" />
                   Max discount (%)
                 </label>
                 <input
@@ -130,51 +130,51 @@ export default function Policies() {
                   step="0.1"
                   value={policy?.max_discount_percentage || 10}
                   onChange={(e) => setPolicy({ ...policy, max_discount_percentage: parseFloat(e.target.value) })}
-                  className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-md px-3 py-2 text-xs font-mono text-[#222222] focus:border-[#C65D3B] focus:bg-white focus:outline-none"
+                  className="w-full bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl px-3 py-2 text-xs font-mono text-[#242424] focus:border-[#783F45] focus:outline-none"
                 />
-                <span className="text-[11px] text-[#71717A]">Cap per basket offer</span>
+                <span className="text-[11px] text-[#6B6560]">Cap per basket offer</span>
               </div>
 
               {/* Max Discount Amount */}
-              <div className="space-y-1">
-                <label className="text-xs text-[#222222] font-medium flex items-center gap-1">
-                  <DollarSign className="w-3.5 h-3.5 text-[#C65D3B]" />
+              <div className="space-y-1.5">
+                <label className="text-xs text-[#242424] font-medium flex items-center gap-1">
+                  <DollarSign className="w-3.5 h-3.5 text-[#783F45]" />
                   Max discount cap (₹)
                 </label>
                 <input
                   type="number"
                   value={policy?.max_discount_amount || 6000}
                   onChange={(e) => setPolicy({ ...policy, max_discount_amount: parseFloat(e.target.value) })}
-                  className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-md px-3 py-2 text-xs font-mono text-[#222222] focus:border-[#C65D3B] focus:bg-white focus:outline-none"
+                  className="w-full bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl px-3 py-2 text-xs font-mono text-[#242424] focus:border-[#783F45] focus:outline-none"
                 />
-                <span className="text-[11px] text-[#71717A]">Monetary ceiling</span>
+                <span className="text-[11px] text-[#6B6560]">Monetary ceiling</span>
               </div>
 
               {/* Max Transaction Amount */}
-              <div className="space-y-1">
-                <label className="text-xs text-[#222222] font-medium flex items-center gap-1">
-                  <Lock className="w-3.5 h-3.5 text-[#C65D3B]" />
+              <div className="space-y-1.5">
+                <label className="text-xs text-[#242424] font-medium flex items-center gap-1">
+                  <Lock className="w-3.5 h-3.5 text-[#783F45]" />
                   Max transaction (₹)
                 </label>
                 <input
                   type="number"
                   value={policy?.max_transaction_amount || 100000}
                   onChange={(e) => setPolicy({ ...policy, max_transaction_amount: parseFloat(e.target.value) })}
-                  className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-md px-3 py-2 text-xs font-mono text-[#222222] focus:border-[#C65D3B] focus:bg-white focus:outline-none"
+                  className="w-full bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl px-3 py-2 text-xs font-mono text-[#242424] focus:border-[#783F45] focus:outline-none"
                 />
-                <span className="text-[11px] text-[#71717A]">Per-order ceiling</span>
+                <span className="text-[11px] text-[#6B6560]">Per-order ceiling</span>
               </div>
             </div>
 
             {/* Allowed Capabilities Whitelist */}
-            <div className="space-y-2">
-              <span className="text-xs font-semibold text-[#222222] uppercase tracking-wider block">
-                Allowed capabilities (whitelist)
+            <div className="space-y-2.5">
+              <span className="text-xs font-bold text-[#242424] uppercase tracking-wider block font-heading">
+                Allowed Capabilities (Whitelist)
               </span>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {policy?.allowed_actions?.map((act) => (
-                  <div key={act} className="p-2 rounded-md bg-[#FAF5F2] border border-[#F0D5CB] text-[11px] text-[#347A52] flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#347A52] shrink-0" />
+                  <div key={act} className="p-2.5 rounded-xl bg-[#F8F4EE] border border-[#E8E2DA] text-[11px] text-[#32734D] flex items-center gap-2">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#32734D] shrink-0" />
                     <span className="font-mono truncate">{act}</span>
                   </div>
                 ))}
@@ -182,14 +182,14 @@ export default function Policies() {
             </div>
 
             {/* Restricted Operations Blacklist */}
-            <div className="space-y-2">
-              <span className="text-xs font-semibold text-[#222222] uppercase tracking-wider block">
-                Restricted financial operations (blocked)
+            <div className="space-y-2.5">
+              <span className="text-xs font-bold text-[#242424] uppercase tracking-wider block font-heading">
+                Restricted Operations (Blocked)
               </span>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {policy?.restricted_actions?.map((act) => (
-                  <div key={act} className="p-2 rounded-md bg-[#FBEFEF] border border-[#B94A48]/30 text-[11px] text-[#B94A48] flex items-center gap-2">
-                    <Ban className="w-3.5 h-3.5 text-[#B94A48] shrink-0" />
+                  <div key={act} className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-[11px] text-[#B84040] flex items-center gap-2">
+                    <Ban className="w-3.5 h-3.5 text-[#B84040] shrink-0" />
                     <span className="font-mono truncate">{act}</span>
                   </div>
                 ))}
@@ -197,74 +197,74 @@ export default function Policies() {
             </div>
 
             {/* Approval Toggle & Save */}
-            <div className="border-t border-[#E5E5E5] pt-4 flex items-center justify-between">
-              <label className="flex items-center gap-2 text-xs text-[#222222] cursor-pointer">
+            <div className="border-t border-[#E8E2DA] pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <label className="flex items-center gap-2.5 text-xs text-[#242424] cursor-pointer">
                 <input
                   type="checkbox"
                   checked={policy?.require_human_approval ?? true}
                   onChange={(e) => setPolicy({ ...policy, require_human_approval: e.target.checked })}
-                  className="w-4 h-4 rounded text-[#C65D3B] focus:ring-[#C65D3B]"
+                  className="w-4 h-4 rounded text-[#783F45] focus:ring-[#783F45]"
                 />
-                <span>Require human merchant approval on automated catalog changes</span>
+                <span>Require human approval on automated catalog modifications</span>
               </label>
 
               <button
                 type="submit"
                 disabled={saving}
-                className="px-4 py-2 rounded-md bg-[#C65D3B] hover:bg-[#b04f30] text-white text-xs font-semibold transition-colors shadow-xs disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl bg-[#783F45] hover:bg-[#603137] text-white text-xs font-semibold transition shadow-sm disabled:opacity-50"
               >
-                {saving ? 'Saving...' : 'Save settings'}
+                {saving ? 'Saving...' : 'Save Settings'}
               </button>
             </div>
           </form>
         </div>
 
         {/* Right Col: Interactive Policy Guardrail Tester */}
-        <div className="surface-card p-5 space-y-4 h-fit">
-          <div className="border-b border-[#E5E5E5] pb-3">
-            <h2 className="text-sm font-semibold text-[#222222]">Policy rule simulator</h2>
-            <p className="text-xs text-[#71717A]">Test whether an order or discount passes guardrails.</p>
+        <div className="bg-white border border-[#E8E2DA] rounded-2xl p-6 space-y-4 h-fit shadow-sm">
+          <div className="border-b border-[#E8E2DA] pb-3">
+            <h2 className="font-heading text-sm font-bold text-[#242424]">Policy Rule Simulator</h2>
+            <p className="text-xs text-[#6B6560]">Test whether an order or discount passes guardrails.</p>
           </div>
 
-          <div className="space-y-3 text-xs">
+          <div className="space-y-3.5 text-xs">
             <div>
-              <label className="text-[#71717A] block mb-1">Basket value (₹)</label>
+              <label className="text-[#6B6560] block mb-1 font-medium">Basket Value (₹)</label>
               <input
                 type="number"
                 value={simOriginal}
                 onChange={(e) => setSimOriginal(e.target.value)}
-                className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-md px-3 py-1.5 font-mono text-xs text-[#222222]"
+                className="w-full bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl px-3 py-2 text-xs text-[#242424]"
               />
             </div>
 
             <div>
-              <label className="text-[#71717A] block mb-1">Proposed discount (₹)</label>
+              <label className="text-[#6B6560] block mb-1 font-medium">Proposed Discount (₹)</label>
               <input
                 type="number"
                 value={simDiscount}
                 onChange={(e) => setSimDiscount(e.target.value)}
-                className="w-full bg-[#F7F7F5] border border-[#E5E5E5] rounded-md px-3 py-1.5 font-mono text-xs text-[#222222]"
+                className="w-full bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl px-3 py-2 text-xs text-[#242424]"
               />
             </div>
 
             <button
               onClick={handleRunSimulation}
               disabled={simTesting}
-              className="w-full py-2 rounded-md bg-white hover:bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] font-medium text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs"
+              className="w-full py-2.5 rounded-xl bg-white hover:bg-[#F8F4EE] border border-[#E8E2DA] text-[#242424] font-semibold text-xs flex items-center justify-center gap-2 transition shadow-sm"
             >
-              <Play className="w-3.5 h-3.5 text-[#C65D3B]" />
+              <Play className="w-3.5 h-3.5 text-[#783F45]" />
               <span>{simTesting ? 'Evaluating...' : 'Run validation test'}</span>
             </button>
 
             {simResult && (
               <div
-                className={`p-3 rounded-md border text-xs space-y-1 ${
+                className={`p-3.5 rounded-xl border text-xs space-y-1 ${
                   simResult.passed
-                    ? 'bg-[#FAF5F2] border-[#F0D5CB] text-[#347A52]'
-                    : 'bg-[#FBEFEF] border-[#B94A48]/30 text-[#B94A48]'
+                    ? 'bg-emerald-50 border-emerald-200 text-[#32734D]'
+                    : 'bg-rose-50 border-rose-200 text-[#B84040]'
                 }`}
               >
-                <div className="flex items-center gap-1.5 font-semibold">
+                <div className="flex items-center gap-1.5 font-bold">
                   {simResult.passed ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
                   <span>{simResult.passed ? 'Compliant with policies' : 'Violation intercepted'}</span>
                 </div>

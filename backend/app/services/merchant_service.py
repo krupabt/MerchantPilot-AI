@@ -18,21 +18,32 @@ from backend.app.schemas.merchant import (
 
 class MerchantService:
     @staticmethod
-    def get_merchant_stats(db: Session, merchant_id: str = "m_1001", date_range: str = "all") -> Dict[str, Any]:
+    def get_merchant_stats(db: Session, merchant_id: str = "m_1001", date_range: str = "7d") -> Dict[str, Any]:
         """
-        Calculates 100% database-derived analytics for the authenticated merchant,
-        including Revenue, Cost of Goods Sold (COGS), Gross Profit, and Gross Margin.
+        Calculates 100% database-derived analytics for the authenticated merchant in Asia/Kolkata timezone.
+        Consistent across Revenue, COGS, Gross Profit, Transactions, AOV, Top Products, Recent Orders, and Trend.
         Zero mock data or fabricated numbers.
         """
-        # Determine date filter
-        now = datetime.utcnow()
+        from datetime import timezone as dt_tz
+        KOLKATA_TZ = dt_tz(timedelta(hours=5, minutes=30))
+        now_kolkata = datetime.now(KOLKATA_TZ)
+        today_kolkata_start = datetime(now_kolkata.year, now_kolkata.month, now_kolkata.day, tzinfo=KOLKATA_TZ)
+
+        # Consistent start filter
         start_filter = None
+        trend_days = 7
         if date_range == "today":
-            start_filter = datetime(now.year, now.month, now.day)
+            start_filter = today_kolkata_start.astimezone(dt_tz.utc).replace(tzinfo=None)
+            trend_days = 1
         elif date_range == "7d":
-            start_filter = now - timedelta(days=7)
+            start_filter = (today_kolkata_start - timedelta(days=6)).astimezone(dt_tz.utc).replace(tzinfo=None)
+            trend_days = 7
         elif date_range == "30d":
-            start_filter = now - timedelta(days=30)
+            start_filter = (today_kolkata_start - timedelta(days=29)).astimezone(dt_tz.utc).replace(tzinfo=None)
+            trend_days = 30
+        elif date_range == "all":
+            start_filter = None
+            trend_days = 7
 
         # 1. Base order query for paid orders
         paid_orders_q = db.query(Order).filter(
@@ -63,7 +74,6 @@ class MerchantService:
         gross_margin_pct = round((gross_profit / total_revenue * 100), 1) if total_revenue > 0 else 0.0
 
         # 3. Order counts & Consistent Metrics
-        # All dashboard metrics are grounded on the exact same confirmed transactions population
         total_orders = completed_orders
         aov = round(total_revenue / completed_orders, 2) if completed_orders > 0 else 0.0
 
@@ -99,8 +109,8 @@ class MerchantService:
             for p in low_stock_query[:10]
         ]
 
-        # 5. Top-selling products derived from OrderItem
-        top_items = (
+        # 5. Top-selling products strictly filtered by the active period
+        top_items_q = (
             db.query(
                 OrderItem.product_id,
                 OrderItem.product_name,
@@ -112,6 +122,12 @@ class MerchantService:
                 Order.merchant_id == merchant_id,
                 Order.status.in_(["PAID", "AUTHORIZED"])
             )
+        )
+        if start_filter:
+            top_items_q = top_items_q.filter(Order.created_at >= start_filter)
+
+        top_items = (
+            top_items_q
             .group_by(OrderItem.product_id, OrderItem.product_name)
             .order_by(desc("total_qty"))
             .limit(5)
@@ -131,33 +147,44 @@ class MerchantService:
                 "current_stock": prod.stock if prod else 0
             })
 
-        # 6. Real database-derived 7-day revenue trend
-        today = datetime.utcnow().date()
+        # 6. Real database-derived revenue trend aligned to Asia/Kolkata
         daily_map = {}
-        for d in range(6, -1, -1):
-            target_date = today - timedelta(days=d)
-            date_str = target_date.strftime("%Y-%m-%d")
-            daily_map[date_str] = {
-                "date": date_str,
-                "day": target_date.strftime("%a"),
-                "revenue": 0.0,
-                "orders_count": 0
-            }
-
-        # Query orders in date range
-        start_dt = datetime.combine(today - timedelta(days=6), datetime.min.time())
-        paid_orders_recent = db.query(Order).filter(
-            Order.merchant_id == merchant_id,
-            Order.status.in_(["PAID", "AUTHORIZED"]),
-            Order.created_at >= start_dt
-        ).all()
-
-        for o in paid_orders_recent:
-            if o.created_at:
-                o_date_str = o.created_at.date().strftime("%Y-%m-%d")
-                if o_date_str in daily_map:
-                    daily_map[o_date_str]["revenue"] += o.final_amount
-                    daily_map[o_date_str]["orders_count"] += 1
+        if date_range == "today":
+            # 6 4-hour slots for today
+            for h in range(0, 24, 4):
+                slot_key = f"{h:02d}:00"
+                daily_map[slot_key] = {
+                    "date": slot_key,
+                    "day": slot_key,
+                    "revenue": 0.0,
+                    "orders_count": 0
+                }
+            for o in paid_orders:
+                if o.created_at:
+                    o_kolkata = o.created_at.replace(tzinfo=dt_tz.utc).astimezone(KOLKATA_TZ)
+                    slot_hour = (o_kolkata.hour // 4) * 4
+                    slot_key = f"{slot_hour:02d}:00"
+                    if slot_key in daily_map:
+                        daily_map[slot_key]["revenue"] += o.final_amount
+                        daily_map[slot_key]["orders_count"] += 1
+        else:
+            num_days = 30 if date_range == "30d" else 7
+            for d in range(num_days - 1, -1, -1):
+                t_date = now_kolkata.date() - timedelta(days=d)
+                date_str = t_date.strftime("%Y-%m-%d")
+                daily_map[date_str] = {
+                    "date": date_str,
+                    "day": t_date.strftime("%a" if num_days <= 7 else "%d %b"),
+                    "revenue": 0.0,
+                    "orders_count": 0
+                }
+            for o in paid_orders:
+                if o.created_at:
+                    o_kolkata = o.created_at.replace(tzinfo=dt_tz.utc).astimezone(KOLKATA_TZ)
+                    d_str = o_kolkata.strftime("%Y-%m-%d")
+                    if d_str in daily_map:
+                        daily_map[d_str]["revenue"] += o.final_amount
+                        daily_map[d_str]["orders_count"] += 1
 
         revenue_trend = [
             {
@@ -169,10 +196,19 @@ class MerchantService:
             for v in daily_map.values()
         ]
 
-        # 7. Recent orders for this merchant
-        recent_orders_db = (
+        # 7. Recent orders for this merchant filtered by active period
+        recent_orders_q = (
             db.query(Order)
-            .filter(Order.merchant_id == merchant_id)
+            .filter(
+                Order.merchant_id == merchant_id,
+                Order.status.in_(["PAID", "AUTHORIZED"])
+            )
+        )
+        if start_filter:
+            recent_orders_q = recent_orders_q.filter(Order.created_at >= start_filter)
+
+        recent_orders_db = (
+            recent_orders_q
             .order_by(Order.created_at.desc())
             .limit(10)
             .all()
@@ -201,6 +237,7 @@ class MerchantService:
             "total_cogs": total_cogs,
             "gross_profit": gross_profit,
             "gross_profit_margin_pct": gross_margin_pct,
+            "date_range": date_range,
             "total_orders": total_orders,
             "pending_orders": pending_orders,
             "completed_orders": completed_orders,
@@ -209,9 +246,8 @@ class MerchantService:
             "low_stock_count": low_stock_count,
             "top_selling_products": top_selling_products,
             "low_stock_products": low_stock_products,
-            "revenue_trend": revenue_trend,
             "recent_orders": recent_orders,
-            "date_range": date_range
+            "revenue_trend": revenue_trend
         }
 
     @staticmethod

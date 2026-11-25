@@ -2,20 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Search,
-  AlertTriangle,
-  CheckCircle2,
   Package,
   RefreshCw,
   Plus,
   Check,
-  X,
-  Filter,
-  DollarSign,
-  TrendingDown,
-  Clock,
-  ArrowRight
+  X
 } from 'lucide-react';
 import { listProducts, updateProductStock, getInventoryIntelligence } from '../services/api';
+
+function formatINR(val) {
+  if (val == null || isNaN(val)) return '₹0';
+  const num = Number(val);
+  return num % 1 === 0
+    ? `₹${num.toLocaleString('en-IN')}`
+    : `₹${num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
 
 export default function MerchantInventory() {
   const [products, setProducts] = useState([]);
@@ -88,10 +89,6 @@ export default function MerchantInventory() {
   const totalValuation = products.reduce((acc, p) => acc + ((p.stock || 0) * (p.price || 0)), 0);
   const lowStockItems = products.filter(p => p.stock > 0 && p.stock <= (p.low_stock_threshold || 5));
   const outOfStockItems = products.filter(p => p.stock <= 0);
-  const stagnantItems = products.filter(p => {
-    const intel = intelMap[p.id];
-    return intel?.risk_status === 'DEAD_STOCK' || p.stock > (p.low_stock_threshold || 5) * 2;
-  });
   const categories = ['ALL', ...new Set(products.map(p => p.category).filter(Boolean))];
 
   const filtered = products.filter(p => {
@@ -117,49 +114,49 @@ export default function MerchantInventory() {
   });
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed bottom-6 right-6 z-50 px-4 py-2.5 rounded-lg bg-white border border-[#E5E5E5] text-[#222222] shadow-modal text-xs flex items-center gap-2 animate-in fade-in">
-          <Check className="w-4 h-4 text-[#347A52]" />
-          <span>{toast}</span>
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl bg-white border border-[#E8E2DA] text-[#242424] shadow-lg text-xs flex items-center gap-2 animate-in fade-in">
+          <Check className="w-4 h-4 text-[#32734D]" />
+          <span className="font-medium">{toast}</span>
         </div>
       )}
 
       {/* Confirmation Modal */}
       {confirmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white border border-[#E5E5E5] rounded-xl max-w-md w-full p-5 shadow-modal space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white border border-[#E8E2DA] rounded-2xl max-w-md w-full p-6 shadow-xl space-y-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-md bg-[#FAF5F2] text-[#C65D3B]">
+              <div className="p-2.5 rounded-xl bg-[#F8F4EE] text-[#783F45]">
                 <Package className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-[#222222]">Confirm stock adjustment</h3>
-                <p className="text-xs text-[#71717A]">Update live product availability in catalog.</p>
+                <h3 className="font-heading text-base font-bold text-[#242424]">Confirm Stock Adjustment</h3>
+                <p className="text-xs text-[#6B6560]">Update live product availability in store catalog.</p>
               </div>
             </div>
 
-            <div className="p-3.5 rounded-md bg-[#F7F7F5] border border-[#E5E5E5] text-xs space-y-1.5">
-              <p className="text-[#71717A]">Product: <span className="font-semibold text-[#222222]">{confirmModal.productName}</span></p>
-              <p className="text-[#71717A]">SKU: <span className="font-mono text-[#C65D3B]">{confirmModal.productId}</span></p>
-              <div className="flex justify-between pt-1.5 border-t border-[#E5E5E5]">
-                <span className="text-[#71717A]">Current: <span className="font-semibold text-[#222222]">{confirmModal.currentStock} units</span></span>
-                <span className="text-[#347A52] font-semibold">New: {confirmModal.newStock} units</span>
+            <div className="p-4 rounded-xl bg-[#F8F4EE] border border-[#E8E2DA] text-xs space-y-2">
+              <p className="text-[#6B6560]">Product: <span className="font-semibold text-[#242424]">{confirmModal.productName}</span></p>
+              <p className="text-[#6B6560]">SKU: <span className="font-mono text-[#783F45]">{confirmModal.productId}</span></p>
+              <div className="flex justify-between pt-2 border-t border-[#E8E2DA]">
+                <span className="text-[#6B6560]">Current: <span className="font-semibold text-[#242424]">{confirmModal.currentStock} units</span></span>
+                <span className="text-[#32734D] font-bold">New: {confirmModal.newStock} units</span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 pt-2">
+            <div className="flex items-center gap-3 pt-2">
               <button
                 onClick={() => setConfirmModal(null)}
-                className="flex-1 px-3.5 py-1.5 rounded-md border border-[#E5E5E5] hover:bg-[#F7F7F5] text-xs font-medium text-[#71717A] transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-xl border border-[#E8E2DA] hover:bg-[#F8F4EE] text-xs font-semibold text-[#6B6560] transition"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleStockUpdate(confirmModal.productId, confirmModal.newStock)}
                 disabled={updatingId === confirmModal.productId}
-                className="flex-1 px-3.5 py-1.5 rounded-md bg-[#C65D3B] hover:bg-[#b04f30] text-white text-xs font-semibold transition-colors shadow-xs"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-[#783F45] hover:bg-[#603137] text-white text-xs font-bold transition shadow-sm"
               >
                 {updatingId === confirmModal.productId ? 'Saving...' : 'Confirm adjustment'}
               </button>
@@ -169,73 +166,73 @@ export default function MerchantInventory() {
       )}
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E5E5E5]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E8E2DA]">
         <div>
-          <h1 className="text-2xl sm:text-[28px] font-bold text-[#222222] tracking-tight">
-            Products & inventory
+          <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#242424] tracking-tight">
+            Inventory Intelligence
           </h1>
-          <p className="text-sm text-[#71717A] mt-0.5">
-            Manage product availability, monitor stock runway, and plan replenishment.
+          <p className="text-xs sm:text-sm text-[#6B6560] mt-1">
+            Product availability, sales velocity runway, and replenishment requirements.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <button
             onClick={loadInventory}
             disabled={loading}
-            className="px-3 py-1.5 rounded-md bg-white hover:bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] text-xs font-medium flex items-center gap-1.5 transition-colors shadow-xs disabled:opacity-50"
+            className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#F8F4EE] border border-[#E8E2DA] text-[#242424] text-xs font-semibold flex items-center gap-1.5 transition shadow-sm disabled:opacity-50"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-[#71717A] ${loading ? 'animate-spin' : ''}`} />
-            <span>Sync inventory</span>
+            <RefreshCw className={`w-3.5 h-3.5 text-[#6B6560] ${loading ? 'animate-spin' : ''}`} />
+            <span>Sync Inventory</span>
           </button>
           <Link
             to="/merchant/products"
-            className="px-3.5 py-1.5 rounded-md bg-[#252525] hover:bg-[#3a3a3a] text-white font-medium text-xs transition-colors shadow-xs flex items-center gap-1.5"
+            className="px-4 py-2 rounded-xl bg-[#783F45] hover:bg-[#603137] text-white font-semibold text-xs transition shadow-sm flex items-center gap-1.5"
           >
-            <Plus className="w-3.5 h-3.5 text-[#B85C40]" />
-            <span>Add product</span>
+            <Plus className="w-3.5 h-3.5 text-[#D8C3A5]" />
+            <span>Add Product</span>
           </Link>
         </div>
       </div>
 
       {/* 4 Inventory Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="surface-card p-4 space-y-1">
-          <span className="text-xs font-medium text-[#71717A]">Total inventory units</span>
-          <p className="text-2xl font-bold text-[#222222] tracking-tight">
+        <div className="bg-white border border-[#E8E2DA] rounded-2xl p-5 space-y-1.5 shadow-sm hover:border-[#D8C3A5] transition">
+          <span className="text-xs font-medium text-[#6B6560]">Total Inventory Units</span>
+          <p className="font-heading text-2xl font-bold text-[#242424] tracking-tight tabular-numbers">
             {loading ? '...' : totalUnits.toLocaleString('en-IN')}
           </p>
-          <p className="text-[12px] text-[#71717A]">
+          <p className="text-[11px] text-[#6B6560]">
             Across {products.length} active SKUs
           </p>
         </div>
 
-        <div className="surface-card p-4 space-y-1">
-          <span className="text-xs font-medium text-[#71717A]">Stock valuation</span>
-          <p className="text-2xl font-bold text-[#222222] tracking-tight">
-            {loading ? '...' : `₹${totalValuation.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}
+        <div className="bg-white border border-[#E8E2DA] rounded-2xl p-5 space-y-1.5 shadow-sm hover:border-[#D8C3A5] transition">
+          <span className="text-xs font-medium text-[#6B6560]">Stock Valuation</span>
+          <p className="font-heading text-2xl font-bold text-[#242424] tracking-tight tabular-numbers">
+            {loading ? '...' : formatINR(totalValuation)}
           </p>
-          <p className="text-[12px] text-[#71717A]">
-            At current catalog retail prices
+          <p className="text-[11px] text-[#6B6560]">
+            At current retail pricing
           </p>
         </div>
 
-        <div className="surface-card p-4 space-y-1">
-          <span className="text-xs font-medium text-[#71717A]">Low & out of stock</span>
-          <p className={`text-2xl font-bold tracking-tight ${lowStockItems.length + outOfStockItems.length > 0 ? 'text-[#B77932]' : 'text-[#222222]'}`}>
+        <div className="bg-white border border-[#E8E2DA] rounded-2xl p-5 space-y-1.5 shadow-sm hover:border-[#D8C3A5] transition">
+          <span className="text-xs font-medium text-[#6B6560]">Low & Out of Stock</span>
+          <p className={`font-heading text-2xl font-bold tracking-tight tabular-numbers ${lowStockItems.length + outOfStockItems.length > 0 ? 'text-[#B77932]' : 'text-[#242424]'}`}>
             {loading ? '...' : lowStockItems.length + outOfStockItems.length}
           </p>
-          <p className="text-[12px] text-[#71717A]">
+          <p className="text-[11px] text-[#6B6560]">
             {outOfStockItems.length} zero stock, {lowStockItems.length} below threshold
           </p>
         </div>
 
-        <div className="surface-card p-4 space-y-1">
-          <span className="text-xs font-medium text-[#71717A]">Unsold inventory value</span>
-          <p className="text-2xl font-bold text-[#222222] tracking-tight">
+        <div className="bg-white border border-[#E8E2DA] rounded-2xl p-5 space-y-1.5 shadow-sm hover:border-[#D8C3A5] transition">
+          <span className="text-xs font-medium text-[#6B6560]">Stagnant Stock</span>
+          <p className="font-heading text-2xl font-bold text-[#242424] tracking-tight tabular-numbers">
             {loading ? '...' : intelData ? `${intelData.summary?.dead_stock_skus || 0} SKUs` : 'Calculating...'}
           </p>
-          <p className="text-[12px] text-[#71717A]">
+          <p className="text-[11px] text-[#6B6560]">
             Items with zero sales in 30 days
           </p>
         </div>
@@ -243,20 +240,20 @@ export default function MerchantInventory() {
 
       {/* Stock Runway & Reorder Summary Banner */}
       {intelData && (
-        <div className="surface-card p-4 space-y-2 border-l-4 border-l-[#C65D3B]">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="bg-white border border-[#E8E2DA] rounded-2xl p-5 space-y-2 border-l-4 border-l-[#783F45] shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="text-sm font-semibold text-[#222222]">
+              <h3 className="font-heading text-sm font-bold text-[#242424]">
                 Predictive stock runway ({intelData.target_buffer_days}-day safety buffer)
               </h3>
-              <p className="text-xs text-[#71717A]">
+              <p className="text-xs text-[#6B6560] mt-0.5">
                 Runway days calculated from 30-day sales velocity. Forecasting is suppressed when sales data is insufficient (&lt; 2 units).
               </p>
             </div>
-            <div className="text-xs text-[#71717A] flex items-center gap-1.5">
+            <div className="text-xs text-[#6B6560] flex items-center gap-1.5 shrink-0">
               <span>Estimated replenishment capital:</span>
-              <span className="font-semibold text-[#222222]">
-                ₹{intelData.summary?.total_replenishment_capital_needed?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              <span className="font-bold text-[#783F45] tabular-numbers font-heading">
+                {formatINR(intelData.summary?.total_replenishment_capital_needed)}
               </span>
             </div>
           </div>
@@ -264,26 +261,25 @@ export default function MerchantInventory() {
       )}
 
       {/* Filters & Search Toolbar */}
-      <div className="surface-card p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="bg-white border border-[#E8E2DA] rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
         {/* Search */}
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#71717A]" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B6560]" />
           <input
             type="text"
             placeholder="Search by product name or SKU..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] text-xs rounded-md pl-9 pr-3.5 py-2 focus:outline-none focus:border-[#C65D3B] focus:bg-white transition-colors"
+            className="w-full bg-[#F8F4EE] border border-[#E8E2DA] text-[#242424] text-xs sm:text-sm rounded-xl pl-10 pr-3.5 py-2 focus:outline-none focus:border-[#783F45] transition placeholder-[#6B6560]"
           />
         </div>
 
         {/* Filter Pills */}
         <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-          {/* Status Filter */}
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] text-xs rounded-md px-2.5 py-1.5 focus:outline-none focus:border-[#C65D3B]"
+            className="bg-[#F8F4EE] border border-[#E8E2DA] text-[#242424] text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-[#783F45]"
           >
             <option value="ALL">All statuses</option>
             <option value="OUT_OF_STOCK">Out of stock</option>
@@ -292,11 +288,10 @@ export default function MerchantInventory() {
             <option value="STAGNANT">Dead stock (0 sales)</option>
           </select>
 
-          {/* Category Filter */}
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] text-xs rounded-md px-2.5 py-1.5 focus:outline-none focus:border-[#C65D3B]"
+            className="bg-[#F8F4EE] border border-[#E8E2DA] text-[#242424] text-xs rounded-xl px-3 py-2 focus:outline-none focus:border-[#783F45]"
           >
             {categories.map((c) => (
               <option key={c} value={c}>
@@ -308,25 +303,25 @@ export default function MerchantInventory() {
       </div>
 
       {/* Clean Inventory Table */}
-      <div className="surface-card overflow-hidden">
+      <div className="bg-white border border-[#E8E2DA] rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#F7F7F5] text-[#71717A] font-medium border-b border-[#E5E5E5]">
+            <thead className="bg-[#F8F4EE] text-[#6B6560] font-semibold border-b border-[#E8E2DA]">
               <tr>
-                <th className="py-2.5 px-3.5">Product details</th>
-                <th className="py-2.5 px-3">Price</th>
-                <th className="py-2.5 px-3">Available stock</th>
-                <th className="py-2.5 px-3">30d Velocity</th>
-                <th className="py-2.5 px-3">Stock runway</th>
-                <th className="py-2.5 px-3">Recommended reorder</th>
-                <th className="py-2.5 px-3">Status</th>
-                <th className="py-2.5 px-3.5 text-right">Quick adjustment</th>
+                <th className="py-3 px-4">Product details</th>
+                <th className="py-3 px-3">Price</th>
+                <th className="py-3 px-3">Available stock</th>
+                <th className="py-3 px-3">30d Velocity</th>
+                <th className="py-3 px-3">Stock runway</th>
+                <th className="py-3 px-3">Recommended reorder</th>
+                <th className="py-3 px-3">Status</th>
+                <th className="py-3 px-4 text-right">Quick adjustment</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#E5E5E5]">
+            <tbody className="divide-y divide-[#E8E2DA]">
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-[#71717A]">
+                  <td colSpan={8} className="py-10 text-center text-[#6B6560] animate-pulse">
                     Loading inventory records...
                   </td>
                 </tr>
@@ -339,22 +334,22 @@ export default function MerchantInventory() {
                   const isDead = intel?.risk_status === 'DEAD_STOCK';
 
                   return (
-                    <tr key={item.id} className="hover:bg-[#F7F7F5]/60 transition-colors">
+                    <tr key={item.id} className="hover:bg-[#F8F4EE]/50 transition-colors">
                       {/* Name & SKU */}
-                      <td className="py-2.5 px-3.5">
-                        <p className="font-medium text-[#222222]">{item.name}</p>
-                        <p className="text-[11px] text-[#71717A] font-mono">
+                      <td className="py-3 px-4">
+                        <p className="font-semibold text-[#242424]">{item.name}</p>
+                        <p className="text-[11px] text-[#6B6560] font-mono">
                           {item.id} • {item.category || 'General'}
                         </p>
                       </td>
 
                       {/* Price */}
-                      <td className="py-2.5 px-3 font-semibold text-[#222222]">
-                        ₹{item.price?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                      <td className="py-3 px-3 font-bold text-[#242424] tabular-numbers font-heading">
+                        {formatINR(item.price)}
                       </td>
 
                       {/* Stock / Safety Threshold */}
-                      <td className="py-2.5 px-3">
+                      <td className="py-3 px-3">
                         {editingStockId === item.id ? (
                           <div className="flex items-center gap-1">
                             <input
@@ -362,7 +357,7 @@ export default function MerchantInventory() {
                               min="0"
                               value={stockInput}
                               onChange={(e) => setStockInput(e.target.value)}
-                              className="w-16 bg-white border border-[#C65D3B] text-[#222222] text-xs rounded px-1.5 py-0.5"
+                              className="w-16 bg-white border border-[#783F45] text-[#242424] text-xs rounded px-2 py-1"
                               autoFocus
                             />
                             <button
@@ -372,15 +367,15 @@ export default function MerchantInventory() {
                                 currentStock: item.stock,
                                 newStock: parseInt(stockInput, 10)
                               })}
-                              className="p-1 rounded bg-[#C65D3B] text-white hover:bg-[#b04f30]"
+                              className="p-1 rounded bg-[#783F45] text-white hover:bg-[#603137]"
                             >
-                              <Check className="w-3 h-3" />
+                              <Check className="w-3.5 h-3.5" />
                             </button>
                             <button
                               onClick={() => setEditingStockId(null)}
-                              className="p-1 rounded bg-[#E5E5E5] text-[#71717A]"
+                              className="p-1 rounded bg-[#E8E2DA] text-[#6B6560]"
                             >
-                              <X className="w-3 h-3" />
+                              <X className="w-3.5 h-3.5" />
                             </button>
                           </div>
                         ) : (
@@ -390,63 +385,63 @@ export default function MerchantInventory() {
                                 setEditingStockId(item.id);
                                 setStockInput(String(item.stock));
                               }}
-                              className="font-semibold text-[#222222] cursor-pointer hover:underline hover:text-[#C65D3B] transition-colors block"
+                              className="font-bold text-[#242424] cursor-pointer hover:underline hover:text-[#783F45] transition block tabular-numbers"
                               title="Click to edit stock inline"
                             >
                               {item.stock} units
                             </span>
-                            <span className="text-[11px] text-[#71717A]">
-                              Threshold: {item.low_stock_threshold || 5}
+                            <span className="text-[11px] text-[#6B6560]">
+                              Min: {item.low_stock_threshold || 5}
                             </span>
                           </div>
                         )}
                       </td>
 
                       {/* 30-Day Sales Velocity */}
-                      <td className="py-2.5 px-3 font-mono">
+                      <td className="py-3 px-3 tabular-numbers">
                         {intel ? (
                           <div>
-                            <span className="text-[#222222] font-medium">{intel.daily_velocity} /day</span>
-                            <span className="text-[10px] text-[#71717A] block">{intel.units_sold_30d} in 30d</span>
+                            <span className="text-[#242424] font-medium">{intel.daily_velocity} /day</span>
+                            <span className="text-[10px] text-[#6B6560] block">{intel.units_sold_30d} in 30d</span>
                           </div>
                         ) : (
-                          <span className="text-[#71717A]">—</span>
+                          <span className="text-[#6B6560]">—</span>
                         )}
                       </td>
 
                       {/* Stock Runway (Days) */}
-                      <td className="py-2.5 px-3 font-mono">
+                      <td className="py-3 px-3 tabular-numbers">
                         {intel ? (
                           intel.runway_days !== null && intel.runway_days !== undefined ? (
                             <span
-                              className={`px-2 py-0.5 rounded text-[11px] font-medium ${
+                              className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${
                                 intel.runway_days <= 7
-                                  ? 'bg-[#FBEFEF] text-[#B94A48] border border-[#B94A48]/20'
+                                  ? 'bg-rose-50 text-[#B84040] border border-rose-200'
                                   : intel.runway_days <= 14
-                                  ? 'bg-[#FDF4EB] text-[#B77932] border border-[#B77932]/20'
-                                  : 'bg-[#FAF5F2] text-[#347A52]'
+                                  ? 'bg-amber-50 text-[#B77932] border border-amber-200'
+                                  : 'bg-emerald-50 text-[#32734D] border border-emerald-200'
                               }`}
                             >
                               {intel.runway_days} days
                             </span>
                           ) : isDead ? (
-                            <span className="text-[11px] text-[#71717A]">
+                            <span className="text-[11px] text-[#6B6560]">
                               Dead stock
                             </span>
                           ) : isOut ? (
-                            <span className="text-[11px] text-[#B94A48] font-medium">
+                            <span className="text-[11px] text-[#B84040] font-bold">
                               0 days
                             </span>
                           ) : (
-                            <span className="text-[11px] text-[#71717A]">Sufficient</span>
+                            <span className="text-[11px] text-[#6B6560]">Sufficient</span>
                           )
                         ) : (
-                          <span className="text-[#71717A]">—</span>
+                          <span className="text-[#6B6560]">—</span>
                         )}
                       </td>
 
                       {/* Recommended Reorder */}
-                      <td className="py-2.5 px-3">
+                      <td className="py-3 px-3">
                         {intel && intel.recommended_reorder_qty > 0 ? (
                           <div>
                             <button
@@ -456,40 +451,40 @@ export default function MerchantInventory() {
                                 currentStock: item.stock,
                                 newStock: item.stock + intel.recommended_reorder_qty
                               })}
-                              className="font-medium text-xs text-[#C65D3B] hover:underline"
+                              className="font-bold text-xs text-[#783F45] hover:underline"
                               title="Click to apply recommended replenishment"
                             >
                               +{intel.recommended_reorder_qty} units
                             </button>
-                            <span className="text-[10px] text-[#71717A] block">
+                            <span className="text-[10px] text-[#6B6560] block">
                               {intel.confidence === 'HIGH' ? 'High confidence' : 'Limited history'}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-[11px] text-[#71717A]">None needed</span>
+                          <span className="text-[11px] text-[#6B6560]">None needed</span>
                         )}
                       </td>
 
                       {/* Status */}
-                      <td className="py-2.5 px-3">
-                        <span className={`px-2 py-0.5 rounded text-[11px] font-medium ${
+                      <td className="py-3 px-3">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase ${
                           isOut
-                            ? 'bg-[#FBEFEF] text-[#B94A48] border border-[#B94A48]/20'
+                            ? 'bg-rose-50 text-[#B84040] border border-rose-200'
                             : isCritical
-                            ? 'bg-[#FBEFEF] text-[#B94A48] border border-[#B94A48]/20'
+                            ? 'bg-rose-50 text-[#B84040] border border-rose-200'
                             : isLow
-                            ? 'bg-[#FDF4EB] text-[#B77932] border border-[#B77932]/20'
+                            ? 'bg-amber-50 text-[#B77932] border border-amber-200'
                             : isDead
-                            ? 'bg-[#F7F7F5] text-[#71717A] border border-[#E5E5E5]'
-                            : 'bg-[#FAF5F2] text-[#347A52]'
+                            ? 'bg-[#F8F4EE] text-[#6B6560] border border-[#E8E2DA]'
+                            : 'bg-emerald-50 text-[#32734D] border border-emerald-200'
                         }`}>
                           {isOut ? 'Out of stock' : isCritical ? 'Critical runway' : isLow ? 'Low stock' : isDead ? 'Dead stock' : 'Optimal'}
                         </span>
                       </td>
 
                       {/* Quick Restock Buttons */}
-                      <td className="py-2.5 px-3.5 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
                           <button
                             onClick={() => setConfirmModal({
                               productId: item.id,
@@ -497,7 +492,7 @@ export default function MerchantInventory() {
                               currentStock: item.stock,
                               newStock: item.stock + 5
                             })}
-                            className="px-2 py-1 rounded bg-white hover:bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] text-[11px] font-medium transition-colors"
+                            className="px-2.5 py-1 rounded-lg bg-white hover:bg-[#F8F4EE] border border-[#E8E2DA] text-[#242424] text-[11px] font-semibold transition shadow-2xs"
                             title="Add 5 units"
                           >
                             +5
@@ -509,7 +504,7 @@ export default function MerchantInventory() {
                               currentStock: item.stock,
                               newStock: item.stock + 20
                             })}
-                            className="px-2 py-1 rounded bg-[#FAF5F2] hover:bg-[#F0D5CB] border border-[#F0D5CB] text-[#C65D3B] text-[11px] font-semibold transition-colors"
+                            className="px-2.5 py-1 rounded-lg bg-[#F8F4EE] hover:bg-[#E8E2DA] border border-[#E8E2DA] text-[#783F45] text-[11px] font-bold transition"
                             title="Add 20 units"
                           >
                             +20
@@ -521,7 +516,7 @@ export default function MerchantInventory() {
                 })
               ) : (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-[#71717A]">
+                  <td colSpan={8} className="py-10 text-center text-[#6B6560]">
                     No inventory records match your criteria.
                   </td>
                 </tr>

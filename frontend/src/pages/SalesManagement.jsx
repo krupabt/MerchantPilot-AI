@@ -16,7 +16,7 @@ import {
   Tag,
   ArrowRight
 } from 'lucide-react';
-import { getMerchantProducts, recordPosSale, getSaleReceipt } from '../services/api';
+import { getMerchantProducts, recordPosSale } from '../services/api';
 
 function formatINR(val) {
   if (val === null || val === undefined) return '₹0';
@@ -36,7 +36,7 @@ export default function SalesManagement() {
   const [selectedCategory, setSelectedCategory] = useState('ALL');
 
   // POS Current Bill State (Right Column)
-  const [billItems, setBillItems] = useState([]); // [{ product, quantity }]
+  const [billItems, setBillItems] = useState([]);
   const [discountPercent, setDiscountPercent] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState('CASH'); // CASH, UPI, CARD
   const [customerName, setCustomerName] = useState('Walk-in Customer');
@@ -170,18 +170,14 @@ export default function SalesManagement() {
       const res = await recordPosSale(payload);
       const data = res.data;
 
-      setSuccessMsg(`Sale #${data.order_id} confirmed! Final: ${formatINR(data.final_amount)}, Profit: ${formatINR(data.gross_profit)}`);
+      setSuccessMsg(`Sale #${data.order_id} recorded! Paid: ${formatINR(data.final_amount)}, Gross Profit: ${formatINR(data.gross_profit)}`);
 
-      // Open printable receipt
       if (data.receipt) {
         setCurrentReceipt(data.receipt);
         setReceiptModalOpen(true);
       }
 
-      // Clear bill only after successful confirmation (Task 6 requirement #11)
       clearBill();
-
-      // Refresh product stocks in catalog
       loadCatalog();
     } catch (err) {
       console.error('Failed to complete sale:', err);
@@ -197,45 +193,45 @@ export default function SalesManagement() {
   };
 
   return (
-    <div className="space-y-5 max-w-7xl mx-auto pb-12 font-sans">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#E5E5E5]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E8E2DA]">
         <div>
-          <h1 className="text-2xl sm:text-[28px] font-bold text-[#222222] tracking-tight">
+          <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#242424] tracking-tight">
             New Sale (POS)
           </h1>
-          <p className="text-xs sm:text-sm text-[#71717A] mt-0.5">
-            Physical shop billing counter with live inventory deduction and margin calculation.
+          <p className="text-xs sm:text-sm text-[#6B6560] mt-1">
+            In-store billing counter with real-time inventory deduction and gross profit calculation.
           </p>
         </div>
 
         <button
           onClick={loadCatalog}
           disabled={loading}
-          className="self-start sm:self-auto px-3 py-1.5 rounded-lg bg-white hover:bg-[#F7F7F5] border border-[#E5E5E5] text-[#222222] text-xs font-medium flex items-center gap-1.5 transition shadow-xs"
+          className="self-start sm:self-auto px-3.5 py-2 rounded-xl bg-white hover:bg-[#F8F4EE] border border-[#E8E2DA] text-[#242424] text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
         >
-          <RefreshCw className={`w-3.5 h-3.5 text-[#71717A] ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-3.5 h-3.5 text-[#6B6560] ${loading ? 'animate-spin' : ''}`} />
           <span>Sync Catalog</span>
         </button>
       </div>
 
       {error && (
-        <div className="p-3.5 rounded-lg bg-[#FDF2F2] border border-[#C24141]/30 text-xs text-[#C24141] flex items-center gap-2">
+        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-[#B84040] flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {successMsg && (
-        <div className="p-3.5 rounded-lg bg-[#EEF7F2] border border-[#39805A]/30 text-xs text-[#39805A] flex items-center justify-between gap-2">
+        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-[#32734D] flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
-            <span>{successMsg}</span>
+            <span className="font-medium">{successMsg}</span>
           </div>
           {currentReceipt && (
             <button
               onClick={() => setReceiptModalOpen(true)}
-              className="text-xs font-semibold underline hover:no-underline"
+              className="text-xs font-bold underline hover:no-underline text-[#783F45]"
             >
               View Receipt
             </button>
@@ -243,43 +239,43 @@ export default function SalesManagement() {
         </div>
       )}
 
-      {/* Two-Column POS Layout (TASK 6) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      {/* Two-Column POS Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* LEFT COLUMN: Search, Categories & Product Grid (7 Cols) */}
         <div className="lg:col-span-7 space-y-4">
           {/* Search & Category Filter */}
-          <div className="surface-card p-3.5 space-y-3">
+          <div className="bg-white border border-[#E8E2DA] rounded-2xl p-4 space-y-3.5 shadow-sm">
             <div className="relative">
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#71717A]" />
+              <Search className="w-4 h-4 absolute left-3.5 top-3 text-[#6B6560]" />
               <input
                 type="text"
                 placeholder="Search products by name or SKU..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 bg-[#F7F7F5] border border-[#E5E5E5] rounded-lg text-xs text-[#222222] placeholder-[#71717A] focus:outline-none focus:border-[#C65D3B]"
+                className="w-full pl-10 pr-3.5 py-2 bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl text-xs sm:text-sm text-[#242424] placeholder-[#6B6560] focus:outline-none focus:border-[#783F45]"
               />
             </div>
 
             {/* Category Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
               {categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium whitespace-nowrap transition ${
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition ${
                     selectedCategory === cat
-                      ? 'bg-[#C65D3B] text-white shadow-xs font-semibold'
-                      : 'bg-[#F7F7F5] text-[#71717A] hover:text-[#222222] hover:bg-[#EFEFEF]'
+                      ? 'bg-[#783F45] text-white shadow-sm font-semibold'
+                      : 'bg-[#F8F4EE] text-[#6B6560] hover:text-[#242424] hover:bg-[#E8E2DA] border border-[#E8E2DA]'
                   }`}
                 >
-                  {cat}
+                  {cat === 'ALL' ? 'All Products' : cat}
                 </button>
               ))}
             </div>
           </div>
 
           {/* Product Cards Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {filteredProducts.map((p) => {
               const inStock = p.stock > 0;
               const inBill = billItems.find((item) => item.product.id === p.id);
@@ -287,18 +283,18 @@ export default function SalesManagement() {
               return (
                 <div
                   key={p.id}
-                  className={`surface-card p-3 flex flex-col justify-between transition-all ${
-                    inStock ? 'hover:border-[#C65D3B] hover:shadow-card' : 'opacity-60 bg-[#F7F7F5]'
+                  className={`bg-white border border-[#E8E2DA] rounded-2xl p-3.5 flex flex-col justify-between transition-all shadow-sm ${
+                    inStock ? 'hover:border-[#D8C3A5] hover:shadow-md' : 'opacity-60 bg-[#F8F4EE]'
                   }`}
                 >
                   <div>
                     {/* Product Photograph */}
-                    <div className="w-full h-28 bg-[#F7F7F5] rounded-lg overflow-hidden mb-2.5 flex items-center justify-center border border-[#E5E5E5]">
+                    <div className="w-full h-28 bg-[#F8F4EE] rounded-xl overflow-hidden mb-2.5 flex items-center justify-center border border-[#E8E2DA] p-2">
                       {p.image_url ? (
                         <img
                           src={p.image_url}
                           alt={p.name}
-                          className="w-full h-full object-contain p-1"
+                          className="w-full h-full object-contain"
                           loading="lazy"
                           onError={(e) => {
                             e.target.onerror = null;
@@ -306,37 +302,39 @@ export default function SalesManagement() {
                           }}
                         />
                       ) : (
-                        <span className="text-[10px] text-[#71717A]">No Photo</span>
+                        <span className="text-[10px] text-[#6B6560]">No Photo</span>
                       )}
                     </div>
 
-                    <p className="font-semibold text-xs text-[#222222] line-clamp-1">{p.name}</p>
-                    <p className="text-[10px] text-[#71717A] mt-0.5">{p.sku}</p>
+                    <p className="font-semibold text-xs text-[#242424] line-clamp-1">{p.name}</p>
+                    <p className="text-[10px] text-[#6B6560] mt-0.5">{p.sku}</p>
                   </div>
 
-                  <div className="mt-3 pt-2 border-t border-[#E5E5E5]">
+                  <div className="mt-3 pt-2.5 border-t border-[#E8E2DA]">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-bold text-xs text-[#222222]">{formatINR(p.price)}</span>
+                      <span className="font-bold text-xs sm:text-sm text-[#242424] tabular-numbers font-heading">
+                        {formatINR(p.price)}
+                      </span>
                       <span
-                        className={`text-[10px] font-medium px-1.5 py-0.2 rounded ${
+                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                           p.stock <= (p.low_stock_threshold || 5)
-                            ? 'bg-[#FEF9EE] text-[#B7791F]'
-                            : 'bg-[#EEF7F2] text-[#39805A]'
+                            ? 'bg-amber-50 text-[#B77932] border border-amber-200'
+                            : 'bg-emerald-50 text-[#32734D] border border-emerald-200'
                         }`}
                       >
-                        {p.stock} in stock
+                        {p.stock} left
                       </span>
                     </div>
 
                     <button
                       onClick={() => addToBill(p)}
                       disabled={!inStock}
-                      className={`w-full py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition ${
+                      className={`w-full py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition ${
                         inStock
                           ? inBill
-                            ? 'bg-[#FAF5F2] text-[#C65D3B] border border-[#F0D5CB] hover:bg-[#C65D3B] hover:text-white'
-                            : 'bg-[#C65D3B] text-white hover:bg-[#b04f30] shadow-xs'
-                          : 'bg-[#E5E5E5] text-[#71717A] cursor-not-allowed'
+                            ? 'bg-[#F8F4EE] text-[#783F45] border border-[#E8E2DA] hover:bg-[#783F45] hover:text-white'
+                            : 'bg-[#783F45] text-white hover:bg-[#603137] shadow-sm'
+                          : 'bg-[#E8E2DA] text-[#6B6560] cursor-not-allowed'
                       }`}
                     >
                       <Plus className="w-3.5 h-3.5" />
@@ -350,18 +348,18 @@ export default function SalesManagement() {
         </div>
 
         {/* RIGHT COLUMN: Current Bill Register (5 Cols) */}
-        <div className="lg:col-span-5 surface-card p-4 space-y-4 sticky top-[75px]">
-          <div className="flex items-center justify-between border-b border-[#E5E5E5] pb-3">
+        <div className="lg:col-span-5 bg-white border border-[#E8E2DA] rounded-2xl p-5 space-y-4 sticky top-[80px] shadow-sm">
+          <div className="flex items-center justify-between border-b border-[#E8E2DA] pb-3">
             <div>
-              <h2 className="text-sm font-bold text-[#222222]">Current Bill</h2>
-              <p className="text-[11px] text-[#71717A]">
-                {billItems.length} item{billItems.length !== 1 ? 's' : ''} selected
+              <h2 className="font-heading text-sm font-bold text-[#242424]">Current Bill</h2>
+              <p className="text-[11px] text-[#6B6560]">
+                {billItems.length} item{billItems.length !== 1 ? 's' : ''} in transaction
               </p>
             </div>
             {billItems.length > 0 && (
               <button
                 onClick={clearBill}
-                className="text-xs text-[#C24141] hover:underline font-medium"
+                className="text-xs text-[#B84040] hover:underline font-semibold"
               >
                 Clear all
               </button>
@@ -369,18 +367,18 @@ export default function SalesManagement() {
           </div>
 
           {/* Selected Items List */}
-          <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
+          <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
             {billItems.length > 0 ? (
               billItems.map((item) => (
                 <div
                   key={item.product.id}
-                  className="p-2.5 rounded-lg bg-[#F7F7F5] border border-[#E5E5E5] flex items-center justify-between gap-2"
+                  className="p-3 rounded-xl bg-[#F8F4EE] border border-[#E8E2DA] flex items-center justify-between gap-2"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-semibold text-[#222222] truncate">
+                    <p className="text-xs font-semibold text-[#242424] truncate">
                       {item.product.name}
                     </p>
-                    <p className="text-[10px] text-[#71717A]">
+                    <p className="text-[11px] text-[#6B6560] tabular-numbers">
                       {formatINR(item.product.price)} each • Cost: {formatINR(item.product.cost_price || 0)}
                     </p>
                   </div>
@@ -388,23 +386,23 @@ export default function SalesManagement() {
                   <div className="flex items-center gap-1.5 shrink-0">
                     <button
                       onClick={() => updateQuantity(item.product.id, -1)}
-                      className="w-6 h-6 rounded bg-white border border-[#E5E5E5] flex items-center justify-center text-[#222222] hover:bg-[#EFEFEF]"
+                      className="w-6 h-6 rounded-lg bg-white border border-[#E8E2DA] flex items-center justify-center text-[#242424] hover:bg-[#E8E2DA]"
                     >
                       <Minus className="w-3 h-3" />
                     </button>
-                    <span className="text-xs font-bold w-5 text-center text-[#222222]">
+                    <span className="text-xs font-bold w-6 text-center text-[#242424] tabular-numbers">
                       {item.quantity}
                     </span>
                     <button
                       onClick={() => updateQuantity(item.product.id, 1)}
-                      className="w-6 h-6 rounded bg-white border border-[#E5E5E5] flex items-center justify-center text-[#222222] hover:bg-[#EFEFEF]"
+                      className="w-6 h-6 rounded-lg bg-white border border-[#E8E2DA] flex items-center justify-center text-[#242424] hover:bg-[#E8E2DA]"
                     >
                       <Plus className="w-3 h-3" />
                     </button>
 
                     <button
                       onClick={() => removeFromBill(item.product.id)}
-                      className="w-6 h-6 rounded text-[#71717A] hover:text-[#C24141] flex items-center justify-center ml-1"
+                      className="w-6 h-6 rounded-lg text-[#6B6560] hover:text-[#B84040] flex items-center justify-center ml-1"
                       title="Remove from bill"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -413,19 +411,19 @@ export default function SalesManagement() {
                 </div>
               ))
             ) : (
-              <div className="py-8 text-center text-xs text-[#71717A] bg-[#F7F7F5] rounded-lg border border-dashed border-[#E5E5E5]">
-                <Receipt className="w-6 h-6 text-[#71717A] mx-auto mb-1.5 opacity-50" />
-                <p className="font-medium text-[#222222]">Bill is empty</p>
+              <div className="py-8 text-center text-xs text-[#6B6560] bg-[#F8F4EE] rounded-xl border border-dashed border-[#E8E2DA]">
+                <Receipt className="w-6 h-6 text-[#6B6560] mx-auto mb-1.5 opacity-50" />
+                <p className="font-semibold text-[#242424]">Bill is empty</p>
                 <p className="text-[11px] mt-0.5">Click "Add to bill" on any product to start.</p>
               </div>
             )}
           </div>
 
           {/* Customer Details Form */}
-          <div className="space-y-2 pt-2 border-t border-[#E5E5E5]">
-            <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-3 pt-3 border-t border-[#E8E2DA]">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[10px] font-semibold text-[#71717A] uppercase mb-1">
+                <label className="block text-[10px] font-semibold text-[#6B6560] uppercase mb-1">
                   Customer Name
                 </label>
                 <input
@@ -433,11 +431,11 @@ export default function SalesManagement() {
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   placeholder="Walk-in Customer"
-                  className="w-full px-2.5 py-1.5 bg-[#F7F7F5] border border-[#E5E5E5] rounded-md text-xs text-[#222222]"
+                  className="w-full px-3 py-2 bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl text-xs text-[#242424]"
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-semibold text-[#71717A] uppercase mb-1">
+                <label className="block text-[10px] font-semibold text-[#6B6560] uppercase mb-1">
                   Phone (Optional)
                 </label>
                 <input
@@ -445,17 +443,17 @@ export default function SalesManagement() {
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
                   placeholder="9876543210"
-                  className="w-full px-2.5 py-1.5 bg-[#F7F7F5] border border-[#E5E5E5] rounded-md text-xs text-[#222222]"
+                  className="w-full px-3 py-2 bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl text-xs text-[#242424]"
                 />
               </div>
             </div>
 
             {/* Payment Method Selector */}
             <div>
-              <label className="block text-[10px] font-semibold text-[#71717A] uppercase mb-1">
+              <label className="block text-[10px] font-semibold text-[#6B6560] uppercase mb-1">
                 Payment Method
               </label>
-              <div className="grid grid-cols-3 gap-1.5">
+              <div className="grid grid-cols-3 gap-2">
                 {[
                   { id: 'CASH', label: 'Cash', icon: Banknote },
                   { id: 'UPI', label: 'Recorded UPI', icon: Smartphone },
@@ -467,13 +465,13 @@ export default function SalesManagement() {
                       key={m.id}
                       type="button"
                       onClick={() => setPaymentMethod(m.id)}
-                      className={`py-1.5 px-2 rounded-md text-[11px] font-medium flex items-center justify-center gap-1 border transition ${
+                      className={`py-2 px-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 border transition ${
                         paymentMethod === m.id
-                          ? 'bg-[#FAF5F2] border-[#C65D3B] text-[#C65D3B] font-semibold'
-                          : 'bg-[#F7F7F5] border-[#E5E5E5] text-[#71717A] hover:text-[#222222]'
+                          ? 'bg-[#F8F4EE] border-[#783F45] text-[#783F45]'
+                          : 'bg-[#F8F4EE] border-[#E8E2DA] text-[#6B6560] hover:text-[#242424]'
                       }`}
                     >
-                      <Icon className="w-3 h-3" />
+                      <Icon className="w-3.5 h-3.5" />
                       <span>{m.label}</span>
                     </button>
                   );
@@ -483,9 +481,9 @@ export default function SalesManagement() {
 
             {/* Discount Percentage Control */}
             <div>
-              <div className="flex items-center justify-between text-[11px] mb-1">
-                <span className="font-semibold text-[#71717A] uppercase text-[10px]">Discount</span>
-                <span className="text-[#C65D3B] font-medium">Policy Cap: 10%</span>
+              <div className="flex items-center justify-between text-xs mb-1">
+                <span className="font-semibold text-[#6B6560] uppercase text-[10px]">Discount</span>
+                <span className="text-[#783F45] font-semibold">Policy Limit: 10%</span>
               </div>
               <div className="flex items-center gap-2">
                 {[0, 5, 10].map((pct) => (
@@ -493,10 +491,10 @@ export default function SalesManagement() {
                     key={pct}
                     type="button"
                     onClick={() => setDiscountPercent(pct)}
-                    className={`flex-1 py-1 rounded text-xs font-semibold border transition ${
+                    className={`flex-1 py-1.5 rounded-xl text-xs font-semibold border transition ${
                       Number(discountPercent) === pct
-                        ? 'bg-[#C65D3B] text-white border-[#C65D3B]'
-                        : 'bg-[#F7F7F5] border-[#E5E5E5] text-[#71717A] hover:bg-[#EFEFEF]'
+                        ? 'bg-[#783F45] text-white border-[#783F45] shadow-sm'
+                        : 'bg-[#F8F4EE] border-[#E8E2DA] text-[#6B6560] hover:bg-[#E8E2DA]'
                     }`}
                   >
                     {pct === 0 ? 'None' : `${pct}% off`}
@@ -507,26 +505,26 @@ export default function SalesManagement() {
           </div>
 
           {/* Financial Breakdown */}
-          <div className="p-3 rounded-lg bg-[#F7F7F5] border border-[#E5E5E5] space-y-1.5 text-xs">
-            <div className="flex justify-between text-[#71717A]">
+          <div className="p-3.5 rounded-xl bg-[#F8F4EE] border border-[#E8E2DA] space-y-2 text-xs">
+            <div className="flex justify-between text-[#6B6560]">
               <span>Subtotal</span>
-              <span>{formatINR(subtotal)}</span>
+              <span className="text-[#242424] font-medium tabular-numbers">{formatINR(subtotal)}</span>
             </div>
             {discountAmount > 0 && (
-              <div className="flex justify-between text-[#C65D3B] font-medium">
+              <div className="flex justify-between text-[#783F45] font-semibold">
                 <span>Discount ({discountPercent}%)</span>
-                <span>-{formatINR(discountAmount)}</span>
+                <span className="tabular-numbers">-{formatINR(discountAmount)}</span>
               </div>
             )}
-            <div className="flex justify-between text-[#222222] font-bold text-sm pt-1 border-t border-[#E5E5E5]">
+            <div className="flex justify-between text-[#242424] font-bold text-sm pt-2 border-t border-[#E8E2DA]">
               <span>Final Payable</span>
-              <span className="text-[#C65D3B]">{formatINR(finalPayable)}</span>
+              <span className="text-[#783F45] font-heading tabular-numbers">{formatINR(finalPayable)}</span>
             </div>
 
-            {/* Real Unit Economics Snapshot */}
-            <div className="pt-2 border-t border-[#E5E5E5] flex items-center justify-between text-[11px] text-[#71717A]">
+            {/* Unit Economics Snapshot */}
+            <div className="pt-2 border-t border-[#E8E2DA] flex items-center justify-between text-[11px] text-[#6B6560]">
               <span>Gross Profit (COGS: {formatINR(totalCogs)})</span>
-              <span className="font-semibold text-[#39805A]">
+              <span className="font-bold text-[#32734D] tabular-numbers">
                 {formatINR(grossProfit)} ({marginPct}%)
               </span>
             </div>
@@ -536,7 +534,7 @@ export default function SalesManagement() {
           <button
             onClick={handleCompleteSale}
             disabled={submitting || billItems.length === 0}
-            className="w-full py-2.5 rounded-lg bg-[#C65D3B] hover:bg-[#b04f30] text-white text-xs font-bold transition shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 rounded-xl bg-[#783F45] hover:bg-[#603137] text-white text-xs font-bold transition shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {submitting ? (
               <RefreshCw className="w-4 h-4 animate-spin" />
@@ -548,42 +546,42 @@ export default function SalesManagement() {
         </div>
       </div>
 
-      {/* Printable Receipt Modal (TASK 6 Requirement #9) */}
+      {/* Printable Receipt Modal */}
       {receiptModalOpen && currentReceipt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-xl shadow-modal max-w-sm w-full p-5 space-y-4 border border-[#E5E5E5] animate-in fade-in">
-            <div className="flex items-center justify-between pb-3 border-b border-[#E5E5E5]">
-              <div className="flex items-center gap-1.5">
-                <Receipt className="w-4 h-4 text-[#C65D3B]" />
-                <h3 className="text-sm font-bold text-[#222222]">Sale Receipt</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4 border border-[#E8E2DA]">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E8E2DA]">
+              <div className="flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-[#783F45]" />
+                <h3 className="font-heading text-sm font-bold text-[#242424]">Sale Receipt</h3>
               </div>
               <button
                 onClick={() => setReceiptModalOpen(false)}
-                className="p-1 rounded-md text-[#71717A] hover:bg-[#F7F7F5]"
+                className="p-1.5 rounded-lg text-[#6B6560] hover:bg-[#F8F4EE]"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Thermal Style Receipt Content */}
-            <div id="printable-receipt" className="font-mono text-xs space-y-3 bg-[#F7F7F5] p-3.5 rounded-lg border border-[#E5E5E5]">
-              <div className="text-center pb-2 border-b border-dashed border-[#D4D4D4]">
-                <p className="font-bold text-sm text-[#222222]">{currentReceipt.merchant_name || 'Smart Accessories Store'}</p>
-                <p className="text-[10px] text-[#71717A]">Bangalore, Karnataka</p>
-                <p className="text-[10px] text-[#71717A] mt-0.5">Receipt: {currentReceipt.receipt_number}</p>
-                <p className="text-[10px] text-[#71717A]">{currentReceipt.created_at}</p>
+            <div id="printable-receipt" className="font-mono text-xs space-y-3 bg-[#F8F4EE] p-4 rounded-xl border border-[#E8E2DA]">
+              <div className="text-center pb-2 border-b border-dashed border-[#D8C3A5]">
+                <p className="font-bold text-sm text-[#242424]">{currentReceipt.merchant_name || 'Smart Accessories Store'}</p>
+                <p className="text-[10px] text-[#6B6560]">Bangalore, Karnataka</p>
+                <p className="text-[10px] text-[#6B6560] mt-0.5">Receipt: {currentReceipt.receipt_number}</p>
+                <p className="text-[10px] text-[#6B6560]">{currentReceipt.created_at}</p>
               </div>
 
-              <div className="text-[11px]">
-                <p><span className="text-[#71717A]">Customer:</span> {currentReceipt.customer_name}</p>
-                <p><span className="text-[#71717A]">Payment:</span> {currentReceipt.payment_method} ({currentReceipt.payment_status})</p>
+              <div className="text-[11px] space-y-0.5">
+                <p><span className="text-[#6B6560]">Customer:</span> {currentReceipt.customer_name}</p>
+                <p><span className="text-[#6B6560]">Payment:</span> {currentReceipt.payment_method} ({currentReceipt.payment_status})</p>
               </div>
 
-              <div className="border-t border-b border-dashed border-[#D4D4D4] py-2 space-y-1">
+              <div className="border-t border-b border-dashed border-[#D8C3A5] py-2 space-y-1">
                 {currentReceipt.items?.map((it, i) => (
                   <div key={i} className="flex justify-between text-[11px]">
                     <span className="truncate max-w-[170px]">{it.quantity}x {it.product_name}</span>
-                    <span>{formatINR(it.total_price)}</span>
+                    <span className="tabular-numbers">{formatINR(it.total_price)}</span>
                   </div>
                 ))}
               </div>
@@ -591,37 +589,37 @@ export default function SalesManagement() {
               <div className="space-y-1 text-xs">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>{formatINR(currentReceipt.subtotal)}</span>
+                  <span className="tabular-numbers">{formatINR(currentReceipt.subtotal)}</span>
                 </div>
                 {currentReceipt.discount_amount > 0 && (
-                  <div className="flex justify-between text-[#C65D3B]">
+                  <div className="flex justify-between text-[#783F45]">
                     <span>Discount</span>
-                    <span>-{formatINR(currentReceipt.discount_amount)}</span>
+                    <span className="tabular-numbers">-{formatINR(currentReceipt.discount_amount)}</span>
                   </div>
                 )}
-                <div className="flex justify-between font-bold text-sm pt-1 border-t border-[#D4D4D4]">
+                <div className="flex justify-between font-bold text-sm pt-1 border-t border-[#D8C3A5]">
                   <span>Total Paid</span>
-                  <span>{formatINR(currentReceipt.final_amount)}</span>
+                  <span className="tabular-numbers font-heading text-[#783F45]">{formatINR(currentReceipt.final_amount)}</span>
                 </div>
               </div>
 
-              <div className="text-center pt-2 border-t border-dashed border-[#D4D4D4] text-[10px] text-[#71717A]">
+              <div className="text-center pt-2 border-t border-dashed border-[#D8C3A5] text-[10px] text-[#6B6560]">
                 <p>Thank you for shopping local!</p>
-                <p className="mt-0.5 font-semibold text-[#39805A]">✓ Order Settled & Logged to Ledger</p>
+                <p className="mt-0.5 font-bold text-[#32734D]">✓ Order Recorded to Ledger</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <button
                 onClick={handlePrintReceipt}
-                className="flex-1 py-2 rounded-lg bg-[#222222] hover:bg-black text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs"
+                className="flex-1 py-2.5 rounded-xl bg-[#783F45] hover:bg-[#603137] text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm"
               >
                 <Printer className="w-3.5 h-3.5" />
                 <span>Print Receipt</span>
               </button>
               <button
                 onClick={() => setReceiptModalOpen(false)}
-                className="px-4 py-2 rounded-lg bg-[#F7F7F5] hover:bg-[#EFEFEF] border border-[#E5E5E5] text-[#222222] text-xs font-semibold"
+                className="px-5 py-2.5 rounded-xl bg-white hover:bg-[#F8F4EE] border border-[#E8E2DA] text-[#242424] text-xs font-semibold"
               >
                 Done
               </button>

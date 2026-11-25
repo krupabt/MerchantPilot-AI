@@ -8,8 +8,11 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 // Public & Auth Pages
 import LandingPage from './pages/LandingPage';
-import SignIn from './pages/SignIn';
-import SignUp from './pages/SignUp';
+import CustomerSignIn from './pages/CustomerSignIn';
+import CustomerSignUp from './pages/CustomerSignUp';
+import MerchantSignIn from './pages/MerchantSignIn';
+import MerchantSignUp from './pages/MerchantSignUp';
+import InfoPage from './pages/InfoPage';
 
 // Customer Storefront Pages
 import Shop from './pages/Shop';
@@ -75,13 +78,23 @@ export default function App() {
       <CartProvider>
         <Router>
           <Routes>
-            {/* 1. Public Landing & Auth Routes */}
+            {/* 1. Public Landing, Info & Auth Routes */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/landing" element={<Navigate to="/" replace />} />
-            <Route path="/about" element={<Navigate to="/" replace />} />
-            <Route path="/login" element={<SignIn />} />
-            <Route path="/signin" element={<Navigate to="/login" replace />} />
-            <Route path="/signup" element={<SignUp />} />
+            <Route path="/about" element={<InfoPage />} />
+            <Route path="/contact" element={<InfoPage />} />
+            <Route path="/privacy" element={<InfoPage />} />
+            <Route path="/terms" element={<InfoPage />} />
+
+            {/* Customer Authentication */}
+            <Route path="/signin" element={<CustomerSignIn />} />
+            <Route path="/login" element={<Navigate to="/signin" replace />} />
+            <Route path="/signup" element={<CustomerSignUp />} />
+
+            {/* Merchant Dedicated Authentication */}
+            <Route path="/merchant/signin" element={<MerchantSignIn />} />
+            <Route path="/merchant/login" element={<Navigate to="/merchant/signin" replace />} />
+            <Route path="/merchant/signup" element={<MerchantSignUp />} />
 
             {/* 2. Customer Storefront Routes (wrapped in CustomerLayout) */}
             <Route path="/shop" element={<CustomerLayout />}>
