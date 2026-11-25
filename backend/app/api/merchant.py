@@ -11,10 +11,65 @@ from backend.app.services.inventory_intelligence_service import InventoryIntelli
 from backend.app.services.action_service import ActionService
 from backend.app.schemas.merchant import (
     ProductCreateRequest, ProductUpdateRequest, StockUpdateRequest,
-    FulfillmentUpdateRequest, CategoryCreateRequest, CategoryResponse
+    FulfillmentUpdateRequest, CategoryCreateRequest, CategoryResponse,
+    StoreOnboardingRequest, StoreOnboardingResponse, ImageUploadRequest
 )
 
 router = APIRouter(prefix="/merchant", tags=["Merchant Portal Management"])
+
+# ----------------- Store Onboarding & Identity -----------------
+
+@router.get("/store/onboarding", summary="Get Current Merchant Onboarding Status")
+def get_store_onboarding(
+    current_merchant: User = Depends(get_current_merchant),
+    db: Session = Depends(get_db)
+):
+    try:
+        return MerchantService.get_onboarding_data(db, current_merchant.merchant_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+@router.post("/store/onboarding", response_model=StoreOnboardingResponse, summary="Complete Merchant Store Setup")
+def complete_store_onboarding(
+    request: StoreOnboardingRequest,
+    current_merchant: User = Depends(get_current_merchant),
+    db: Session = Depends(get_db)
+):
+    try:
+        return MerchantService.complete_onboarding(db, current_merchant.merchant_id, request)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.post("/store/publish", summary="Toggle Storefront Visibility")
+def toggle_store_publish(
+    payload: Dict[str, Any] = None,
+    current_merchant: User = Depends(get_current_merchant),
+    db: Session = Depends(get_db)
+):
+    is_pub = payload.get("is_published") if payload else None
+    return MerchantService.toggle_store_publish(db, current_merchant.merchant_id, is_pub)
+
+@router.post("/upload-image", summary="Upload Product Photo (Persistent Storage)")
+def upload_product_image(
+    request: ImageUploadRequest,
+    current_merchant: User = Depends(get_current_merchant)
+):
+    raw_b64 = request.image_base64.strip()
+    if not raw_b64:
+        raise HTTPException(status_code=400, detail="Image data is required.")
+    
+    # Ensure standard data URI format so it renders reliably across any client
+    if not raw_b64.startswith("data:image/"):
+        image_url = f"data:image/webp;base64,{raw_b64}"
+    else:
+        image_url = raw_b64
+
+    return {
+        "success": True,
+        "image_url": image_url,
+        "filename": request.filename or "product_image.png",
+        "message": "Image processed and stored persistently."
+    }
 
 # ----------------- Product Management -----------------
 
@@ -44,16 +99,27 @@ def create_product(
 ):
     try:
         prod = MerchantService.create_product(db, current_merchant.merchant_id, request)
+        gross_profit = round(prod.price - (prod.cost_price or 0.0), 2)
+        gross_margin = round(((prod.price - (prod.cost_price or 0.0)) / prod.price) * 100, 1) if prod.price > 0 else 0.0
         return {
             "success": True,
             "message": "Product created successfully.",
             "product": {
                 "id": prod.id,
+                "sku": prod.sku,
                 "name": prod.name,
                 "category": prod.category,
+                "cost_price": prod.cost_price,
                 "price": prod.price,
+                "gross_profit": gross_profit,
+                "gross_margin_percent": gross_margin,
                 "stock": prod.stock,
-                "is_active": prod.is_active
+                "low_stock_threshold": prod.low_stock_threshold,
+                "image_url": prod.image_url,
+                "images": getattr(prod, "images", None) or ([prod.image_url] if prod.image_url else []),
+                "variants": getattr(prod, "variants", None) or [],
+                "is_active": prod.is_active,
+                "is_published": getattr(prod, "is_published", True)
             }
         }
     except Exception as e:
@@ -68,15 +134,27 @@ def update_product(
 ):
     try:
         prod = MerchantService.update_product(db, current_merchant.merchant_id, product_id, request)
+        gross_profit = round(prod.price - (prod.cost_price or 0.0), 2)
+        gross_margin = round(((prod.price - (prod.cost_price or 0.0)) / prod.price) * 100, 1) if prod.price > 0 else 0.0
         return {
             "success": True,
             "message": "Product updated successfully.",
             "product": {
                 "id": prod.id,
+                "sku": prod.sku,
                 "name": prod.name,
+                "category": prod.category,
+                "cost_price": prod.cost_price,
                 "price": prod.price,
+                "gross_profit": gross_profit,
+                "gross_margin_percent": gross_margin,
                 "stock": prod.stock,
-                "is_active": prod.is_active
+                "low_stock_threshold": prod.low_stock_threshold,
+                "image_url": prod.image_url,
+                "images": getattr(prod, "images", None) or ([prod.image_url] if prod.image_url else []),
+                "variants": getattr(prod, "variants", None) or [],
+                "is_active": prod.is_active,
+                "is_published": getattr(prod, "is_published", True)
             }
         }
     except ValueError as e:

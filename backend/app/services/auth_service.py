@@ -5,6 +5,7 @@ import hashlib
 import uuid
 import base64
 import json
+import re
 from typing import Tuple, Optional, Dict, Any
 from sqlalchemy.orm import Session
 from backend.app.config import settings
@@ -76,17 +77,27 @@ class AuthService:
     @staticmethod
     def _build_user_response(db: Session, user: User) -> UserResponse:
         store_name = None
+        store_slug = None
+        store_description = None
+        store_logo = None
         biz_category = None
         phone = None
         address = None
+        onboarding_completed = False
+        is_published = True
         is_demo = False
         if user.merchant_id:
             m = db.query(Merchant).filter(Merchant.id == user.merchant_id).first()
             if m:
                 store_name = m.name
+                store_slug = getattr(m, "slug", None) or f"store-{m.id}"
+                store_description = getattr(m, "description", None)
+                store_logo = getattr(m, "logo_url", None)
                 biz_category = getattr(m, "business_category", "General Retail")
                 phone = getattr(m, "phone", None)
                 address = getattr(m, "address", None)
+                onboarding_completed = getattr(m, "onboarding_completed", False)
+                is_published = getattr(m, "is_published", True)
                 is_demo = getattr(m, "is_demo", False)
 
         return UserResponse(
@@ -96,9 +107,14 @@ class AuthService:
             role=user.role,
             merchant_id=user.merchant_id,
             store_name=store_name,
+            store_slug=store_slug,
+            store_description=store_description,
+            store_logo=store_logo,
             business_category=biz_category,
             business_phone=phone,
             business_address=address,
+            onboarding_completed=onboarding_completed,
+            is_published=is_published,
             is_demo=is_demo,
             created_at=user.created_at
         )
@@ -120,6 +136,17 @@ class AuthService:
             merchant_id = f"m_{uuid.uuid4().hex[:8]}"
             store_title = request.store_name.strip() if request.store_name else f"{request.name.strip()}'s Store"
             biz_category = request.business_category.strip() if getattr(request, "business_category", None) else "General Retail"
+            
+            # Generate clean, unique URL slug
+            slug_base = request.store_slug.strip() if getattr(request, "store_slug", None) else store_title
+            clean_slug = re.sub(r'[^a-z0-9]+', '-', slug_base.lower()).strip('-')
+            if not clean_slug:
+                clean_slug = f"store-{uuid.uuid4().hex[:6]}"
+            
+            existing_slug = db.query(Merchant).filter(Merchant.slug == clean_slug).first()
+            if existing_slug:
+                clean_slug = f"{clean_slug}-{uuid.uuid4().hex[:4]}"
+
             new_merchant = Merchant(
                 id=merchant_id,
                 name=store_title,
@@ -128,6 +155,10 @@ class AuthService:
                 business_category=biz_category,
                 phone=request.business_phone.strip() if getattr(request, "business_phone", None) else None,
                 address=request.business_address.strip() if getattr(request, "business_address", None) else None,
+                slug=clean_slug,
+                description=getattr(request, "store_description", None) or f"{store_title} — Quality {biz_category}",
+                onboarding_completed=False,
+                is_published=True,
                 is_demo=False
             )
             db.add(new_merchant)

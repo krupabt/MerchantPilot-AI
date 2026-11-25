@@ -110,4 +110,16 @@ export const generateMerchantActions = () => api.post('/merchant/actions/generat
 export const approveMerchantAction = (actionId) => api.post(`/merchant/actions/${actionId}/approve`);
 export const rejectMerchantAction = (actionId) => api.post(`/merchant/actions/${actionId}/reject`);
 
+// Dynamic Multi-Merchant Storefront APIs
+export const getPublicStores = () => api.get('/stores');
+export const getStorefrontProfile = (slug) => api.get(`/store/${slug}`);
+export const getStorefrontProducts = (slug, params) => api.get(`/store/${slug}/products`, { params });
+export const getStorefrontCategories = (slug) => api.get(`/store/${slug}/categories`);
+
+// Merchant Onboarding & Store Configuration APIs
+export const getStoreOnboarding = () => api.get('/merchant/store/onboarding');
+export const completeStoreOnboarding = (data) => api.post('/merchant/store/onboarding', data);
+export const toggleStorePublish = (data) => api.post('/merchant/store/publish', data);
+export const uploadMerchantImage = (data) => api.post('/merchant/upload-image', data);
+
 export default api;

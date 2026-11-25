@@ -21,6 +21,7 @@ import Checkout from './pages/Checkout';
 import CustomerOrders from './pages/CustomerOrders';
 import CustomerProfile from './pages/CustomerProfile';
 import AIShoppingAssistant from './pages/AIShoppingAssistant';
+import DynamicStorefront from './pages/DynamicStorefront';
 
 // Merchant Workspace Pages
 import Dashboard from './pages/Dashboard';
@@ -37,6 +38,7 @@ import Policies from './pages/Policies';
 import AuditTrail from './pages/AuditTrail';
 import DataImport from './pages/DataImport';
 import Settings from './pages/Settings';
+import MerchantOnboarding from './pages/MerchantOnboarding';
 
 // Context Providers
 import { AuthProvider } from './context/AuthContext';
@@ -95,6 +97,17 @@ export default function App() {
             <Route path="/merchant/signin" element={<MerchantSignIn />} />
             <Route path="/merchant/login" element={<Navigate to="/merchant/signin" replace />} />
             <Route path="/merchant/signup" element={<MerchantSignUp />} />
+            <Route
+              path="/merchant/onboarding"
+              element={
+                <ProtectedRoute allowedRoles={['merchant']}>
+                  <MerchantOnboarding />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Dynamic Multi-Merchant Customer Storefront */}
+            <Route path="/store/:storeSlug" element={<DynamicStorefront />} />
 
             {/* 2. Customer Storefront Routes (wrapped in CustomerLayout) */}
             <Route path="/shop" element={<CustomerLayout />}>
@@ -148,6 +161,7 @@ export default function App() {
             <Route path="/dashboard" element={<Navigate to="/merchant/overview" replace />} />
             <Route path="/store" element={<Navigate to="/shop" replace />} />
             <Route path="/cart" element={<Navigate to="/shop/cart" replace />} />
+            <Route path="/bag" element={<Navigate to="/shop/cart" replace />} />
             <Route path="/checkout" element={<Navigate to="/shop/checkout" replace />} />
             <Route path="/ai-assistant" element={<Navigate to="/shop/assistant" replace />} />
             <Route path="/ai-buyer" element={<Navigate to="/shop/assistant" replace />} />

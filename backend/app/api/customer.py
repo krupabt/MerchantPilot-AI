@@ -13,6 +13,7 @@ router = APIRouter(prefix="/customer", tags=["Customer Storefront & Cart"])
 class CartItemAddRequest(BaseModel):
     product_id: str = Field(..., description="Target product ID to add to cart")
     quantity: int = Field(default=1, ge=1, description="Quantity to add")
+    force_replace: bool = Field(default=False, description="Replace cart items if from different merchant")
 
 class CartItemUpdateRequest(BaseModel):
     quantity: int = Field(..., ge=0, description="New quantity (0 to remove)")
@@ -37,7 +38,8 @@ def add_to_cart(
             db=db,
             user_id=current_user.id,
             product_id=request.product_id,
-            quantity=request.quantity
+            quantity=request.quantity,
+            force_replace=request.force_replace
         )
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

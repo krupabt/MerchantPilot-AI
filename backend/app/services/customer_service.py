@@ -34,10 +34,22 @@ class CustomerService:
         subtotal = 0.0
         total_items_count = 0
 
+        cart_merchant_id = None
+        cart_merchant_name = None
+        cart_merchant_slug = None
+
         for item in cart.items:
             product = db.query(Product).filter(Product.id == item.product_id).first()
             if not product or not product.is_active:
                 continue
+
+            if not cart_merchant_id and product.merchant_id:
+                cart_merchant_id = product.merchant_id
+                from backend.app.models.merchant import Merchant
+                m = db.query(Merchant).filter(Merchant.id == product.merchant_id).first()
+                if m:
+                    cart_merchant_name = m.name
+                    cart_merchant_slug = getattr(m, "slug", None) or f"store-{m.id}"
 
             item_total = item.quantity * item.unit_price
             subtotal += item_total
@@ -46,6 +58,7 @@ class CustomerService:
             items_data.append({
                 "item_id": item.id,
                 "product_id": product.id,
+                "merchant_id": product.merchant_id,
                 "name": product.name,
                 "category": product.category,
                 "unit_price": item.unit_price,
@@ -54,12 +67,16 @@ class CustomerService:
                 "available_stock": product.stock,
                 "is_low_stock": product.stock <= (product.low_stock_threshold or 5),
                 "is_out_of_stock": product.stock <= 0,
+                "image_url": product.image_url,
                 "specs": product.specs or {}
             })
 
         return {
             "cart_id": cart.id,
             "customer_id": user_id,
+            "merchant_id": cart_merchant_id,
+            "merchant_name": cart_merchant_name,
+            "merchant_slug": cart_merchant_slug,
             "items": items_data,
             "total_items": total_items_count,
             "subtotal": round(subtotal, 2),
@@ -68,8 +85,8 @@ class CustomerService:
         }
 
     @staticmethod
-    def add_to_cart(db: Session, user_id: str, product_id: str, quantity: int = 1) -> Dict[str, Any]:
-        """Adds product to cart, validating live stock availability."""
+    def add_to_cart(db: Session, user_id: str, product_id: str, quantity: int = 1, force_replace: bool = False) -> Dict[str, Any]:
+        """Adds product to cart, validating live stock availability and single-merchant cart boundary."""
         if quantity <= 0:
             raise ValueError("Quantity must be greater than zero.")
 
@@ -81,6 +98,28 @@ class CustomerService:
             raise ValueError(f"Product '{product.name}' is currently out of stock.")
 
         cart = CustomerService.get_or_create_cart(db, user_id)
+
+        # Multi-merchant check: only 1 merchant per checkout
+        if cart.items:
+            first_item = cart.items[0]
+            existing_product = db.query(Product).filter(Product.id == first_item.product_id).first()
+            if existing_product and existing_product.merchant_id != product.merchant_id:
+                if force_replace:
+                    # Clear previous merchant's items
+                    for it in list(cart.items):
+                        db.delete(it)
+                    db.flush()
+                else:
+                    from backend.app.models.merchant import Merchant
+                    cur_merch = db.query(Merchant).filter(Merchant.id == existing_product.merchant_id).first()
+                    new_merch = db.query(Merchant).filter(Merchant.id == product.merchant_id).first()
+                    cur_name = cur_merch.name if cur_merch else "another store"
+                    new_name = new_merch.name if new_merch else "this store"
+                    raise ValueError(
+                        f"Your bag currently contains items from '{cur_name}'. "
+                        f"Would you like to clear your bag and start a new order from '{new_name}', "
+                        f"or continue shopping at '{cur_name}'?"
+                    )
 
         # Check existing item
         cart_item = db.query(CartItem).filter(

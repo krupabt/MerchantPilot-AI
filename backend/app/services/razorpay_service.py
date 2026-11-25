@@ -56,6 +56,7 @@ class RazorpayService:
         bundle_name: Optional[str] = None,
         is_bundle: bool = False,
         approval_token: Optional[str] = None,
+        shipping_address: Optional[str] = None,
         merchant_id: str = "m_1001"
     ) -> Dict[str, Any]:
         """
@@ -120,6 +121,17 @@ class RazorpayService:
         if not rzp_order_id:
             rzp_order_id = f"order_demo_{uuid.uuid4().hex[:14]}"
 
+        from backend.app.models.merchant import Merchant
+        merch_rec = db.query(Merchant).filter(Merchant.id == merchant_id).first()
+        store_display_name = merch_rec.name if merch_rec else "MerchantPilot AI Store"
+
+        formatted_address = shipping_address
+        if isinstance(shipping_address, dict):
+            import json
+            formatted_address = json.dumps(shipping_address)
+        elif not isinstance(shipping_address, str) and shipping_address is not None:
+            formatted_address = str(shipping_address)
+
         # Create DB Order Record with customer linkage
         order = Order(
             id=db_order_id,
@@ -128,6 +140,7 @@ class RazorpayService:
             customer_name=customer_name,
             customer_email=customer_email,
             customer_phone=customer_phone,
+            shipping_address=formatted_address,
             session_id=session_id,
             subtotal_amount=round(subtotal, 2),
             discount_amount=round(discount_amount, 2),
@@ -171,8 +184,8 @@ class RazorpayService:
         AuditService.log_event(
             db=db, actor="RAZORPAY_SYSTEM", session_id=session_id,
             action="CREATE_RAZORPAY_ORDER",
-            reason=f"Created order {db_order_id} for ₹{final_amount:,.2f} | keys_configured={keys_ready}",
-            input_data={"amount_inr": final_amount, "discount": discount_amount, "items": len(verified_items)},
+            reason=f"Created order {db_order_id} for ₹{final_amount:,.2f} | merchant={store_display_name}",
+            input_data={"amount_inr": final_amount, "discount": discount_amount, "items": len(verified_items), "merchant_id": merchant_id},
             decision="ORDER_CREATED", amount=final_amount,
             razorpay_order_id=rzp_order_id, final_result="PENDING_PAYMENT"
         )
@@ -186,7 +199,7 @@ class RazorpayService:
             "currency": "INR",
             "key_id": settings.RAZORPAY_KEY_ID if keys_ready else "",
             "keys_configured": keys_ready,
-            "merchant_name": "MerchantPilot AI Store",
+            "merchant_name": store_display_name,
             "customer_name": customer_name,
             "customer_email": customer_email,
             "customer_phone": customer_phone,

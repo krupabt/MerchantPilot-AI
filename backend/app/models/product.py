@@ -21,9 +21,13 @@ class Product(Base):
     rating = Column(Float, default=4.5)
     image_url = Column(String(500), nullable=True)
     specs = Column(JSON, default=dict)
+    variants = Column(JSON, default=list)
+    images = Column(JSON, default=list)
     compatible_product_ids = Column(JSON, default=list)
     tags = Column(JSON, default=list)
     is_active = Column(Boolean, default=True, index=True)
+    is_published = Column(Boolean, default=True, index=True)
+    is_archived = Column(Boolean, default=False, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

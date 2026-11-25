@@ -4,17 +4,19 @@ import { User, Store, Mail, Lock, Eye, EyeOff, ArrowRight, ArrowLeft, AlertCircl
 import { useAuth } from '../context/AuthContext';
 
 const BUSINESS_CATEGORIES = [
+  'Clothing & Apparel',
+  'Electronics & Gadgets',
+  'Beauty & Personal Care',
+  'Stationery & Office Supplies',
+  'Home & Kitchen Accessories',
   'Mobile & Tech Accessories',
-  'Computer Hardware & Peripherals',
-  'Consumer Electronics & Audio',
-  'Gadgets & Office Tech',
   'General Retail'
 ];
 
 export default function MerchantSignUp() {
   const [name, setName] = useState('');
   const [businessName, setBusinessName] = useState('');
-  const [businessCategory, setBusinessCategory] = useState('Mobile & Tech Accessories');
+  const [businessCategory, setBusinessCategory] = useState('Clothing & Apparel');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -82,7 +84,7 @@ export default function MerchantSignUp() {
         password,
         role: 'merchant'
       });
-      navigate('/merchant/overview', { replace: true });
+      navigate('/merchant/onboarding', { replace: true });
     } catch (err) {
       const msg = err.response?.data?.detail || 'Store registration failed. An account with this email may already exist.';
       setGeneralError(msg);

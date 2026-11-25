@@ -38,12 +38,17 @@ def _ensure_schema_columns():
         columns_to_add = {
             "products": [
                 ("cost_price", "FLOAT DEFAULT 0.0"),
-                ("sku", "VARCHAR(100)")
+                ("sku", "VARCHAR(100)"),
+                ("variants", "TEXT DEFAULT '[]'"),
+                ("images", "TEXT DEFAULT '[]'"),
+                ("is_published", "BOOLEAN DEFAULT 1"),
+                ("is_archived", "BOOLEAN DEFAULT 0")
             ],
             "orders": [
                 ("sales_channel", "VARCHAR(30) DEFAULT 'ONLINE'"),
                 ("payment_method", "VARCHAR(30) DEFAULT 'RAZORPAY'"),
                 ("payment_reference", "VARCHAR(100)"),
+                ("shipping_address", "VARCHAR(500)"),
                 ("notes", "VARCHAR(500)")
             ],
             "order_items": [
@@ -53,6 +58,11 @@ def _ensure_schema_columns():
                 ("business_category", "VARCHAR(100) DEFAULT 'General Retail'"),
                 ("phone", "VARCHAR(30)"),
                 ("address", "VARCHAR(300)"),
+                ("slug", "VARCHAR(100)"),
+                ("description", "VARCHAR(1000)"),
+                ("logo_url", "VARCHAR(500)"),
+                ("onboarding_completed", "BOOLEAN DEFAULT 0"),
+                ("is_published", "BOOLEAN DEFAULT 1"),
                 ("is_demo", "BOOLEAN DEFAULT 0")
             ],
             "audit_logs": [
@@ -71,6 +81,13 @@ def _ensure_schema_columns():
                                 conn.commit()
                             except Exception:
                                 pass
+            # Ensure demo merchant has default slug
+            if "merchants" in tables:
+                try:
+                    conn.execute(text("UPDATE merchants SET slug = 'smart-accessories', onboarding_completed = 1, is_published = 1 WHERE (id = 'm_1001' OR email = 'merchant@merchantpilot.ai') AND (slug IS NULL OR slug = '')"))
+                    conn.commit()
+                except Exception:
+                    pass
     except Exception as e:
         print(f"_ensure_schema_columns note: {e}")
 

@@ -40,10 +40,20 @@ export function CartProvider({ children }) {
     }
   }, [isAuthenticated]);
 
-  const addItem = async (productId, quantity = 1) => {
-    const res = await addToCustomerCart({ product_id: productId, quantity });
+  const addItem = async (productId, quantity = 1, forceReplace = false) => {
+    const res = await addToCustomerCart({ product_id: productId, quantity, force_replace: forceReplace });
     await refreshCart();
     return res.data;
+  };
+
+  const clearCart = async () => {
+    try {
+      const { clearCustomerCart } = await import('../services/api');
+      await clearCustomerCart();
+      await refreshCart();
+    } catch (err) {
+      console.warn('Error clearing cart:', err);
+    }
   };
 
   const updateItemQty = async (itemId, quantity) => {
@@ -64,6 +74,7 @@ export function CartProvider({ children }) {
     loading,
     refreshCart,
     addItem,
+    clearCart,
     updateItemQty,
     removeItem
   };

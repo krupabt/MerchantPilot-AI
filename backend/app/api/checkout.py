@@ -25,6 +25,7 @@ def create_checkout_order(
             customer_name=request.customer_name or (current_user.name if current_user else "Demo Buyer"),
             customer_email=request.customer_email or (current_user.email if current_user else "buyer@merchantpilot.ai"),
             customer_phone=request.customer_phone or (current_user.phone if current_user else "9999999999"),
+            shipping_address=request.shipping_address,
             customer_id=current_user.id if current_user else None,
             session_id=request.session_id,
             bundle_name=request.bundle_name,

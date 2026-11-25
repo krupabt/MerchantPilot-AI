@@ -117,9 +117,17 @@ export default function Checkout() {
         customer_name: customerName,
         customer_email: customerEmail,
         customer_phone: customerPhone,
+        shipping_address: {
+          street,
+          city,
+          state,
+          postal_code: pincode,
+          pincode,
+          phone: customerPhone
+        },
         items: items,
         discount_amount: discountAmount,
-        bundle_name: items.length > 1 ? 'Customer Accessories Package' : 'Retail Order',
+        bundle_name: items.length > 1 ? 'Customer Package' : 'Retail Order',
         is_bundle: items.length > 1,
         approval_token: policyRes.data.approval_token
       };

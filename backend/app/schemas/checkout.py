@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Union
 
 class OrderItemRequest(BaseModel):
     product_id: str
@@ -12,6 +12,7 @@ class CreateOrderRequest(BaseModel):
     customer_name: str = "Demo Buyer"
     customer_email: str = "buyer@merchantpilot.ai"
     customer_phone: Optional[str] = "9999999999"
+    shipping_address: Optional[Union[str, Dict[str, Any]]] = None
     items: List[OrderItemRequest]
     discount_amount: float = 0.0
     bundle_name: Optional[str] = None

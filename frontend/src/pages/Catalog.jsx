@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import {
   Layers, Search, Package, Tag,
-  RefreshCw, Plus, Trash2, AlertTriangle, X, Check
+  RefreshCw, Plus, Trash2, AlertTriangle, X, Check,
+  Upload, TrendingUp, Sparkles, Image as ImageIcon
 } from 'lucide-react';
 import {
-  getAgentCatalog, createMerchantProduct, updateProductStock,
-  archiveMerchantProduct, createMerchantCategory
+  getMerchantProducts, createMerchantProduct, updateProductStock,
+  archiveMerchantProduct, createMerchantCategory, uploadMerchantImage
 } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -19,7 +20,8 @@ function formatINR(val) {
 
 export default function Catalog() {
   const { user } = useAuth();
-  const [catalogData, setCatalogData] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState(['ALL']);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
@@ -28,19 +30,19 @@ export default function Catalog() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [statusMsg, setStatusMsg] = useState({ type: '', text: '' });
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Add Product Form
   const [newProduct, setNewProduct] = useState({
-    id: '',
     sku: '',
     name: '',
     category: '',
     price: '',
     cost_price: '',
-    stock: '',
+    stock: '20',
     low_stock_threshold: '5',
     description: '',
-    compatible_product_ids: []
+    image_url: ''
   });
 
   // Add Category Form
@@ -50,8 +52,12 @@ export default function Catalog() {
   const fetchCatalog = async () => {
     setLoading(true);
     try {
-      const res = await getAgentCatalog();
-      setCatalogData(res.data);
+      const res = await getMerchantProducts();
+      const list = Array.isArray(res.data) ? res.data : (res.data?.products || []);
+      setProducts(list);
+
+      const uniqueCats = ['ALL', ...Array.from(new Set(list.map((p) => p.category).filter(Boolean)))];
+      setCategories(uniqueCats);
     } catch (err) {
       console.error('Catalog fetch error:', err);
     } finally {
@@ -63,48 +69,78 @@ export default function Catalog() {
     fetchCatalog();
   }, []);
 
-  const products = catalogData?.products || [];
-  const categories = ['ALL', ...(catalogData?.categories || [])];
-
   const filteredProducts = products.filter((p) => {
     const matchesSearch =
       !searchTerm ||
       p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase())) ||
       p.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'ALL' || p.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
+  // Live Gross Profit & Margin
+  const numCost = parseFloat(newProduct.cost_price) || 0;
+  const numPrice = parseFloat(newProduct.price) || 0;
+  const grossProfit = Math.max(0, numPrice - numCost);
+  const grossMargin = numPrice > 0 ? ((grossProfit / numPrice) * 100).toFixed(1) : '0.0';
+
+  const handleImageFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setStatusMsg({ type: 'error', text: 'Image size must be less than 5MB' });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        setUploadingImage(true);
+        const res = await uploadMerchantImage({
+          image_data: reader.result,
+          filename: file.name
+        });
+        setNewProduct((prev) => ({ ...prev, image_url: res.data.url }));
+      } catch (err) {
+        setNewProduct((prev) => ({ ...prev, image_url: reader.result }));
+      } finally {
+        setUploadingImage(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleCreateProduct = async (e) => {
     e.preventDefault();
     try {
       const payload = {
-        id: newProduct.id.trim(),
-        sku: newProduct.sku ? newProduct.sku.trim() : newProduct.id.trim(),
         name: newProduct.name.trim(),
-        category: newProduct.category.trim() || 'Accessories',
+        category: newProduct.category.trim() || 'General Retail',
+        sku: newProduct.sku ? newProduct.sku.trim() : undefined,
         price: parseFloat(newProduct.price),
         cost_price: parseFloat(newProduct.cost_price || 0),
-        stock: parseInt(newProduct.stock, 10),
+        stock: parseInt(newProduct.stock, 10) || 0,
         low_stock_threshold: parseInt(newProduct.low_stock_threshold, 10) || 5,
         description: newProduct.description.trim(),
-        compatible_product_ids: newProduct.compatible_product_ids
+        image_url: newProduct.image_url.trim() || undefined
       };
+
       await createMerchantProduct(payload);
-      setStatusMsg({ type: 'success', text: `Product '${payload.name}' published successfully!` });
+      setStatusMsg({ type: 'success', text: `Product '${payload.name}' added to your catalog!` });
       setShowAddModal(false);
       setNewProduct({
-        id: '',
         sku: '',
         name: '',
         category: '',
         price: '',
         cost_price: '',
-        stock: '',
+        stock: '20',
         low_stock_threshold: '5',
         description: '',
-        compatible_product_ids: []
+        image_url: ''
       });
       fetchCatalog();
     } catch (err) {
@@ -133,20 +169,19 @@ export default function Catalog() {
     const newStock = Math.max(0, currentStock + delta);
     try {
       await updateProductStock(productId, newStock);
-      setCatalogData((prev) => ({
-        ...prev,
-        products: prev.products.map((p) => (p.id === productId ? { ...p, stock: newStock } : p))
-      }));
+      setProducts((prev) =>
+        prev.map((p) => (p.id === productId ? { ...p, stock: newStock } : p))
+      );
     } catch (err) {
       console.error('Stock update error:', err);
     }
   };
 
   const handleArchive = async (productId) => {
-    if (!window.confirm(`Archive product ${productId}? It will be hidden from the storefront.`)) return;
+    if (!window.confirm(`Archive this product? It will be hidden from customer storefronts.`)) return;
     try {
       await archiveMerchantProduct(productId);
-      setStatusMsg({ type: 'success', text: `Product ${productId} archived.` });
+      setStatusMsg({ type: 'success', text: `Product archived.` });
       fetchCatalog();
     } catch (err) {
       setStatusMsg({ type: 'error', text: 'Failed to archive product' });
@@ -154,31 +189,31 @@ export default function Catalog() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12 font-sans selection:bg-[#252722] selection:text-white">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E8E2DA]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E5E2DB]">
         <div>
-          <h1 className="font-heading text-2xl sm:text-3xl font-bold text-[#242424] tracking-tight">
-            Product Catalog
+          <h1 className="font-serif text-2xl sm:text-3xl font-medium text-[#20211F] tracking-tight">
+            Product Catalog & Inventory
           </h1>
-          <p className="text-xs sm:text-sm text-[#6B6560] mt-1">
-            Publish products, manage categories, and configure safety thresholds.
+          <p className="text-xs sm:text-sm text-[#777B70] mt-1">
+            Manage your store's retail merchandise, unit costs, pricing margins, and stock thresholds.
           </p>
         </div>
 
         <div className="flex items-center gap-2.5">
           <button
             onClick={() => setShowAddModal(true)}
-            className="px-4 py-2 rounded-xl bg-[#783F45] hover:bg-[#603137] text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
+            className="px-4 py-2.5 rounded-xl bg-[#252722] hover:bg-[#41453C] text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
           >
-            <Plus className="w-3.5 h-3.5 text-[#D8C3A5]" />
+            <Plus className="w-3.5 h-3.5 text-[#D9D1C2]" />
             <span>Add Product</span>
           </button>
           <button
             onClick={() => setShowCategoryModal(true)}
-            className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#F8F4EE] border border-[#E8E2DA] text-[#242424] text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
+            className="px-3.5 py-2.5 rounded-xl bg-white hover:bg-[#F5F3EE] border border-[#E5E2DB] text-[#20211F] text-xs font-semibold flex items-center gap-1.5 transition shadow-sm"
           >
-            <Tag className="w-3.5 h-3.5 text-[#783F45]" />
+            <Tag className="w-3.5 h-3.5 text-[#777B70]" />
             <span>New Category</span>
           </button>
         </div>
@@ -188,15 +223,15 @@ export default function Catalog() {
         <div
           className={`p-3.5 rounded-xl border text-xs flex items-center justify-between ${
             statusMsg.type === 'error'
-              ? 'bg-rose-50 border-rose-200 text-[#B84040]'
-              : 'bg-emerald-50 border-emerald-200 text-[#32734D]'
+              ? 'bg-rose-50 border-rose-200 text-rose-700'
+              : 'bg-emerald-50 border-emerald-200 text-emerald-800'
           }`}
         >
           <div className="flex items-center gap-2">
             {statusMsg.type === 'error' ? (
-              <AlertTriangle className="w-4 h-4 text-[#B84040]" />
+              <AlertTriangle className="w-4 h-4 text-rose-600" />
             ) : (
-              <Check className="w-4 h-4 text-[#32734D]" />
+              <Check className="w-4 h-4 text-emerald-600" />
             )}
             <span className="font-medium">{statusMsg.text}</span>
           </div>
@@ -207,27 +242,27 @@ export default function Catalog() {
       )}
 
       {/* Toolbar */}
-      <div className="bg-white border border-[#E8E2DA] rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
+      <div className="bg-white border border-[#E5E2DB] rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
         <div className="relative w-full sm:w-80">
-          <Search className="w-4 h-4 text-[#6B6560] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[#777B70] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search specs, tags, products..."
-            className="w-full pl-10 pr-3.5 py-2 bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl text-xs sm:text-sm text-[#242424] placeholder-[#6B6560] focus:outline-none focus:border-[#783F45] transition"
+            placeholder="Search by name, SKU, category..."
+            className="w-full pl-10 pr-3.5 py-2 bg-[#F5F3EE]/60 border border-[#E5E2DB] rounded-xl text-xs sm:text-sm text-[#20211F] placeholder-[#777B70] focus:outline-none focus:border-[#252722] transition"
           />
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 no-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-none">
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
               className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition ${
                 selectedCategory === cat
-                  ? 'bg-[#783F45] text-white shadow-sm font-semibold'
-                  : 'bg-[#F8F4EE] text-[#6B6560] hover:text-[#242424] hover:bg-[#E8E2DA] border border-[#E8E2DA]'
+                  ? 'bg-[#252722] text-white shadow-sm font-semibold'
+                  : 'bg-[#F5F3EE] text-[#777B70] hover:text-[#20211F] hover:bg-[#E5E2DB] border border-[#E5E2DB]'
               }`}
             >
               {cat === 'ALL' ? 'All Products' : cat}
@@ -236,60 +271,113 @@ export default function Catalog() {
         </div>
       </div>
 
-      {/* Product Cards Grid */}
+      {/* Product Cards Grid or Empty State */}
       {loading ? (
-        <div className="flex items-center justify-center py-16 text-xs text-[#6B6560] animate-pulse">
-          Loading product catalog...
+        <div className="flex items-center justify-center py-20 text-xs text-[#777B70]">
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-6 h-6 border-2 border-[#252722] border-t-transparent rounded-full animate-spin" />
+            <span>Loading product catalog...</span>
+          </div>
+        </div>
+      ) : products.length === 0 ? (
+        <div className="bg-white border border-[#E5E2DB] rounded-2xl p-12 text-center max-w-lg mx-auto shadow-sm">
+          <div className="w-14 h-14 bg-[#F5F3EE] rounded-full flex items-center justify-center mx-auto mb-4 text-[#252722]">
+            <Package className="w-7 h-7" />
+          </div>
+          <h3 className="font-serif text-xl font-medium text-[#20211F] mb-2">No products added yet</h3>
+          <p className="text-xs text-[#777B70] leading-relaxed mb-6">
+            Your catalog is currently empty. Add your first retail product with photograph, cost, and selling price to begin accepting customer orders.
+          </p>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#252722] hover:bg-[#41453C] text-white text-xs font-semibold rounded-xl transition shadow-sm"
+          >
+            <Plus className="w-4 h-4 text-[#D9D1C2]" />
+            <span>Add First Product</span>
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredProducts.map((p) => {
             const isOut = p.stock <= 0;
             const isLow = p.stock > 0 && p.stock <= (p.low_stock_threshold || 5);
+            const profit = p.price - (p.cost_price || 0);
+            const margin = p.price > 0 ? Math.round((profit / p.price) * 100) : 0;
+
             return (
-              <div key={p.id} className="bg-white border border-[#E8E2DA] rounded-2xl p-5 space-y-3 flex flex-col justify-between shadow-sm hover:border-[#D8C3A5] hover:shadow-md transition">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-semibold uppercase text-[#6B6560] bg-[#F8F4EE] px-2.5 py-0.5 rounded-full border border-[#E8E2DA]">
-                      {p.category}
-                    </span>
-                    <span
-                      className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${
-                        isOut
-                          ? 'bg-rose-50 text-[#B84040] border border-rose-200'
-                          : isLow
-                          ? 'bg-amber-50 text-[#B77932] border border-amber-200'
-                          : 'bg-emerald-50 text-[#32734D] border border-emerald-200'
-                      }`}
-                    >
-                      {isOut ? 'Out of stock' : `${p.stock} in stock`}
-                    </span>
+              <div
+                key={p.id}
+                className="bg-white border border-[#E5E2DB] rounded-2xl p-5 space-y-3.5 flex flex-col justify-between shadow-sm hover:border-[#252722]/30 hover:shadow-md transition"
+              >
+                <div>
+                  {/* Photo & Category Row */}
+                  <div className="flex items-start gap-3 mb-3">
+                    {p.image_url ? (
+                      <img
+                        src={p.image_url}
+                        alt={p.name}
+                        className="w-16 h-16 rounded-xl object-cover border border-[#E5E2DB] shrink-0"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 rounded-xl bg-[#F5F3EE] border border-[#E5E2DB] flex items-center justify-center text-[#777B70] shrink-0">
+                        <Package className="w-6 h-6" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1 mb-1">
+                        <span className="text-[10px] font-semibold uppercase text-[#777B70] bg-[#F5F3EE] px-2 py-0.5 rounded-md border border-[#E5E2DB] truncate">
+                          {p.category}
+                        </span>
+                        <span
+                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
+                            isOut
+                              ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                              : isLow
+                              ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                          }`}
+                        >
+                          {isOut ? 'Out of stock' : `${p.stock} in stock`}
+                        </span>
+                      </div>
+                      <h3 className="font-serif text-sm font-medium text-[#20211F] truncate" title={p.name}>
+                        {p.name}
+                      </h3>
+                      {p.sku && (
+                        <div className="text-[10px] font-mono text-[#777B70] mt-0.5">
+                          SKU: {p.sku}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <h3 className="font-heading text-sm font-bold text-[#242424]">{p.name}</h3>
-                  <p className="text-xs text-[#6B6560] line-clamp-2 leading-relaxed">{p.description}</p>
+                  {p.description && (
+                    <p className="text-xs text-[#777B70] line-clamp-2 leading-relaxed">
+                      {p.description}
+                    </p>
+                  )}
                 </div>
 
-                <div className="pt-3 border-t border-[#E8E2DA] flex items-center justify-between">
+                <div className="pt-3 border-t border-[#E5E2DB] flex items-center justify-between">
                   <div>
-                    <span className="text-base font-bold text-[#242424] block leading-tight tabular-numbers font-heading">
+                    <span className="text-base font-bold text-[#20211F] block leading-tight tabular-numbers font-serif">
                       {formatINR(p.price)}
                     </span>
-                    <span className="text-[11px] text-[#6B6560] tabular-numbers">
-                      Cost: {formatINR(p.cost_price || 0)} (Margin: {p.price > 0 ? Math.round(((p.price - (p.cost_price || 0)) / p.price) * 100) : 0}%)
+                    <span className="text-[11px] text-[#777B70] tabular-numbers">
+                      Cost: {formatINR(p.cost_price || 0)} ({margin}% margin)
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => handleQuickStockUpdate(p.id, p.stock, 5)}
-                      className="px-2.5 py-1 bg-white hover:bg-[#F8F4EE] border border-[#E8E2DA] text-[#242424] rounded-lg text-[11px] font-semibold transition"
+                      className="px-2.5 py-1.5 bg-white hover:bg-[#F5F3EE] border border-[#E5E2DB] text-[#20211F] rounded-lg text-[11px] font-semibold transition"
                       title="Add 5 units"
                     >
-                      +5
+                      +5 Restock
                     </button>
                     <button
                       onClick={() => handleArchive(p.id)}
-                      className="p-1.5 hover:bg-rose-50 text-[#6B6560] hover:text-[#B84040] rounded-lg transition"
+                      className="p-1.5 hover:bg-rose-50 text-[#777B70] hover:text-rose-700 rounded-lg transition"
                       title="Archive product"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -304,135 +392,176 @@ export default function Catalog() {
 
       {/* Add Product Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white border border-[#E8E2DA] rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-xl">
-            <div className="flex items-center justify-between border-b border-[#E8E2DA] pb-3">
-              <h3 className="font-heading text-base font-bold text-[#242424]">Add Catalog Product</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-[#6B6560] hover:text-[#242424]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white border border-[#E5E2DB] rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#E5E2DB] pb-3">
+              <h3 className="font-serif text-base font-medium text-[#20211F] flex items-center gap-2">
+                <Package className="w-4 h-4 text-[#252722]" />
+                Add Catalog Product
+              </h3>
+              <button onClick={() => setShowAddModal(false)} className="text-[#777B70] hover:text-[#20211F]">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateProduct} className="space-y-3.5 text-xs">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[#6B6560] font-medium block mb-1">Product ID / Code *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. P016"
-                    value={newProduct.id}
-                    onChange={(e) => setNewProduct({ ...newProduct, id: e.target.value })}
-                    className="w-full bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl px-3 py-2 text-[#242424] focus:outline-none focus:border-[#783F45]"
-                  />
-                </div>
-                <div>
-                  <label className="text-[#6B6560] font-medium block mb-1">SKU (Barcode/Tag)</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. SKU-ACC-016"
-                    value={newProduct.sku}
-                    onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })}
-                    className="w-full bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl px-3 py-2 text-[#242424] focus:outline-none focus:border-[#783F45]"
-                  />
-                </div>
+            <form onSubmit={handleCreateProduct} className="space-y-4 text-xs">
+              <div>
+                <label className="text-[#20211F] font-semibold block mb-1">Product Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Classic Cotton T-Shirt, Ceramic Cup"
+                  value={newProduct.name}
+                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                  className="w-full bg-[#F5F3EE]/50 border border-[#E5E2DB] rounded-xl px-3 py-2 text-[#20211F] focus:outline-none focus:border-[#252722]"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[#6B6560] font-medium block mb-1">Product Name *</label>
+                  <label className="text-[#20211F] font-semibold block mb-1">Category *</label>
                   <input
                     type="text"
                     required
-                    placeholder="Type-C Braided Cable"
-                    value={newProduct.name}
-                    onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                    className="w-full bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl px-3 py-2 text-[#242424] focus:outline-none focus:border-[#783F45]"
-                  />
-                </div>
-                <div>
-                  <label className="text-[#6B6560] font-medium block mb-1">Category *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Charging"
+                    placeholder="e.g. Apparel, Tech"
                     value={newProduct.category}
                     onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-                    className="w-full bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl px-3 py-2 text-[#242424] focus:outline-none focus:border-[#783F45]"
+                    className="w-full bg-[#F5F3EE]/50 border border-[#E5E2DB] rounded-xl px-3 py-2 text-[#20211F] focus:outline-none focus:border-[#252722]"
+                  />
+                </div>
+                <div>
+                  <label className="text-[#20211F] font-semibold block mb-1">SKU (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. SKU-TSH-001"
+                    value={newProduct.sku}
+                    onChange={(e) => setNewProduct({ ...newProduct, sku: e.target.value })}
+                    className="w-full bg-[#F5F3EE]/50 border border-[#E5E2DB] rounded-xl px-3 py-2 text-[#20211F] focus:outline-none focus:border-[#252722]"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[#6B6560] font-medium block mb-1">Price (₹) *</label>
+                  <label className="text-[#20211F] font-semibold block mb-1">Cost Price (₹) *</label>
                   <input
                     type="number"
                     step="0.01"
                     required
-                    placeholder="150"
-                    value={newProduct.price}
-                    onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-                    className="w-full bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl px-3 py-2 text-[#242424] focus:outline-none focus:border-[#783F45]"
-                  />
-                </div>
-                <div>
-                  <label className="text-[#6B6560] font-medium block mb-1">Cost Price (₹) *</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    placeholder="80"
+                    placeholder="200"
                     value={newProduct.cost_price}
                     onChange={(e) => setNewProduct({ ...newProduct, cost_price: e.target.value })}
-                    className="w-full bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl px-3 py-2 text-[#242424] focus:outline-none focus:border-[#783F45]"
+                    className="w-full bg-[#F5F3EE]/50 border border-[#E5E2DB] rounded-xl px-3 py-2 text-[#20211F] focus:outline-none focus:border-[#252722]"
                   />
                 </div>
                 <div>
-                  <label className="text-[#6B6560] font-medium block mb-1">Stock *</label>
+                  <label className="text-[#20211F] font-semibold block mb-1">Selling Price (₹) *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    placeholder="350"
+                    value={newProduct.price}
+                    onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                    className="w-full bg-[#F5F3EE]/50 border border-[#E5E2DB] rounded-xl px-3 py-2 text-[#20211F] focus:outline-none focus:border-[#252722]"
+                  />
+                </div>
+              </div>
+
+              {/* Live Profit & Margin Indicator */}
+              {(numCost > 0 || numPrice > 0) && (
+                <div className="p-3 bg-[#F5F3EE] border border-[#E5E2DB] rounded-xl flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-[#252722]" />
+                    <span className="text-xs text-[#777B70]">Unit Profitability:</span>
+                  </div>
+                  <div className="text-xs font-semibold text-[#20211F]">
+                    ₹{grossProfit.toFixed(2)} profit{' '}
+                    <span className="text-emerald-700">({grossMargin}% margin)</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[#20211F] font-semibold block mb-1">Initial Stock *</label>
                   <input
                     type="number"
                     required
-                    placeholder="25"
+                    placeholder="20"
                     value={newProduct.stock}
                     onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
-                    className="w-full bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl px-3 py-2 text-[#242424] focus:outline-none focus:border-[#783F45]"
+                    className="w-full bg-[#F5F3EE]/50 border border-[#E5E2DB] rounded-xl px-3 py-2 text-[#20211F] focus:outline-none focus:border-[#252722]"
                   />
                 </div>
                 <div>
-                  <label className="text-[#6B6560] font-medium block mb-1">Low Alert Qty</label>
+                  <label className="text-[#20211F] font-semibold block mb-1">Low-Stock Alert Level</label>
                   <input
                     type="number"
                     placeholder="5"
                     value={newProduct.low_stock_threshold}
                     onChange={(e) => setNewProduct({ ...newProduct, low_stock_threshold: e.target.value })}
-                    className="w-full bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl px-3 py-2 text-[#242424] focus:outline-none focus:border-[#783F45]"
+                    className="w-full bg-[#F5F3EE]/50 border border-[#E5E2DB] rounded-xl px-3 py-2 text-[#20211F] focus:outline-none focus:border-[#252722]"
+                  />
+                </div>
+              </div>
+
+              {/* Product Photograph */}
+              <div>
+                <label className="text-[#20211F] font-semibold block mb-1">Product Photograph</label>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    {newProduct.image_url ? (
+                      <img
+                        src={newProduct.image_url}
+                        alt="Preview"
+                        className="w-12 h-12 rounded-lg object-cover border border-[#E5E2DB]"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-lg bg-[#F5F3EE] border border-[#E5E2DB] flex items-center justify-center text-[#777B70]">
+                        <ImageIcon className="w-5 h-5" />
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageFileChange}
+                      className="text-xs text-[#777B70] file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#252722] file:text-white hover:file:bg-[#41453C]"
+                    />
+                  </div>
+                  <input
+                    type="url"
+                    placeholder="Or paste direct image URL (Unsplash, etc.)"
+                    value={newProduct.image_url}
+                    onChange={(e) => setNewProduct({ ...newProduct, image_url: e.target.value })}
+                    className="w-full bg-[#F5F3EE]/50 border border-[#E5E2DB] rounded-xl px-3 py-2 text-[#20211F] focus:outline-none focus:border-[#252722]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[#6B6560] font-medium block mb-1">Description</label>
+                <label className="text-[#20211F] font-semibold block mb-1">Description</label>
                 <textarea
                   rows={2}
-                  placeholder="Durable braided cable compatible with fast charging..."
+                  placeholder="Tell customers about fabrics, specifications, or key features..."
                   value={newProduct.description}
                   onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
-                  className="w-full bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl px-3 py-2 text-[#242424] focus:outline-none focus:border-[#783F45]"
+                  className="w-full bg-[#F5F3EE]/50 border border-[#E5E2DB] rounded-xl px-3 py-2 text-[#20211F] focus:outline-none focus:border-[#252722]"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#E8E2DA]">
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#E5E2DB]">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 rounded-xl border border-[#E8E2DA] text-[#6B6560] hover:bg-[#F8F4EE] transition"
+                  className="px-4 py-2 rounded-xl border border-[#E5E2DB] text-[#777B70] hover:bg-[#F5F3EE] transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#783F45] hover:bg-[#603137] text-white font-semibold shadow-sm transition"
+                  disabled={uploadingImage}
+                  className="px-5 py-2 rounded-xl bg-[#252722] hover:bg-[#41453C] text-white font-semibold shadow-sm transition"
                 >
                   Publish Product
                 </button>
@@ -444,49 +573,49 @@ export default function Catalog() {
 
       {/* Add Category Modal */}
       {showCategoryModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white border border-[#E8E2DA] rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl">
-            <div className="flex items-center justify-between border-b border-[#E8E2DA] pb-3">
-              <h3 className="font-heading text-base font-bold text-[#242424]">Create Category</h3>
-              <button onClick={() => setShowCategoryModal(false)} className="text-[#6B6560] hover:text-[#242424]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-fade-in">
+          <div className="bg-white border border-[#E5E2DB] rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl">
+            <div className="flex items-center justify-between border-b border-[#E5E2DB] pb-3">
+              <h3 className="font-serif text-base font-medium text-[#20211F]">Create Category</h3>
+              <button onClick={() => setShowCategoryModal(false)} className="text-[#777B70] hover:text-[#20211F]">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleCreateCategory} className="space-y-3.5 text-xs">
               <div>
-                <label className="text-[#6B6560] font-medium block mb-1">Category Name</label>
+                <label className="text-[#20211F] font-semibold block mb-1">Category Name</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Wireless Audio"
+                  placeholder="e.g. Wireless Audio, Apparel"
                   value={newCatName}
                   onChange={(e) => setNewCatName(e.target.value)}
-                  className="w-full bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl px-3 py-2 text-[#242424] focus:outline-none focus:border-[#783F45]"
+                  className="w-full bg-[#F5F3EE]/50 border border-[#E5E2DB] rounded-xl px-3 py-2 text-[#20211F] focus:outline-none focus:border-[#252722]"
                 />
               </div>
               <div>
-                <label className="text-[#6B6560] font-medium block mb-1">Description</label>
+                <label className="text-[#20211F] font-semibold block mb-1">Description</label>
                 <input
                   type="text"
-                  placeholder="Bluetooth earphones and portable speakers"
+                  placeholder="Collection description"
                   value={newCatDesc}
                   onChange={(e) => setNewCatDesc(e.target.value)}
-                  className="w-full bg-[#F8F4EE] border border-[#E8E2DA] rounded-xl px-3 py-2 text-[#242424] focus:outline-none focus:border-[#783F45]"
+                  className="w-full bg-[#F5F3EE]/50 border border-[#E5E2DB] rounded-xl px-3 py-2 text-[#20211F] focus:outline-none focus:border-[#252722]"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#E8E2DA]">
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#E5E2DB]">
                 <button
                   type="button"
                   onClick={() => setShowCategoryModal(false)}
-                  className="px-4 py-2 rounded-xl border border-[#E8E2DA] text-[#6B6560] hover:bg-[#F8F4EE] transition"
+                  className="px-4 py-2 rounded-xl border border-[#E5E2DB] text-[#777B70] hover:bg-[#F5F3EE] transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-[#783F45] hover:bg-[#603137] text-white font-semibold shadow-sm transition"
+                  className="px-5 py-2 rounded-xl bg-[#252722] hover:bg-[#41453C] text-white font-semibold shadow-sm transition"
                 >
                   Create
                 </button>

@@ -25,6 +25,9 @@ class ProductCreateRequest(BaseModel):
     stock: int = Field(0, ge=0)
     low_stock_threshold: int = Field(5, ge=0)
     image_url: Optional[str] = None
+    images: List[str] = Field(default_factory=list)
+    variants: List[Dict[str, Any]] = Field(default_factory=list)
+    is_published: bool = True
     specs: Dict[str, Any] = Field(default_factory=dict)
     tags: List[str] = Field(default_factory=list)
     compatible_product_ids: List[str] = Field(default_factory=list)
@@ -40,10 +43,33 @@ class ProductUpdateRequest(BaseModel):
     stock: Optional[int] = Field(None, ge=0)
     low_stock_threshold: Optional[int] = Field(None, ge=0)
     image_url: Optional[str] = None
+    images: Optional[List[str]] = None
+    variants: Optional[List[Dict[str, Any]]] = None
+    is_published: Optional[bool] = None
     specs: Optional[Dict[str, Any]] = None
     tags: Optional[List[str]] = None
     compatible_product_ids: Optional[List[str]] = None
     is_active: Optional[bool] = None
+
+class StoreOnboardingRequest(BaseModel):
+    store_name: str = Field(..., min_length=2, max_length=100)
+    business_category: str = Field(..., min_length=2, max_length=100)
+    description: Optional[str] = Field(None, max_length=1000)
+    logo_url: Optional[str] = None
+    phone: Optional[str] = Field(None, max_length=30)
+    address: Optional[str] = Field(None, max_length=300)
+    slug: Optional[str] = Field(None, max_length=100)
+
+class StoreOnboardingResponse(BaseModel):
+    success: bool
+    store_slug: str
+    store_url: str
+    onboarding_completed: bool
+    store: Dict[str, Any]
+
+class ImageUploadRequest(BaseModel):
+    image_base64: str
+    filename: Optional[str] = "product_image.png"
 
 class MerchantSettingsResponse(BaseModel):
     merchant_id: str
@@ -67,7 +93,7 @@ class StockUpdateRequest(BaseModel):
     stock: int = Field(..., ge=0)
 
 class FulfillmentUpdateRequest(BaseModel):
-    fulfillment_status: str = Field(..., description="UNFULFILLED, PROCESSING, SHIPPED, DELIVERED, CANCELLED")
+    fulfillment_status: str = Field(..., description="CONFIRMED, PROCESSING, PACKED, SHIPPED, DELIVERED, CANCELLED, UNFULFILLED")
 
 class TopProductResponse(BaseModel):
     product_id: str

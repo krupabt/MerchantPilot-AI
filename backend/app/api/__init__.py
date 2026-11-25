@@ -13,6 +13,7 @@ from backend.app.api.customer import router as customer_router
 from backend.app.api.merchant_ai import router as merchant_ai_router
 from backend.app.api.sales import router as sales_router
 from backend.app.api.import_data import router as import_router
+from backend.app.api.store import router as store_router
 
 # Router with explicit /api prefix
 api_router = APIRouter(prefix="/api")
@@ -30,6 +31,7 @@ api_router.include_router(customer_router)
 api_router.include_router(merchant_ai_router)
 api_router.include_router(sales_router)
 api_router.include_router(import_router)
+api_router.include_router(store_router)
 
 # Also expose root router (without /api prefix) in case proxy or rewrite strips /api
 root_api_router = APIRouter()
@@ -47,3 +49,4 @@ root_api_router.include_router(customer_router)
 root_api_router.include_router(merchant_ai_router)
 root_api_router.include_router(sales_router)
 root_api_router.include_router(import_router)
+root_api_router.include_router(store_router)

@@ -176,9 +176,11 @@ def seed_database(db: Session = None):
                     specs={"compatible_products": lcomps, "processor": "Intel i7", "ram": "32GB"},
                     compatible_product_ids=lcomps,
                     tags=ltags,
-                    is_active=True
+                    is_active=True,
+                    is_published=False
                 ))
             else:
+                lexist.is_published = False
                 lexist.stock = lstock
                 lexist.price = lprice
                 lexist.cost_price = lcost

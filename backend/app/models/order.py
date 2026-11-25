@@ -22,6 +22,7 @@ class Order(Base):
     sales_channel = Column(String(30), default="ONLINE", nullable=False)  # ONLINE, POS, IN_STORE
     payment_method = Column(String(30), default="RAZORPAY", nullable=False)  # CASH, UPI, CARD, RAZORPAY
     payment_reference = Column(String(100), nullable=True)
+    shipping_address = Column(String(500), nullable=True)
     notes = Column(String(500), nullable=True)
     is_ai_assisted = Column(Boolean, default=False)
     is_bundle = Column(Boolean, default=False)

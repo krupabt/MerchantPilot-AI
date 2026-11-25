@@ -13,6 +13,11 @@ class Merchant(Base):
     business_category = Column(String(100), default="General Retail", nullable=False)
     phone = Column(String(30), nullable=True)
     address = Column(String(300), nullable=True)
+    slug = Column(String(100), unique=True, index=True, nullable=True)
+    description = Column(String(1000), nullable=True)
+    logo_url = Column(String(500), nullable=True)
+    onboarding_completed = Column(Boolean, default=False, nullable=False)
+    is_published = Column(Boolean, default=True, nullable=False)
     is_demo = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 

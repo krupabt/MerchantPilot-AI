@@ -11,6 +11,8 @@ class SignUpRequest(BaseModel):
     password: str = Field(..., min_length=6, max_length=100)
     role: Optional[str] = "customer"  # Default to customer, can be "merchant"
     store_name: Optional[str] = None  # If registering as a merchant
+    store_slug: Optional[str] = None
+    store_description: Optional[str] = None
     business_category: Optional[str] = "General Retail"  # e.g., Electronics, Clothing, Grocery, Stationery
     business_phone: Optional[str] = None
     business_address: Optional[str] = None
@@ -55,9 +57,14 @@ class UserResponse(BaseModel):
     role: str
     merchant_id: Optional[str] = None
     store_name: Optional[str] = None
+    store_slug: Optional[str] = None
+    store_description: Optional[str] = None
+    store_logo: Optional[str] = None
     business_category: Optional[str] = None
     business_phone: Optional[str] = None
     business_address: Optional[str] = None
+    onboarding_completed: Optional[bool] = False
+    is_published: Optional[bool] = True
     is_demo: Optional[bool] = False
     created_at: Optional[datetime] = None
 

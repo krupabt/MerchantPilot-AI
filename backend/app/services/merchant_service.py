@@ -290,17 +290,23 @@ class MerchantService:
                 "category": p.category,
                 "name": p.name,
                 "description": p.description,
-                "cost_price": getattr(p, "cost_price", 0.0),
+                "cost_price": getattr(p, "cost_price", 0.0) or 0.0,
                 "price": p.price,
+                "gross_profit": round(p.price - (getattr(p, "cost_price", 0.0) or 0.0), 2),
+                "gross_margin_percent": round(((p.price - (getattr(p, "cost_price", 0.0) or 0.0)) / p.price) * 100, 1) if p.price > 0 else 0.0,
                 "currency": p.currency,
                 "stock": p.stock,
                 "low_stock_threshold": p.low_stock_threshold,
                 "rating": p.rating,
                 "image_url": p.image_url,
+                "images": getattr(p, "images", None) or ([p.image_url] if p.image_url else []),
+                "variants": getattr(p, "variants", None) or [],
                 "specs": p.specs or {},
                 "tags": p.tags or [],
                 "compatible_product_ids": p.compatible_product_ids or [],
                 "is_active": p.is_active,
+                "is_published": getattr(p, "is_published", True),
+                "is_archived": getattr(p, "is_archived", False),
                 "created_at": p.created_at.isoformat() if p.created_at else None
             }
             for p in prods
@@ -338,6 +344,10 @@ class MerchantService:
 
         prod_id = f"P{uuid.uuid4().hex[:6].upper()}"
         cost_val = float(getattr(data, "cost_price", 0.0) or 0.0)
+        img_url = data.image_url or (data.images[0] if getattr(data, "images", None) and len(data.images) > 0 else "/images/products/placeholder.webp")
+        imgs_list = getattr(data, "images", None) or ([img_url] if img_url else [])
+        variants_list = getattr(data, "variants", None) or []
+
         new_prod = Product(
             id=prod_id,
             sku=sku_val or prod_id,
@@ -351,12 +361,16 @@ class MerchantService:
             currency=data.currency,
             stock=data.stock,
             low_stock_threshold=data.low_stock_threshold,
-            rating=4.5,
-            image_url=data.image_url,
+            rating=4.8,
+            image_url=img_url,
+            images=imgs_list,
+            variants=variants_list,
             specs=data.specs or {},
             tags=data.tags or [],
             compatible_product_ids=data.compatible_product_ids or [],
-            is_active=True
+            is_active=True,
+            is_published=getattr(data, "is_published", True),
+            is_archived=False
         )
         db.add(new_prod)
         db.commit()
@@ -408,6 +422,14 @@ class MerchantService:
             prod.tags = data.tags
         if data.compatible_product_ids is not None:
             prod.compatible_product_ids = data.compatible_product_ids
+        if getattr(data, "images", None) is not None:
+            prod.images = data.images
+            if data.images and len(data.images) > 0 and not data.image_url:
+                prod.image_url = data.images[0]
+        if getattr(data, "variants", None) is not None:
+            prod.variants = data.variants
+        if getattr(data, "is_published", None) is not None:
+            prod.is_published = data.is_published
         if data.is_active is not None:
             prod.is_active = data.is_active
 
@@ -415,6 +437,111 @@ class MerchantService:
         db.commit()
         db.refresh(prod)
         return prod
+
+    @staticmethod
+    def get_onboarding_data(db: Session, merchant_id: str) -> Dict[str, Any]:
+        m = db.query(Merchant).filter(Merchant.id == merchant_id).first()
+        if not m:
+            raise ValueError(f"Merchant '{merchant_id}' not found.")
+
+        product_count = db.query(Product).filter(
+            Product.merchant_id == merchant_id,
+            Product.is_active == True
+        ).count()
+
+        return {
+            "merchant_id": m.id,
+            "store_name": m.name,
+            "store_slug": getattr(m, "slug", None) or f"store-{m.id}",
+            "business_category": getattr(m, "business_category", "General Retail"),
+            "description": getattr(m, "description", None),
+            "logo_url": getattr(m, "logo_url", None),
+            "phone": getattr(m, "phone", None),
+            "address": getattr(m, "address", None),
+            "onboarding_completed": getattr(m, "onboarding_completed", False),
+            "is_published": getattr(m, "is_published", True),
+            "product_count": product_count
+        }
+
+    @staticmethod
+    def complete_onboarding(db: Session, merchant_id: str, data: Any) -> Dict[str, Any]:
+        import re
+        m = db.query(Merchant).filter(Merchant.id == merchant_id).first()
+        if not m:
+            raise ValueError(f"Merchant '{merchant_id}' not found.")
+
+        # Update merchant fields
+        if hasattr(data, "store_name") and data.store_name:
+            m.name = data.store_name.strip()
+        if hasattr(data, "business_category") and data.business_category:
+            m.business_category = data.business_category.strip()
+        if hasattr(data, "description") and data.description:
+            m.description = data.description.strip()
+        if hasattr(data, "logo_url") and data.logo_url:
+            m.logo_url = data.logo_url
+        if hasattr(data, "phone") and data.phone:
+            m.phone = data.phone.strip()
+        if hasattr(data, "address") and data.address:
+            m.address = data.address.strip()
+
+        # Slug generation & uniqueness verification
+        desired_slug = getattr(data, "slug", None) or m.name
+        clean_slug = re.sub(r'[^a-z0-9]+', '-', desired_slug.lower()).strip('-')
+        if not clean_slug:
+            clean_slug = f"store-{m.id}"
+
+        # If slug exists for ANOTHER merchant, make it unique
+        existing = db.query(Merchant).filter(
+            Merchant.slug == clean_slug,
+            Merchant.id != merchant_id
+        ).first()
+        if existing:
+            clean_slug = f"{clean_slug}-{uuid.uuid4().hex[:4]}"
+
+        m.slug = clean_slug
+        m.onboarding_completed = True
+        m.is_published = True
+
+        db.commit()
+        db.refresh(m)
+
+        return {
+            "success": True,
+            "store_slug": m.slug,
+            "store_url": f"/store/{m.slug}",
+            "onboarding_completed": True,
+            "store": {
+                "id": m.id,
+                "name": m.name,
+                "slug": m.slug,
+                "business_category": m.business_category,
+                "description": m.description,
+                "logo_url": m.logo_url,
+                "phone": m.phone,
+                "address": m.address,
+                "is_published": m.is_published
+            }
+        }
+
+    @staticmethod
+    def toggle_store_publish(db: Session, merchant_id: str, is_published: Optional[bool] = None) -> Dict[str, Any]:
+        m = db.query(Merchant).filter(Merchant.id == merchant_id).first()
+        if not m:
+            raise ValueError(f"Merchant '{merchant_id}' not found.")
+
+        if is_published is not None:
+            m.is_published = bool(is_published)
+        else:
+            m.is_published = not getattr(m, "is_published", True)
+
+        db.commit()
+        db.refresh(m)
+        return {
+            "success": True,
+            "is_published": m.is_published,
+            "store_slug": m.slug,
+            "message": f"Store is now {'published' if m.is_published else 'unpublished'}."
+        }
 
     @staticmethod
     def archive_product(db: Session, merchant_id: str, product_id: str) -> bool:
@@ -559,7 +686,7 @@ class MerchantService:
         if not order:
             raise ValueError(f"Order '{order_id}' not found or access denied.")
 
-        valid_statuses = ["UNFULFILLED", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED"]
+        valid_statuses = ["CONFIRMED", "PROCESSING", "PACKED", "SHIPPED", "DELIVERED", "CANCELLED", "UNFULFILLED"]
         new_status_clean = new_status.upper().strip()
         if new_status_clean not in valid_statuses:
             raise ValueError(f"Invalid status '{new_status}'. Allowed: {', '.join(valid_statuses)}")
