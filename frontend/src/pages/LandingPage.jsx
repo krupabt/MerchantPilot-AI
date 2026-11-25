@@ -12,7 +12,14 @@ import {
   Receipt,
   Boxes,
   Menu,
-  X
+  X,
+  Layers,
+  BarChart3,
+  Sliders,
+  Cable,
+  Headphones,
+  Smartphone,
+  Mouse
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { listProducts } from '../services/api';
@@ -68,6 +75,41 @@ const FEATURED_ACCESSORIES = [
   }
 ];
 
+const CATEGORIES = [
+  {
+    id: "cat_cables",
+    name: "Cables & Power",
+    count: "4 items",
+    description: "Fast charging cables, wall chargers & OTG adapters",
+    image: "/images/products/acc_usb_01.webp",
+    icon: Cable
+  },
+  {
+    id: "cat_computer",
+    name: "Computer Peripherals",
+    count: "3 items",
+    description: "Ergonomic optical mice, mouse pads & USB hubs",
+    image: "/images/products/acc_mou_02.webp",
+    icon: Mouse
+  },
+  {
+    id: "cat_mobile",
+    name: "Mobile Essentials",
+    count: "4 items",
+    description: "Matte cases, glass protectors & aluminum stands",
+    image: "/images/products/acc_sta_05.webp",
+    icon: Smartphone
+  },
+  {
+    id: "cat_audio",
+    name: "Audio & Sound",
+    count: "2 items",
+    description: "Dynamic in-ear earphones & auxiliary cables",
+    image: "/images/products/acc_ear_03.webp",
+    icon: Headphones
+  }
+];
+
 export default function LandingPage() {
   const { isAuthenticated, isMerchant, user } = useAuth();
   const navigate = useNavigate();
@@ -106,8 +148,8 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F3EFE9] text-[#242424] flex flex-col font-sans selection:bg-[#783F45] selection:text-white">
-      {/* 1. Sticky Navigation Bar */}
+    <div className="min-h-screen bg-[#F5F1EB] text-[#242424] flex flex-col font-sans selection:bg-[#783F45] selection:text-white">
+      {/* 1. Sticky Navigation Bar with Animated Underlines */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#E8E2DA] transition-all">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Brand Wordmark */}
@@ -115,25 +157,25 @@ export default function LandingPage() {
             <div className="w-8 h-8 rounded-lg bg-[#783F45] text-white flex items-center justify-center font-heading font-bold text-sm tracking-tight shadow-xs transition-transform duration-200 group-hover:scale-105">
               MP
             </div>
-            <span className="font-heading font-bold text-lg text-[#242424] tracking-tight">
+            <span className="font-heading font-bold text-lg sm:text-xl text-[#242424] tracking-tight">
               MerchantPilot
             </span>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-8 text-[14px] font-medium text-[#6B6560]">
-            <Link to="/" className="text-[#783F45] font-semibold hover:text-[#603137] transition-colors duration-150">
+          <nav className="hidden md:flex items-center gap-8 text-[15px] font-medium text-[#6B6560]">
+            <Link to="/" className="nav-link-animated text-[#783F45] font-semibold">
               Home
             </Link>
             <button
               onClick={handleCustomerNavigation}
-              className="hover:text-[#242424] transition-colors duration-150 cursor-pointer text-left"
+              className="nav-link-animated hover:text-[#242424] cursor-pointer text-left"
             >
               Shop
             </button>
             <button
               onClick={handleMerchantNavigation}
-              className="hover:text-[#242424] transition-colors duration-150 cursor-pointer text-left"
+              className="nav-link-animated hover:text-[#242424] cursor-pointer text-left"
             >
               For Merchants
             </button>
@@ -148,7 +190,7 @@ export default function LandingPage() {
                 </span>
                 <button
                   onClick={isMerchant ? handleMerchantNavigation : handleCustomerNavigation}
-                  className="px-4 py-2 rounded-lg bg-[#783F45] hover:bg-[#603137] text-white text-xs font-semibold transition-all duration-150 shadow-xs hover:shadow-sm"
+                  className="px-4 py-2 rounded-lg bg-[#783F45] hover:bg-[#603137] text-white text-xs font-semibold transition-all duration-200 shadow-xs hover:shadow-sm"
                 >
                   {isMerchant ? 'Merchant Workspace' : 'Open Store'}
                 </button>
@@ -157,13 +199,13 @@ export default function LandingPage() {
               <>
                 <Link
                   to="/signin"
-                  className="px-3.5 py-2 text-xs font-semibold text-[#242424] hover:text-[#783F45] transition-colors duration-150"
+                  className="px-3.5 py-2 text-xs sm:text-sm font-semibold text-[#242424] hover:text-[#783F45] transition-colors duration-150"
                 >
                   Sign In
                 </Link>
                 <button
                   onClick={handleCustomerNavigation}
-                  className="px-4 py-2 rounded-lg bg-[#783F45] hover:bg-[#603137] text-white text-xs font-semibold transition-all duration-150 shadow-xs hover:shadow-sm active:scale-98"
+                  className="px-4 py-2 rounded-lg bg-[#783F45] hover:bg-[#603137] text-white text-xs sm:text-sm font-semibold transition-all duration-200 shadow-xs hover:shadow-sm active:scale-98 cursor-pointer"
                 >
                   Get Started
                 </button>
@@ -229,18 +271,18 @@ export default function LandingPage() {
         )}
       </header>
 
-      {/* 2. Hero Section */}
-      <section className="relative overflow-hidden py-14 sm:py-20 lg:py-24 border-b border-[#E8E2DA]">
+      {/* 2. Full-Width Editorial Hero Section (56–64px Heading) */}
+      <section className="relative overflow-hidden py-16 sm:py-20 lg:py-24 border-b border-[#E8E2DA]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
             {/* Left Column: Headlines & Call to Actions */}
             <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFFFFF] border border-[#E8E2DA] text-xs font-medium text-[#6B6560] shadow-xs">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white border border-[#E8E2DA] text-xs font-medium text-[#6B6560] shadow-xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#783F45]" />
                 <span>Commerce & Revenue Intelligence</span>
               </div>
 
-              <h1 className="font-heading text-4xl sm:text-5xl lg:text-[56px] font-bold text-[#242424] tracking-tight leading-[1.12]">
+              <h1 className="font-heading text-4xl sm:text-5xl lg:text-[60px] font-bold text-[#242424] tracking-tight leading-[1.10]">
                 Better shopping. <br className="hidden sm:inline" />
                 <span className="text-[#783F45]">Smarter business.</span>
               </h1>
@@ -271,7 +313,7 @@ export default function LandingPage() {
               <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-6 text-xs text-[#6B6560]">
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-[#32734D]" />
-                  <span>Verified 15-product catalog</span>
+                  <span>15 verified accessories</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-[#32734D]" />
@@ -288,7 +330,7 @@ export default function LandingPage() {
             <div className="lg:col-span-5 relative">
               <div className="relative mx-auto max-w-md lg:max-w-none">
                 {/* Background decorative card */}
-                <div className="absolute inset-0 bg-[#E8E2DA]/40 rounded-3xl transform rotate-1 -z-10 translate-x-2 translate-y-2" />
+                <div className="absolute inset-0 bg-[#E8E2DA]/50 rounded-3xl transform rotate-1 -z-10 translate-x-2 translate-y-2" />
 
                 {/* Primary Editorial Showcase Card */}
                 <div className="bg-white border border-[#E8E2DA] rounded-3xl p-6 sm:p-7 shadow-sm space-y-5">
@@ -305,12 +347,12 @@ export default function LandingPage() {
                   {/* 2x2 Product Visual Grid */}
                   <div className="grid grid-cols-2 gap-3.5">
                     {/* Item 1 */}
-                    <div className="bg-[#FAF9F6] border border-[#E8E2DA] rounded-2xl p-3 text-center group hover:border-[#783F45]/30 transition-all duration-200">
+                    <div className="bg-[#FAF9F6] border border-[#E8E2DA] rounded-2xl p-3 text-center group card-elevate">
                       <div className="w-full aspect-square rounded-xl bg-white overflow-hidden mb-2.5 flex items-center justify-center p-2">
                         <img
                           src="/images/products/acc_mou_02.webp"
                           alt="Wireless Mouse"
-                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
+                          className="w-full h-full object-contain img-zoom"
                         />
                       </div>
                       <p className="text-xs font-bold text-[#242424] truncate">Wireless Mouse</p>
@@ -318,12 +360,12 @@ export default function LandingPage() {
                     </div>
 
                     {/* Item 2 */}
-                    <div className="bg-[#FAF9F6] border border-[#E8E2DA] rounded-2xl p-3 text-center group hover:border-[#783F45]/30 transition-all duration-200">
+                    <div className="bg-[#FAF9F6] border border-[#E8E2DA] rounded-2xl p-3 text-center group card-elevate">
                       <div className="w-full aspect-square rounded-xl bg-white overflow-hidden mb-2.5 flex items-center justify-center p-2">
                         <img
                           src="/images/products/acc_ear_03.webp"
                           alt="Earphones"
-                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
+                          className="w-full h-full object-contain img-zoom"
                         />
                       </div>
                       <p className="text-xs font-bold text-[#242424] truncate">Earphones</p>
@@ -331,12 +373,12 @@ export default function LandingPage() {
                     </div>
 
                     {/* Item 3 */}
-                    <div className="bg-[#FAF9F6] border border-[#E8E2DA] rounded-2xl p-3 text-center group hover:border-[#783F45]/30 transition-all duration-200">
+                    <div className="bg-[#FAF9F6] border border-[#E8E2DA] rounded-2xl p-3 text-center group card-elevate">
                       <div className="w-full aspect-square rounded-xl bg-white overflow-hidden mb-2.5 flex items-center justify-center p-2">
                         <img
                           src="/images/products/acc_hub_15.webp"
                           alt="USB Hub"
-                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
+                          className="w-full h-full object-contain img-zoom"
                         />
                       </div>
                       <p className="text-xs font-bold text-[#242424] truncate">USB Hub</p>
@@ -344,12 +386,12 @@ export default function LandingPage() {
                     </div>
 
                     {/* Item 4 */}
-                    <div className="bg-[#FAF9F6] border border-[#E8E2DA] rounded-2xl p-3 text-center group hover:border-[#783F45]/30 transition-all duration-200">
+                    <div className="bg-[#FAF9F6] border border-[#E8E2DA] rounded-2xl p-3 text-center group card-elevate">
                       <div className="w-full aspect-square rounded-xl bg-white overflow-hidden mb-2.5 flex items-center justify-center p-2">
                         <img
                           src="/images/products/acc_chg_11.webp"
                           alt="Wall Charger"
-                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
+                          className="w-full h-full object-contain img-zoom"
                         />
                       </div>
                       <p className="text-xs font-bold text-[#242424] truncate">Wall Charger</p>
@@ -375,11 +417,68 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 3. Section: One platform. Two experiences. */}
+      {/* 3. Shop by Category Section */}
       <section className="py-16 sm:py-20 bg-white border-b border-[#E8E2DA]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-[#783F45]">Browse Collections</p>
+              <h2 className="font-heading text-3xl sm:text-4xl font-bold text-[#242424] mt-1 tracking-tight">
+                Shop by Category
+              </h2>
+            </div>
+            <button
+              onClick={handleCustomerNavigation}
+              className="text-xs sm:text-sm font-semibold text-[#783F45] hover:text-[#603137] flex items-center gap-1 cursor-pointer"
+            >
+              <span>Explore all categories</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {CATEGORIES.map((cat) => {
+              const IconComp = cat.icon;
+              return (
+                <div
+                  key={cat.id}
+                  onClick={handleCustomerNavigation}
+                  className="bg-[#FAF9F6] border border-[#E8E2DA] rounded-2xl p-5 flex flex-col justify-between card-elevate cursor-pointer group"
+                >
+                  <div className="space-y-4">
+                    <div className="w-full aspect-[4/3] rounded-xl bg-white overflow-hidden p-3 flex items-center justify-center border border-[#E8E2DA]">
+                      <img
+                        src={cat.image}
+                        alt={cat.name}
+                        className="w-full h-full object-contain img-zoom"
+                      />
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-semibold text-[#6B6560] uppercase tracking-wider">{cat.count}</span>
+                        <IconComp className="w-4 h-4 text-[#783F45]" />
+                      </div>
+                      <h3 className="font-heading font-bold text-base text-[#242424] mt-1">{cat.name}</h3>
+                      <p className="text-xs text-[#6B6560] mt-1 line-clamp-2 leading-relaxed">{cat.description}</p>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 mt-4 border-t border-[#E8E2DA] flex items-center justify-between text-xs font-semibold text-[#783F45]">
+                    <span>View items</span>
+                    <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1" />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 4. One Platform. Two Experiences. */}
+      <section className="py-16 sm:py-20 border-b border-[#E8E2DA]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
-            <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold text-[#242424] tracking-tight">
+            <h2 className="font-heading text-3xl sm:text-4xl font-bold text-[#242424] tracking-tight">
               One platform. Two experiences.
             </h2>
             <p className="text-sm sm:text-base text-[#6B6560] mt-3">
@@ -389,9 +488,9 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
             {/* Customer Section */}
-            <div className="bg-[#FAF9F6] border border-[#E8E2DA] rounded-3xl p-8 sm:p-10 flex flex-col justify-between hover:border-[#783F45]/40 transition-all duration-200 shadow-xs hover:shadow-sm">
+            <div className="bg-white border border-[#E8E2DA] rounded-3xl p-8 sm:p-10 flex flex-col justify-between card-elevate shadow-xs">
               <div className="space-y-5">
-                <div className="w-12 h-12 rounded-2xl bg-white border border-[#E8E2DA] flex items-center justify-center text-[#783F45] shadow-xs">
+                <div className="w-12 h-12 rounded-2xl bg-[#FAF9F6] border border-[#E8E2DA] flex items-center justify-center text-[#783F45] shadow-xs">
                   <ShoppingBag className="w-6 h-6" />
                 </div>
                 <div>
@@ -429,7 +528,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Merchant Section */}
+            {/* Merchant Section (Deep Charcoal Panel: #292628) */}
             <div className="bg-[#292628] text-white rounded-3xl p-8 sm:p-10 flex flex-col justify-between shadow-md">
               <div className="space-y-5">
                 <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center text-[#D8C3A5]">
@@ -473,14 +572,14 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 4. Small Featured Product Collection */}
-      <section className="py-16 sm:py-20 border-b border-[#E8E2DA]">
+      {/* 5. Featured Product Collection (Small Curated Essentials Grid) */}
+      <section className="py-16 sm:py-20 bg-white border-b border-[#E8E2DA]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wider text-[#783F45]">Handpicked Essentials</p>
-              <h2 className="font-heading text-2xl sm:text-3xl font-bold text-[#242424] mt-1">
-                Featured Product Collection
+              <h2 className="font-heading text-3xl sm:text-4xl font-bold text-[#242424] mt-1 tracking-tight">
+                Featured Products
               </h2>
             </div>
             <button
@@ -497,14 +596,14 @@ export default function LandingPage() {
               <div
                 key={p.id}
                 onClick={handleCustomerNavigation}
-                className="bg-white border border-[#E8E2DA] rounded-2xl p-3.5 flex flex-col justify-between hover:border-[#783F45]/40 hover:shadow-sm transition-all duration-200 cursor-pointer group"
+                className="bg-white border border-[#E8E2DA] rounded-2xl p-3.5 flex flex-col justify-between card-elevate cursor-pointer group"
               >
                 <div>
                   <div className="w-full aspect-square rounded-xl bg-[#FAF9F6] border border-[#E8E2DA]/60 overflow-hidden mb-3 p-2 flex items-center justify-center">
                     <img
                       src={p.image_url}
                       alt={p.name}
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-200"
+                      className="w-full h-full object-contain img-zoom"
                     />
                   </div>
                   <span className="text-[10px] font-semibold text-[#6B6560] uppercase tracking-wider block truncate">
@@ -527,7 +626,106 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 5. Professional Footer */}
+      {/* 6. Merchant Platform Introduction */}
+      <section className="py-16 sm:py-20 border-b border-[#E8E2DA]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            <div className="lg:col-span-6 space-y-5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-[#783F45] bg-white px-3 py-1 rounded-full border border-[#E8E2DA]">
+                Merchant Operating System
+              </span>
+              <h2 className="font-heading text-3xl sm:text-4xl font-bold text-[#242424] tracking-tight leading-snug">
+                Built to help small merchants operate efficiently and grow revenue.
+              </h2>
+              <p className="text-sm sm:text-base text-[#6B6560] leading-relaxed">
+                From fast in-store billing to automated basket recommendations and predictive inventory alerts, MerchantPilot equips modern retail shops with enterprise intelligence.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <div className="bg-white border border-[#E8E2DA] rounded-xl p-4 space-y-1.5 shadow-xs">
+                  <Receipt className="w-5 h-5 text-[#783F45]" />
+                  <h4 className="font-heading font-bold text-sm text-[#242424]">In-Store POS Counter</h4>
+                  <p className="text-xs text-[#6B6560] leading-relaxed">Instant billing with cash/UPI tender and thermal printable receipts.</p>
+                </div>
+
+                <div className="bg-white border border-[#E8E2DA] rounded-xl p-4 space-y-1.5 shadow-xs">
+                  <Boxes className="w-5 h-5 text-[#783F45]" />
+                  <h4 className="font-heading font-bold text-sm text-[#242424]">Inventory Runway</h4>
+                  <p className="text-xs text-[#6B6560] leading-relaxed">Predictive stock velocity to prevent stockouts of top-selling items.</p>
+                </div>
+
+                <div className="bg-white border border-[#E8E2DA] rounded-xl p-4 space-y-1.5 shadow-xs">
+                  <TrendingUp className="w-5 h-5 text-[#783F45]" />
+                  <h4 className="font-heading font-bold text-sm text-[#242424]">Apriori Market Basket</h4>
+                  <p className="text-xs text-[#6B6560] leading-relaxed">Data-backed product bundles based on genuine multi-item transactions.</p>
+                </div>
+
+                <div className="bg-white border border-[#E8E2DA] rounded-xl p-4 space-y-1.5 shadow-xs">
+                  <Sparkles className="w-5 h-5 text-[#783F45]" />
+                  <h4 className="font-heading font-bold text-sm text-[#242424]">AI Business Copilot</h4>
+                  <p className="text-xs text-[#6B6560] leading-relaxed">Ask natural questions about sales, margins, and stock status.</p>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={handleMerchantNavigation}
+                  className="px-6 py-3 rounded-xl bg-[#783F45] hover:bg-[#603137] text-white text-xs sm:text-sm font-semibold transition flex items-center gap-2 cursor-pointer shadow-xs"
+                >
+                  <span>Open Merchant Workspace</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Right: Live Preview Panel */}
+            <div className="lg:col-span-6">
+              <div className="bg-[#292628] rounded-3xl p-6 sm:p-8 text-white shadow-lg space-y-6">
+                <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-[#D8C3A5] text-[#242424] flex items-center justify-center font-bold text-xs">
+                      MP
+                    </div>
+                    <div>
+                      <p className="font-heading font-bold text-sm">Smart Accessories Store</p>
+                      <p className="text-[10px] text-stone-400">Live Workspace Register</p>
+                    </div>
+                  </div>
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[11px] font-semibold">
+                    Active Session
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-1">
+                    <p className="text-[11px] uppercase tracking-wider text-stone-400">7-Day Revenue</p>
+                    <p className="text-2xl font-bold font-mono text-white">₹9,180</p>
+                    <p className="text-[11px] text-emerald-400">37 transactions</p>
+                  </div>
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-1">
+                    <p className="text-[11px] uppercase tracking-wider text-stone-400">Gross Margin</p>
+                    <p className="text-2xl font-bold font-mono text-emerald-400">38.2%</p>
+                    <p className="text-[11px] text-stone-300">₹3,507 gross profit</p>
+                  </div>
+                </div>
+
+                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
+                  <p className="text-[11px] uppercase tracking-wider text-stone-400">Top Recommended Bundle</p>
+                  <div className="flex items-center justify-between text-xs text-white">
+                    <span>USB Cable + Phone Cover Bundle</span>
+                    <span className="text-[#D8C3A5] font-mono font-semibold">Lift 2.2×</span>
+                  </div>
+                  <p className="text-[11px] text-stone-300 leading-relaxed">
+                    67% of customers buying USB-C cables also add mobile covers.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 7. Professional Footer */}
       <footer className="bg-white py-12 sm:py-16 text-xs text-[#6B6560]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 pb-12 border-b border-[#E8E2DA]">

@@ -8,8 +8,10 @@ export default {
     extend: {
       colors: {
         // MerchantPilot Editorial Retail Palette
-        customerBg: '#F3EFE9',
+        mainBg: '#F5F1EB',
+        customerBg: '#F5F1EB',
         merchantBg: '#F6F5F3',
+        merchantPanel: '#292628',
         card: '#FFFFFF',
         textPrimary: '#242424',
         textSecondary: '#6B6560',
