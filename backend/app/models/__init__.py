@@ -12,6 +12,7 @@ from backend.app.models.audit import AuditLog
 from backend.app.models.action import MerchantAction
 from backend.app.models.import_record import ImportRecord
 from backend.app.models.stock_adjustment import StockAdjustment
+from backend.app.models.mcp import McpToken, McpActivity
 
 __all__ = [
     "Merchant",
@@ -30,5 +31,7 @@ __all__ = [
     "AuditLog",
     "MerchantAction",
     "ImportRecord",
-    "StockAdjustment"
+    "StockAdjustment",
+    "McpToken",
+    "McpActivity"
 ]

@@ -55,24 +55,24 @@ def run_prod_visual_verification():
         # -----------------------------------------------------------------
         print("\n--- 3. Verifying Merchant Signup & Onboarding ---")
         page.goto(f"{PROD_URL}/merchant/signup", wait_until="domcontentloaded")
-        page.wait_for_selector("button:has-text('Create Merchant Account')", timeout=15000)
+        page.wait_for_selector("button:has-text('Register Store Workspace')", timeout=15000)
         time.sleep(1)
 
         rand_suffix = uuid.uuid4().hex[:6]
         biz_email = f"aarav_test_{rand_suffix}@store.com"
-        page.locator("input[placeholder='Aarav Patel']").fill("Aarav Sharma")
-        page.locator("input[placeholder='e.g. Apex Tech Retailers']").fill(f"Urban Fashion {rand_suffix}")
-        page.locator("input[placeholder='aarav@apextech.in']").fill(biz_email)
-        page.locator("input[placeholder='Create a robust password']").fill("Password123!")
-        page.locator("input[placeholder='Re-type your password']").fill("Password123!")
+        page.locator("#merchant-owner-name").fill("Aarav Sharma")
+        page.locator("#merchant-business-name").fill(f"Urban Fashion {rand_suffix}")
+        page.locator("#merchant-email").fill(biz_email)
+        page.locator("#merchant-password").fill("Password123!")
+        page.locator("#merchant-confirm-password").fill("Password123!")
         
         ss_signup = os.path.join(OUTPUT_DIR, "production_merchant_signup.png")
         page.screenshot(path=ss_signup, full_page=True)
         print(f"✅ Captured: {ss_signup}")
 
         # Submit registration
-        page.locator("button:has-text('Create Merchant Account')").click()
-        page.wait_for_url("**/merchant/onboarding**", timeout=12000)
+        page.locator("button:has-text('Register Store Workspace')").click()
+        page.wait_for_url("**/merchant/onboarding**", timeout=15000)
         time.sleep(2)
         print(f"Current URL after registration: {page.url}")
         assert "/merchant/onboarding" in page.url

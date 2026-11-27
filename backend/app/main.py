@@ -6,6 +6,10 @@ from backend.app.database import engine, Base, SessionLocal
 from backend.app.api import api_router, root_api_router
 from backend.app.seed.seed_data import seed_database
 from backend.app.models.product import Product
+from backend.app.mcp import mcp, get_mcp_app
+
+# Instantiate the MCP app so session_manager is ready
+mcp_asgi_app = get_mcp_app()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -21,7 +25,12 @@ async def lifespan(app: FastAPI):
             print(f"Database already initialized with {product_count} products.")
     finally:
         db.close()
-    yield
+    
+    # Run official MCP session manager for Streamable HTTP transport
+    if hasattr(mcp.session_manager, "_has_started"):
+        mcp.session_manager._has_started = False
+    async with mcp.session_manager.run():
+        yield
     # Shutdown logic if any
 
 app = FastAPI(
@@ -43,6 +52,9 @@ app.add_middleware(
 # Include All API Routers under /api and root fallback
 app.include_router(api_router)
 app.include_router(root_api_router)
+
+# Mount MCP Server endpoint at /mcp
+app.mount("/mcp", mcp_asgi_app)
 
 @app.get("/")
 def root():

@@ -23,6 +23,7 @@ const PAGE_TITLES = {
   '/merchant/assistant': { title: 'AI Business Copilot', subtitle: 'Database-grounded operational and revenue assistant.' },
   '/merchant/policies': { title: 'Discount Rules & Margin Limits', subtitle: 'Commercial guardrails and approval thresholds.' },
   '/merchant/activity': { title: 'Audit Trail', subtitle: 'Immutable transaction, policy, and decision logs.' },
+  '/merchant/claude': { title: 'Connect Claude (MCP)', subtitle: 'Model Context Protocol server endpoint, bearer tokens, and tools.' },
   '/merchant/settings': { title: 'Store Settings', subtitle: 'Business identity and workspace preferences.' }
 };
 

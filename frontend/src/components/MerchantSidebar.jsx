@@ -15,7 +15,8 @@ import {
   Store,
   LogOut,
   PlusCircle,
-  ExternalLink
+  ExternalLink,
+  Cpu
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -25,6 +26,7 @@ const NAV_GROUPS = [
     items: [
       { name: 'Overview', path: '/merchant/overview', icon: LayoutDashboard },
       { name: 'New Sale (POS)', path: '/merchant/sales', icon: PlusCircle, isPos: true },
+      { name: 'Connect Claude (MCP)', path: '/merchant/claude', icon: Cpu, isMcp: true },
       { name: 'AI Business Copilot', path: '/merchant/assistant', icon: Bot, isCopilot: true },
     ]
   },
@@ -124,6 +126,11 @@ export default function MerchantSidebar({ mobile = false, onClose }) {
                       {item.isPos && (
                         <span className="ml-auto text-[9px] bg-[#252722] text-white px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
                           POS
+                        </span>
+                      )}
+                      {item.isMcp && (
+                        <span className="ml-auto text-[9px] bg-emerald-700 text-white px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                          MCP
                         </span>
                       )}
                     </NavLink>

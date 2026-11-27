@@ -39,6 +39,7 @@ import AuditTrail from './pages/AuditTrail';
 import DataImport from './pages/DataImport';
 import Settings from './pages/Settings';
 import MerchantOnboarding from './pages/MerchantOnboarding';
+import ConnectClaude from './pages/ConnectClaude';
 
 // Context Providers
 import { AuthProvider } from './context/AuthContext';
@@ -155,6 +156,8 @@ export default function App() {
               <Route path="activity" element={<AuditTrail />} />
               <Route path="import" element={<DataImport />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="claude" element={<ConnectClaude />} />
+              <Route path="mcp" element={<Navigate to="/merchant/claude" replace />} />
             </Route>
 
             {/* 4. Backward Compatibility Aliases & Direct Redirects */}
