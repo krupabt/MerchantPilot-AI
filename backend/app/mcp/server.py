@@ -860,13 +860,22 @@ class McpAuthMiddleware:
         user_agent = headers.get(b"user-agent", b"").decode("utf-8", errors="ignore")[:60]
         mcp_proto_header = headers.get(b"mcp-protocol-version", b"").decode("utf-8", errors="ignore")
         has_auth = bool(auth_raw)
-        auth_scheme = auth_raw.split()[0].upper() if auth_raw else "NONE"
 
         token_str = None
-        if auth_raw.lower().startswith("bearer "):
-            token_str = auth_raw[7:].strip()
-        elif b"x-mcp-token" in headers:
+        if auth_raw:
+            # Bulletproof extraction: matches mp_mcp_... even if 'Bearer' is missing, conjoined ('Bearermp_mcp_...'), has colons, or quotes
+            m = re.search(r"(mp_mcp_[A-Za-z0-9_\-]+)", auth_raw, re.IGNORECASE)
+            if m:
+                token_str = m.group(1)
+            elif auth_raw.lower().startswith("bearer"):
+                token_str = re.sub(r"^bearer[:\s]*", "", auth_raw, flags=re.I).strip()
+            else:
+                token_str = auth_raw.strip()
+
+        if not token_str and b"x-mcp-token" in headers:
             token_str = headers[b"x-mcp-token"].decode("utf-8", errors="ignore").strip()
+
+        auth_scheme = "BEARER" if (auth_raw and "bearer" in auth_raw.lower()) else ("RAW_TOKEN" if token_str else "NONE")
 
         # 4. Reachability Probe: Unauthenticated GET returns 200 OK operational metadata
         if method == "GET" and not token_str:

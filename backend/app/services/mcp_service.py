@@ -65,15 +65,27 @@ def verify_mcp_token(token_str: str) -> Optional[Dict[str, Any]]:
     Authenticate an MCP bearer token.
     Updates last_used_at and returns merchant information if valid.
     """
-    if not token_str or not token_str.startswith("mp_mcp_"):
+    if not token_str:
+        return None
+
+    clean_tok = token_str.strip()
+    if not clean_tok.lower().startswith("mp_mcp_"):
         return None
 
     db = SessionLocal()
     try:
+        from sqlalchemy import func
         token_record = db.query(McpToken).filter(
-            McpToken.token == token_str,
+            McpToken.token == clean_tok,
             McpToken.is_active == True
         ).first()
+
+        # Fallback to case-insensitive match for client tolerance
+        if not token_record:
+            token_record = db.query(McpToken).filter(
+                func.lower(McpToken.token) == clean_tok.lower(),
+                McpToken.is_active == True
+            ).first()
 
         if not token_record:
             return None
