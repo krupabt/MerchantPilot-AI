@@ -108,11 +108,16 @@ print(f"  POST /mcp tools/list -> Status: {res.status_code}")
 tools_body = res.text
 # Parse SSE stream or JSON
 tools = []
-for line in tools_body.split("\n"):
-    if line.startswith("data:"):
-        d = json.loads(line[5:].strip())
-        if "result" in d and "tools" in d["result"]:
-            tools = d["result"]["tools"]
+try:
+    data = json.loads(tools_body)
+    if "result" in data and "tools" in data["result"]:
+        tools = data["result"]["tools"]
+except Exception:
+    for line in tools_body.split("\n"):
+        if line.startswith("data:"):
+            d = json.loads(line[5:].strip())
+            if "result" in d and "tools" in d["result"]:
+                tools = d["result"]["tools"]
 
 print(f"✓ Successfully discovered {len(tools)} tools:")
 for t in tools:
@@ -132,13 +137,40 @@ call_payload = {
 }
 res = s.post(f"{BASE_URL}/mcp", headers=headers, json=call_payload, allow_redirects=False)
 print(f"  get_store_details -> Status: {res.status_code}")
-for line in res.text.split("\n"):
-    if line.startswith("data:"):
-        d = json.loads(line[5:].strip())
-        print(f"    Result: {d.get('result', {})}")
+try:
+    d = res.json()
+    print(f"    Result: {d.get('result', {})}")
+except Exception:
+    for line in res.text.split("\n"):
+        if line.startswith("data:"):
+            d = json.loads(line[5:].strip())
+            print(f"    Result: {d.get('result', {})}")
 
-# 9. Test Direct URL Token Authentication (?token=...)
-print("\n8. Testing URL Query Parameter Authentication (?token=...)...")
+# 8b. Test tools/call: list_products
+print("\n8. Executing tool: list_products...")
+list_prod_payload = {
+    "jsonrpc": "2.0",
+    "id": 4,
+    "method": "tools/call",
+    "params": {
+        "name": "list_products",
+        "arguments": {}
+    }
+}
+res = s.post(f"{BASE_URL}/mcp", headers=headers, json=list_prod_payload, allow_redirects=False)
+print(f"  list_products -> Status: {res.status_code}")
+try:
+    d = res.json()
+    prod_content = d.get('result', {}).get('content', [])
+    print(f"    Discovered products output length: {len(str(prod_content))}")
+except Exception:
+    for line in res.text.split("\n"):
+        if line.startswith("data:"):
+            d = json.loads(line[5:].strip())
+            print(f"    Result: {d.get('result', {})}")
+
+# 9. Verify URL Query Parameter Rejection (no tokens in URL)
+print("\n9. Verifying URL Query Parameter (?token=...) is rejected for security...")
 res = s.post(
     f"{BASE_URL}/mcp?token={mcp_token}",
     headers={"Content-Type": "application/json", "Accept": "application/json"},
@@ -146,15 +178,17 @@ res = s.post(
     allow_redirects=False
 )
 print(f"  POST /mcp?token=... -> Status: {res.status_code}")
-assert res.status_code == 200, f"Expected 200 with query token, got {res.status_code}"
-print("✓ Direct URL token parameter authentication succeeded!")
+assert res.status_code == 401, f"Expected 401 rejecting query token, got {res.status_code}"
+print("✓ Direct URL token query parameter safely rejected per RFC specification!")
 
 # 10. Verify Live Activity Log
-print("\n9. Verifying Live Activity Audit Trail in Dashboard...")
+print("\n10. Verifying Live Activity Audit Trail in Dashboard...")
 act_res = s.get(f"{BASE_URL}/api/merchant/mcp/activity?limit=10", headers={"Authorization": f"Bearer {auth_token}"})
 activities = act_res.json()
 print(f"✓ Found {len(activities)} audit records:")
 for a in activities[:3]:
+    dur = a.get('duration_ms', a.get('execution_time_ms', 0))
+    print(f"    • [{a.get('status', 'OK')}] {a.get('tool_name', 'tool')} ({dur}ms) - {a.get('details', '')}")
     print(f"    [{a.get('created_at')}] {a.get('tool_name')} -> {a.get('status')} ({a.get('duration_ms', a.get('execution_time_ms', 0))}ms)")
 
 print("\n============================================================")

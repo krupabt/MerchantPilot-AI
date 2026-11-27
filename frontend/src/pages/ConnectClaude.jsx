@@ -623,8 +623,7 @@ export default function ConnectClaude() {
                     </div>
 
                     <div className="pt-2 border-t border-[#E5E2DB] text-[11px] text-[#777B70]">
-                      <strong>Direct Token URL:</strong> If your client prefers direct URL authentication, you can also paste: <br />
-                      <code className="font-mono text-[#20211F] select-all">{publicEndpoint}?token=&lt;your_token&gt;</code>
+                      <strong>Security Note:</strong> Authentication is handled strictly through the <code className="font-mono text-[#20211F]">Authorization: Bearer</code> header to prevent credential leakage in URL logs.
                     </div>
                   </div>
                 </div>

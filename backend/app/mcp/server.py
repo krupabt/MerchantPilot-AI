@@ -21,7 +21,9 @@ from backend.app.services.revenue_service import RevenueService
 # Context variable storing authenticated merchant details for current request
 current_mcp_merchant: ContextVar[Optional[Dict[str, Any]]] = ContextVar("current_mcp_merchant", default=None)
 
-# Initialize official FastMCP server with Streamable HTTP transport
+import time
+
+# Initialize official FastMCP server with Streamable HTTP transport and pure JSON responses
 mcp = FastMCP(
     name="MerchantPilot AI",
     instructions=(
@@ -30,7 +32,8 @@ mcp = FastMCP(
         "and store configuration directly using authenticated merchant tools."
     ),
     streamable_http_path="/",
-    stateless_http=True
+    stateless_http=True,
+    json_response=True
 )
 
 def _get_active_merchant() -> Dict[str, Any]:
@@ -811,7 +814,8 @@ class McpAuthMiddleware:
     """
     ASGI middleware ensuring all calls to the Streamable HTTP MCP transport
     are authenticated via a valid merchant MCP Bearer token, handle CORS preflights,
-    support reachability checks, and normalize content-type negotiation.
+    support RFC 9728/RFC 8414 OAuth discovery challenges, normalize content negotiation,
+    and log comprehensive request/response audit events without exposing secret tokens.
     """
     def __init__(self, app: ASGIApp):
         self.app = app
@@ -821,67 +825,72 @@ class McpAuthMiddleware:
             await self.app(scope, receive, send)
             return
 
+        start_time = time.time()
         method = scope.get("method", "GET").upper()
+        path = scope.get("path", "")
 
         cors_headers = {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET, POST, OPTIONS, HEAD",
-            "Access-Control-Allow-Headers": "Authorization, Content-Type, Accept, mcp-session-id, x-mcp-token, x-vercel-protection-bypass",
-            "Access-Control-Max-Age": "86400"
+            "Access-Control-Allow-Headers": "Authorization, Content-Type, Accept, mcp-session-id, x-mcp-token, mcp-protocol-version, x-vercel-protection-bypass",
+            "Access-Control-Expose-Headers": "MCP-Protocol-Version, Content-Type, Authorization",
+            "Access-Control-Max-Age": "86400",
+            "MCP-Protocol-Version": "2025-03-26"
         }
 
         # 1. Allow CORS preflight requests without authentication
         if method == "OPTIONS":
             response = JSONResponse({"status": "ok"}, headers=cors_headers)
             await response(scope, receive, send)
+            duration_ms = int((time.time() - start_time) * 1000)
+            print(f"[MCP-INSPECT] method=OPTIONS path={path} status=200 latency={duration_ms}ms")
             return
 
         # 2. Allow HEAD requests for connectivity checks
         if method == "HEAD":
             response = Response(status_code=200, headers=cors_headers)
             await response(scope, receive, send)
+            duration_ms = int((time.time() - start_time) * 1000)
+            print(f"[MCP-INSPECT] method=HEAD path={path} status=200 latency={duration_ms}ms")
             return
 
-        # 3. Extract Authorization token
+        # 3. Extract and inspect incoming headers safely (NO secrets logged)
         headers = dict(scope.get("headers", []))
-        auth_raw = headers.get(b"authorization", b"").decode("utf-8").strip()
+        auth_raw = headers.get(b"authorization", b"").decode("utf-8", errors="ignore").strip()
+        user_agent = headers.get(b"user-agent", b"").decode("utf-8", errors="ignore")[:60]
+        mcp_proto_header = headers.get(b"mcp-protocol-version", b"").decode("utf-8", errors="ignore")
+        has_auth = bool(auth_raw)
+        auth_scheme = auth_raw.split()[0].upper() if auth_raw else "NONE"
 
         token_str = None
         if auth_raw.lower().startswith("bearer "):
             token_str = auth_raw[7:].strip()
         elif b"x-mcp-token" in headers:
-            token_str = headers[b"x-mcp-token"].decode("utf-8").strip()
-        elif "query_string" in scope:
-            query = scope.get("query_string", b"").decode("utf-8", errors="ignore")
-            for param in query.split("&"):
-                if param.startswith("token="):
-                    token_str = param.split("=", 1)[1]
-                    break
+            token_str = headers[b"x-mcp-token"].decode("utf-8", errors="ignore").strip()
 
-        # 4. Reachability Probe: Unauthenticated GET request returns 200 OK server info
-        # This allows Claude Web, browser checks, and health monitors to verify the server is running
+        # 4. Reachability Probe: Unauthenticated GET returns 200 OK operational metadata
         if method == "GET" and not token_str:
-            accept_header = headers.get(b"accept", b"").decode("utf-8", errors="ignore")
-            # If client did not provide auth token, return healthy operational response
             response = JSONResponse(
                 {
                     "status": "operational",
                     "service": "MerchantPilot AI MCP Server",
                     "transport": "streamable-http",
                     "endpoint": "https://merchantpilot-ai.vercel.app/mcp",
-                    "protocolVersion": "2024-11-05",
+                    "protocolVersion": "2025-03-26",
+                    "supportedProtocolVersions": ["2025-03-26", "2024-11-05"],
                     "auth": "bearer",
                     "tools_count": 12,
                     "description": (
                         "Authenticated Streamable HTTP MCP server for Claude. "
-                        "To interact, provide header 'Authorization: Bearer mp_mcp_...' "
-                        "or append '?token=mp_mcp_...'."
+                        "Connect with 'Authorization: Bearer mp_mcp_...'."
                     )
                 },
                 status_code=200,
                 headers=cors_headers
             )
             await response(scope, receive, send)
+            duration_ms = int((time.time() - start_time) * 1000)
+            print(f"[MCP-INSPECT] method=GET path={path} status=200 has_auth=False ua={user_agent} latency={duration_ms}ms")
             return
 
         # 5. Authenticate token against active McpTokens in DB
@@ -889,7 +898,11 @@ class McpAuthMiddleware:
 
         if not merchant_info:
             unauth_headers = dict(cors_headers)
-            unauth_headers["WWW-Authenticate"] = "Bearer realm='MerchantPilot MCP'"
+            # Standards-compliant RFC 9728 WWW-Authenticate challenge with resource_metadata pointer
+            unauth_headers["WWW-Authenticate"] = (
+                'Bearer realm="MerchantPilot MCP", '
+                'resource_metadata="https://merchantpilot-ai.vercel.app/.well-known/oauth-protected-resource"'
+            )
             response = JSONResponse(
                 {
                     "jsonrpc": "2.0",
@@ -897,7 +910,7 @@ class McpAuthMiddleware:
                         "code": -32001,
                         "message": (
                             "Unauthorized: Valid MerchantPilot MCP Bearer token required. "
-                            "Provide header 'Authorization: Bearer mp_mcp_...' or URL query parameter '?token=mp_mcp_...'"
+                            "Provide header 'Authorization: Bearer mp_mcp_...'"
                         )
                     }
                 },
@@ -905,10 +918,15 @@ class McpAuthMiddleware:
                 headers=unauth_headers
             )
             await response(scope, receive, send)
+            duration_ms = int((time.time() - start_time) * 1000)
+            print(
+                f"[MCP-INSPECT] method={method} path={path} status=401 "
+                f"has_auth={has_auth} auth_scheme={auth_scheme} "
+                f"mcp_version={mcp_proto_header or 'N/A'} ua={user_agent} latency={duration_ms}ms"
+            )
             return
 
-        # 6. Normalize Accept header for Streamable HTTP transport
-        # FastMCP StreamableHTTPServerTransport requires both application/json and text/event-stream
+        # 6. Normalize Accept header for FastMCP Streamable HTTP transport
         headers_list = list(scope.get("headers", []))
         accept_idx = next((i for i, (k, _) in enumerate(headers_list) if k.lower() == b"accept"), -1)
         if accept_idx != -1:
@@ -917,18 +935,19 @@ class McpAuthMiddleware:
             headers_list.append((b"accept", b"application/json, text/event-stream"))
         scope["headers"] = headers_list
 
-        # 7. Wrap send to inject CORS headers into all downstream FastMCP responses
+        # 7. Wrap send to inject CORS headers and protocol version into all downstream responses
         async def cors_send(message):
             if message.get("type") == "http.response.start":
                 resp_headers = list(message.get("headers", []))
-                # Add CORS headers if not already set
                 existing_names = {k.lower() for k, _ in resp_headers}
                 if b"access-control-allow-origin" not in existing_names:
                     resp_headers.append((b"access-control-allow-origin", b"*"))
                 if b"access-control-allow-methods" not in existing_names:
                     resp_headers.append((b"access-control-allow-methods", b"GET, POST, OPTIONS, HEAD"))
                 if b"access-control-allow-headers" not in existing_names:
-                    resp_headers.append((b"access-control-allow-headers", b"Authorization, Content-Type, Accept, mcp-session-id, x-mcp-token, x-vercel-protection-bypass"))
+                    resp_headers.append((b"access-control-allow-headers", b"Authorization, Content-Type, Accept, mcp-session-id, x-mcp-token, mcp-protocol-version, x-vercel-protection-bypass"))
+                if b"mcp-protocol-version" not in existing_names:
+                    resp_headers.append((b"mcp-protocol-version", b"2025-03-26"))
                 message["headers"] = resp_headers
             await send(message)
 
@@ -936,6 +955,12 @@ class McpAuthMiddleware:
         token_ctx = current_mcp_merchant.set(merchant_info)
         try:
             await self.app(scope, receive, cors_send)
+            duration_ms = int((time.time() - start_time) * 1000)
+            print(
+                f"[MCP-INSPECT] method={method} path={path} status=200 "
+                f"merchant_id={merchant_info['merchant_id']} "
+                f"mcp_version={mcp_proto_header or '2025-03-26'} ua={user_agent} latency={duration_ms}ms"
+            )
         finally:
             current_mcp_merchant.reset(token_ctx)
 
