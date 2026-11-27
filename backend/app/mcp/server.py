@@ -5,7 +5,7 @@ from contextvars import ContextVar
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
 from starlette.types import ASGIApp, Scope, Receive, Send
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, Response
 
 from mcp.server.fastmcp import FastMCP
 
@@ -810,7 +810,8 @@ def publish_store(is_published: bool = True) -> Dict[str, Any]:
 class McpAuthMiddleware:
     """
     ASGI middleware ensuring all calls to the Streamable HTTP MCP transport
-    are authenticated via a valid merchant MCP Bearer token.
+    are authenticated via a valid merchant MCP Bearer token, handle CORS preflights,
+    support reachability checks, and normalize content-type negotiation.
     """
     def __init__(self, app: ASGIApp):
         self.app = app
@@ -820,22 +821,28 @@ class McpAuthMiddleware:
             await self.app(scope, receive, send)
             return
 
-        method = scope.get("method", "GET")
+        method = scope.get("method", "GET").upper()
 
-        # Allow CORS preflight requests without auth
+        cors_headers = {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS, HEAD",
+            "Access-Control-Allow-Headers": "Authorization, Content-Type, Accept, mcp-session-id, x-mcp-token, x-vercel-protection-bypass",
+            "Access-Control-Max-Age": "86400"
+        }
+
+        # 1. Allow CORS preflight requests without authentication
         if method == "OPTIONS":
-            response = JSONResponse(
-                {"status": "ok"},
-                headers={
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-                    "Access-Control-Allow-Headers": "Authorization, Content-Type, Accept, mcp-session-id"
-                }
-            )
+            response = JSONResponse({"status": "ok"}, headers=cors_headers)
             await response(scope, receive, send)
             return
 
-        # Extract Authorization header or token query param
+        # 2. Allow HEAD requests for connectivity checks
+        if method == "HEAD":
+            response = Response(status_code=200, headers=cors_headers)
+            await response(scope, receive, send)
+            return
+
+        # 3. Extract Authorization token
         headers = dict(scope.get("headers", []))
         auth_raw = headers.get(b"authorization", b"").decode("utf-8").strip()
 
@@ -844,40 +851,91 @@ class McpAuthMiddleware:
             token_str = auth_raw[7:].strip()
         elif b"x-mcp-token" in headers:
             token_str = headers[b"x-mcp-token"].decode("utf-8").strip()
-        elif b"query_string" in scope:
-            query = scope[b"query_string"].decode("utf-8")
+        elif "query_string" in scope:
+            query = scope.get("query_string", b"").decode("utf-8", errors="ignore")
             for param in query.split("&"):
                 if param.startswith("token="):
                     token_str = param.split("=", 1)[1]
                     break
 
-        # Authenticate token against active McpTokens in DB
+        # 4. Reachability Probe: Unauthenticated GET request returns 200 OK server info
+        # This allows Claude Web, browser checks, and health monitors to verify the server is running
+        if method == "GET" and not token_str:
+            accept_header = headers.get(b"accept", b"").decode("utf-8", errors="ignore")
+            # If client did not provide auth token, return healthy operational response
+            response = JSONResponse(
+                {
+                    "status": "operational",
+                    "service": "MerchantPilot AI MCP Server",
+                    "transport": "streamable-http",
+                    "endpoint": "https://merchantpilot-ai.vercel.app/mcp",
+                    "protocolVersion": "2024-11-05",
+                    "auth": "bearer",
+                    "tools_count": 12,
+                    "description": (
+                        "Authenticated Streamable HTTP MCP server for Claude. "
+                        "To interact, provide header 'Authorization: Bearer mp_mcp_...' "
+                        "or append '?token=mp_mcp_...'."
+                    )
+                },
+                status_code=200,
+                headers=cors_headers
+            )
+            await response(scope, receive, send)
+            return
+
+        # 5. Authenticate token against active McpTokens in DB
         merchant_info = verify_mcp_token(token_str) if token_str else None
 
         if not merchant_info:
+            unauth_headers = dict(cors_headers)
+            unauth_headers["WWW-Authenticate"] = "Bearer realm='MerchantPilot MCP'"
             response = JSONResponse(
                 {
                     "jsonrpc": "2.0",
                     "error": {
                         "code": -32001,
-                        "message": "Unauthorized: Valid MerchantPilot MCP Bearer token required. Provide header 'Authorization: Bearer mp_mcp_...'"
+                        "message": (
+                            "Unauthorized: Valid MerchantPilot MCP Bearer token required. "
+                            "Provide header 'Authorization: Bearer mp_mcp_...' or URL query parameter '?token=mp_mcp_...'"
+                        )
                     }
                 },
                 status_code=401,
-                headers={
-                    "WWW-Authenticate": "Bearer realm='MerchantPilot MCP'",
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-                    "Access-Control-Allow-Headers": "Authorization, Content-Type, Accept, mcp-session-id, x-mcp-token"
-                }
+                headers=unauth_headers
             )
             await response(scope, receive, send)
             return
 
-        # Bind authenticated merchant context for this request lifecycle
+        # 6. Normalize Accept header for Streamable HTTP transport
+        # FastMCP StreamableHTTPServerTransport requires both application/json and text/event-stream
+        headers_list = list(scope.get("headers", []))
+        accept_idx = next((i for i, (k, _) in enumerate(headers_list) if k.lower() == b"accept"), -1)
+        if accept_idx != -1:
+            headers_list[accept_idx] = (b"accept", b"application/json, text/event-stream")
+        else:
+            headers_list.append((b"accept", b"application/json, text/event-stream"))
+        scope["headers"] = headers_list
+
+        # 7. Wrap send to inject CORS headers into all downstream FastMCP responses
+        async def cors_send(message):
+            if message.get("type") == "http.response.start":
+                resp_headers = list(message.get("headers", []))
+                # Add CORS headers if not already set
+                existing_names = {k.lower() for k, _ in resp_headers}
+                if b"access-control-allow-origin" not in existing_names:
+                    resp_headers.append((b"access-control-allow-origin", b"*"))
+                if b"access-control-allow-methods" not in existing_names:
+                    resp_headers.append((b"access-control-allow-methods", b"GET, POST, OPTIONS, HEAD"))
+                if b"access-control-allow-headers" not in existing_names:
+                    resp_headers.append((b"access-control-allow-headers", b"Authorization, Content-Type, Accept, mcp-session-id, x-mcp-token, x-vercel-protection-bypass"))
+                message["headers"] = resp_headers
+            await send(message)
+
+        # 8. Bind authenticated merchant context for this request lifecycle
         token_ctx = current_mcp_merchant.set(merchant_info)
         try:
-            await self.app(scope, receive, send)
+            await self.app(scope, receive, cors_send)
         finally:
             current_mcp_merchant.reset(token_ctx)
 

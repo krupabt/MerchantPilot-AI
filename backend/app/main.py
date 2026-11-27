@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.types import ASGIApp, Scope, Receive, Send
 from contextlib import asynccontextmanager
 from backend.app.config import settings
 from backend.app.database import engine, Base, SessionLocal
@@ -53,7 +54,36 @@ app.add_middleware(
 app.include_router(api_router)
 app.include_router(root_api_router)
 
-# Mount MCP Server endpoint at /mcp
+# Class to route /mcp and /mcp/ directly to MCP ASGI app with zero redirects
+class McpPathMiddleware:
+    """
+    Ensures both /mcp and /mcp/ (and subpaths) route directly to the
+    MCP ASGI app with path='/' without Starlette Mount 307 temporary redirects.
+    """
+    def __init__(self, app: ASGIApp, mcp_app: ASGIApp):
+        self.app = app
+        self.mcp_app = mcp_app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send):
+        if scope["type"] == "http":
+            path = scope.get("path", "")
+            if path in ("/mcp", "/mcp/"):
+                sc = dict(scope)
+                sc["path"] = "/"
+                sc["raw_path"] = b"/"
+                await self.mcp_app(sc, receive, send)
+                return
+            elif path.startswith("/mcp/"):
+                sc = dict(scope)
+                sc["path"] = path[4:]  # e.g. /sse or /messages
+                sc["raw_path"] = sc["path"].encode("utf-8")
+                await self.mcp_app(sc, receive, send)
+                return
+
+        await self.app(scope, receive, send)
+
+# Mount MCP Server endpoint and intercept /mcp routes without 307 redirects
+app.add_middleware(McpPathMiddleware, mcp_app=mcp_asgi_app)
 app.mount("/mcp", mcp_asgi_app)
 
 @app.get("/")

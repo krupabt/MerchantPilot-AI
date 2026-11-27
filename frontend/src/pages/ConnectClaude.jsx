@@ -252,11 +252,16 @@ export default function ConnectClaude() {
       {/* Public Endpoint Banner */}
       <div className="bg-white border border-[#E5E2DB] rounded-2xl p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
-          <span className="text-[11px] font-bold text-[#777B70] uppercase tracking-wider block font-heading">
-            Remote MCP Endpoint URL
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold text-[#777B70] uppercase tracking-wider block font-heading">
+              Remote MCP Endpoint URL
+            </span>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
+              Zero-Redirect Verified
+            </span>
+          </div>
           <p className="text-xs text-[#777B70]">
-            Use this public URL when configuring Claude custom connectors or Claude Desktop.
+            Verified for Claude Web (claude.ai) and Claude Desktop. Both <code className="font-mono text-[#20211F]">/mcp</code> and <code className="font-mono text-[#20211F]">/mcp/</code> route directly without redirects.
           </p>
         </div>
 
@@ -275,7 +280,7 @@ export default function ConnectClaude() {
               </>
             ) : (
               <>
-                <Copy className="w-3.5 h-3.5 text-[#D9D1C2]" />
+                <Copy className="w-3.5 h-3.5" />
                 <span>Copy URL</span>
               </>
             )}
@@ -567,13 +572,61 @@ export default function ConnectClaude() {
                 <div className="w-8 h-8 rounded-full bg-[#252722] text-white font-bold text-xs flex items-center justify-center shrink-0">
                   2
                 </div>
-                <div className="space-y-2 flex-1">
-                  <h3 className="font-heading font-bold text-sm text-[#20211F]">
-                    Choose your Claude Client
-                  </h3>
-                  <p className="text-xs text-[#777B70]">
-                    You can connect via <strong>Claude Desktop</strong> or via a <strong>Claude Custom Connector</strong>.
-                  </p>
+                <div className="space-y-4 flex-1">
+                  <div>
+                    <h3 className="font-heading font-bold text-sm text-[#20211F]">
+                      Option A: Connect via Claude Web (claude.ai) Custom Connector
+                    </h3>
+                    <p className="text-xs text-[#777B70]">
+                      Add MerchantPilot directly in your Claude Web settings:
+                    </p>
+                  </div>
+
+                  <div className="bg-[#FAF9F6] border border-[#E5E2DB] rounded-xl p-4 space-y-3 text-xs">
+                    <div className="space-y-1">
+                      <span className="font-semibold text-[#20211F]">1. Navigation:</span>
+                      <p className="text-[#777B70]">In claude.ai, click your Profile Icon → <strong>Settings</strong> → <strong>Connectors</strong> → <strong>Add Custom Connector</strong>.</p>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <span className="font-semibold text-[#20211F]">2. Server Name & URL:</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#777B70] w-20">Name:</span>
+                        <code className="bg-white px-2 py-1 rounded border border-[#E5E2DB] font-mono text-[#20211F]">MerchantPilot AI</code>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#777B70] w-20">Server URL:</span>
+                        <code className="bg-white px-2 py-1 rounded border border-[#E5E2DB] font-mono text-[#20211F] select-all flex-1">
+                          {publicEndpoint}
+                        </code>
+                        <button
+                          onClick={() => copyToClipboard(publicEndpoint, 'claude_web_url')}
+                          className="px-2.5 py-1 rounded bg-[#252722] text-white text-[11px] font-semibold cursor-pointer shrink-0"
+                        >
+                          {copiedKey === 'claude_web_url' ? 'Copied' : 'Copy'}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <span className="font-semibold text-[#20211F]">3. Authentication Header:</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#777B70] w-20">Header:</span>
+                        <code className="bg-white px-2 py-1 rounded border border-[#E5E2DB] font-mono text-[#20211F]">Authorization</code>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[#777B70] w-20">Value:</span>
+                        <code className="bg-white px-2 py-1 rounded border border-[#E5E2DB] font-mono text-[#20211F] flex-1">
+                          Bearer &lt;your_mcp_token_here&gt;
+                        </code>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-[#E5E2DB] text-[11px] text-[#777B70]">
+                      <strong>Direct Token URL:</strong> If your client prefers direct URL authentication, you can also paste: <br />
+                      <code className="font-mono text-[#20211F] select-all">{publicEndpoint}?token=&lt;your_token&gt;</code>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -584,7 +637,7 @@ export default function ConnectClaude() {
                 </div>
                 <div className="space-y-3 flex-1">
                   <h3 className="font-heading font-bold text-sm text-[#20211F]">
-                    Claude Desktop Configuration (<code className="font-mono text-xs">claude_desktop_config.json</code>)
+                    Option B: Claude Desktop Configuration (<code className="font-mono text-xs">claude_desktop_config.json</code>)
                   </h3>
                   <p className="text-xs text-[#777B70]">
                     Open your Claude Desktop configuration file and add the MerchantPilot remote MCP server:

@@ -67,6 +67,16 @@ def run_browser_verification():
         page.screenshot(path=ss_activity, full_page=True)
         print("Saved:", ss_activity)
 
+        # Switch to Claude Setup Guide Tab
+        print("6. Switching to Claude Setup Guide Tab...")
+        page.click("button:has-text('Claude Setup Guide')")
+        time.sleep(1)
+        page.evaluate("window.scrollTo(0, 0)")
+        time.sleep(1)
+        ss_setup = os.path.join(OUTPUT_DIR, "production_connect_claude_setup.png")
+        page.screenshot(path=ss_setup, full_page=True)
+        print("Saved:", ss_setup)
+
         browser.close()
         print("Browser inspection completed successfully!")
 

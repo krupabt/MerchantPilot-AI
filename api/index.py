@@ -18,8 +18,6 @@ class VercelPathMiddleware(BaseHTTPMiddleware):
         current_path = request.scope.get("path", "")
         if matched_path and current_path in ("/api/index.py", "/api/index", "/index.py", "/api"):
             clean_path = matched_path.split("?")[0]
-            if clean_path == "/mcp":
-                clean_path = "/mcp/"
             request.scope["path"] = clean_path
         response = await call_next(request)
         return response
