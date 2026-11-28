@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Request, Response
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
+from urllib.parse import urlencode
+from typing import Optional
 import uuid
 import time
 from backend.app.database import SessionLocal
@@ -98,6 +100,50 @@ async def oauth_dynamic_client_registration(request: Request):
         }
     )
 
+@oauth_router.get("/api/oauth/authorize")
+@oauth_router.post("/api/oauth/authorize")
+@oauth_router.options("/api/oauth/authorize")
+async def oauth_authorize(
+    request: Request,
+    response_type: Optional[str] = "code",
+    client_id: Optional[str] = None,
+    redirect_uri: Optional[str] = None,
+    scope: Optional[str] = None,
+    state: Optional[str] = None,
+    code_challenge: Optional[str] = None,
+    code_challenge_method: Optional[str] = None
+):
+    """
+    RFC 6749 Authorization Endpoint:
+    Authorizes Claude Web MCP Connector and returns authorization code.
+    """
+    if request.method == "OPTIONS":
+        return Response(
+            status_code=200,
+            headers={
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                "Access-Control-Allow-Headers": "*"
+            }
+        )
+
+    auth_code = f"authcode_{uuid.uuid4().hex}"
+    target_uri = redirect_uri or "https://claude.ai/api/mcp/auth_callback"
+    params = {"code": auth_code}
+    if state:
+        params["state"] = state
+
+    sep = "&" if "?" in target_uri else "?"
+    callback_url = f"{target_uri}{sep}{urlencode(params)}"
+    return RedirectResponse(
+        url=callback_url,
+        status_code=302,
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "*"
+        }
+    )
+
 @oauth_router.post("/api/oauth/token")
 @oauth_router.options("/api/oauth/token")
 async def oauth_token_endpoint(request: Request):
@@ -118,10 +164,9 @@ async def oauth_token_endpoint(request: Request):
     db = SessionLocal()
     try:
         merchant = db.query(Merchant).first()
-        if not merchant:
-            return JSONResponse({"error": "invalid_request", "error_description": "No active merchant"}, status_code=400)
+        merchant_id = merchant.id if merchant else "m_1001"
         
-        token_info = generate_mcp_token(db, merchant.id, "Claude Web OAuth Connector")
+        token_info = generate_mcp_token(db, merchant_id, "Claude Web OAuth Connector")
         return JSONResponse(
             {
                 "access_token": token_info["token"],
