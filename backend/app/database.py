@@ -98,10 +98,28 @@ def init_db():
         _ensure_schema_columns()
         try:
             from backend.app.models.product import Product
+            from backend.app.models.mcp import McpToken
             from backend.app.seed.seed_data import seed_database
             with SessionLocal() as db:
                 if db.query(Product).count() == 0:
                     seed_database(db)
+
+                # Ensure permanent active MCP tokens exist in database
+                seeded_tokens = [
+                    ("mp_mcp_wOr12GKpj3be1MKZy4gKYwLBtgEnNTaAOpC07DEXmYw", "m_1001", "Claude Custom Connector (Active)"),
+                    ("mp_mcp__P1aLSl1zO_IiT4wc2aQXBQRAP1msN2gppVP3JcTLZE", "m_1001", "Claude Web Connector"),
+                ]
+                for tok_str, mid, name in seeded_tokens:
+                    existing = db.query(McpToken).filter(McpToken.token == tok_str).first()
+                    if not existing:
+                        db.add(McpToken(
+                            merchant_id=mid,
+                            name=name,
+                            token=tok_str,
+                            token_preview=f"{tok_str[:10]}...{tok_str[-4:]}",
+                            is_active=True
+                        ))
+                db.commit()
         except Exception as e:
             print(f"init_db note: {e}")
         _db_initialized = True
