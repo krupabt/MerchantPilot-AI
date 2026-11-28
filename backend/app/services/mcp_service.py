@@ -239,7 +239,6 @@ def log_mcp_activity(
 
 def get_mcp_activities(db: Session, merchant_id: str, limit: int = 50) -> List[Dict[str, Any]]:
     """Retrieve recent MCP activity logs for a merchant."""
-    return get_mcp_activity_logs(db, merchant_id, limit)
     logs = db.query(McpActivity).filter(
         McpActivity.merchant_id == merchant_id
     ).order_by(McpActivity.created_at.desc()).limit(limit).all()
@@ -255,3 +254,6 @@ def get_mcp_activities(db: Session, merchant_id: str, limit: int = 50) -> List[D
         }
         for l in logs
     ]
+
+# Alias for compatibility
+get_mcp_activity_logs = get_mcp_activities

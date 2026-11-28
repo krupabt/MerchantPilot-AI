@@ -163,7 +163,11 @@ async def oauth_token_endpoint(request: Request):
     # Issue an active merchant MCP token
     db = SessionLocal()
     try:
-        merchant = db.query(Merchant).first()
+        merchant = db.query(Merchant).filter(
+            (Merchant.id == "m_1001") | (Merchant.email == "merchant@merchantpilot.ai") | (Merchant.is_demo == True)
+        ).first()
+        if not merchant:
+            merchant = db.query(Merchant).first()
         merchant_id = merchant.id if merchant else "m_1001"
         
         token_info = generate_mcp_token(db, merchant_id, "Claude Web OAuth Connector")
