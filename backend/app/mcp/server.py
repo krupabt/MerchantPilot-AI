@@ -22,6 +22,36 @@ from backend.app.services.revenue_service import RevenueService
 current_mcp_merchant: ContextVar[Optional[Dict[str, Any]]] = ContextVar("current_mcp_merchant", default=None)
 
 import time
+import asyncio
+
+_mcp_init_lock = asyncio.Lock()
+
+async def _ensure_session_manager_running():
+    """
+    Ensure MCP session manager taskgroup is active even in serverless environments
+    where the hosting platform (e.g. Vercel) does not invoke the ASGI lifespan context.
+    """
+    if hasattr(mcp, "session_manager") and getattr(mcp.session_manager, "_task_group", None) is not None:
+        return
+    async with _mcp_init_lock:
+        if hasattr(mcp, "session_manager") and getattr(mcp.session_manager, "_task_group", None) is not None:
+            return
+        if hasattr(mcp.session_manager, "_has_started"):
+            mcp.session_manager._has_started = False
+
+        async def _bg_runner():
+            try:
+                async with mcp.session_manager.run():
+                    while True:
+                        await asyncio.sleep(3600)
+            except Exception as e:
+                print(f"MCP session manager runner notice: {e}")
+
+        asyncio.create_task(_bg_runner())
+        for _ in range(200):
+            if getattr(mcp.session_manager, "_task_group", None) is not None:
+                break
+            await asyncio.sleep(0.005)
 
 # Initialize official FastMCP server with Streamable HTTP transport and pure JSON responses
 mcp = FastMCP(
@@ -960,7 +990,8 @@ class McpAuthMiddleware:
                 message["headers"] = resp_headers
             await send(message)
 
-        # 8. Bind authenticated merchant context for this request lifecycle
+        # 8. Ensure taskgroup is running for serverless and bind authenticated merchant context
+        await _ensure_session_manager_running()
         token_ctx = current_mcp_merchant.set(merchant_info)
         try:
             await self.app(scope, receive, cors_send)
