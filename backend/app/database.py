@@ -119,6 +119,27 @@ def init_db():
                             token_preview=f"{tok_str[:10]}...{tok_str[-4:]}",
                             is_active=True
                         ))
+
+                # Ensure Gaming Nothing Earbuds exists for m_1001 with custom image
+                earbuds = db.query(Product).filter(Product.name == "Gaming Nothing Earbuds").first()
+                if not earbuds:
+                    db.add(Product(
+                        id="prod_bea11385c9",
+                        merchant_id="m_1001",
+                        name="Gaming Nothing Earbuds",
+                        sku="GAMING-3F2C",
+                        category="Gaming Earbuds",
+                        description="Best gaming earbuds in this era",
+                        price=25000.0,
+                        cost_price=0.0,
+                        stock=23,
+                        is_published=True,
+                        is_active=True,
+                        is_archived=False,
+                        image_url="/images/products/gaming_nothing_earbuds.jpg"
+                    ))
+                else:
+                    earbuds.image_url = "/images/products/gaming_nothing_earbuds.jpg"
                 db.commit()
         except Exception as e:
             print(f"init_db note: {e}")
