@@ -201,10 +201,11 @@ def add_product(
     category: str = "General Retail",
     description: str = "",
     sku: Optional[str] = None,
-    low_stock_threshold: int = 5
+    low_stock_threshold: int = 5,
+    image_url: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Add a new product to the merchant's store catalog.
+    Add a new product to the merchant's store catalog. Optionally supply an image_url (https://... or /images/...).
     """
     merchant_info = _get_active_merchant()
     merchant_id = merchant_info["merchant_id"]
@@ -247,6 +248,7 @@ def add_product(
             price=float(price),
             stock=int(stock),
             low_stock_threshold=int(low_stock_threshold),
+            image_url=image_url.strip() if image_url else None,
             is_active=True,
             is_published=True,
             is_archived=False,
@@ -292,10 +294,11 @@ def update_product(
     cost_price: Optional[float] = None,
     description: Optional[str] = None,
     category: Optional[str] = None,
+    image_url: Optional[str] = None,
     is_published: Optional[bool] = None
 ) -> Dict[str, Any]:
     """
-    Update details, pricing, or publishing status of an existing product owned by the merchant.
+    Update details, pricing, cost price, image URL, or publishing status of an existing product owned by the merchant.
     """
     merchant_info = _get_active_merchant()
     merchant_id = merchant_info["merchant_id"]
@@ -322,6 +325,8 @@ def update_product(
             p.description = description.strip()
         if category is not None and category.strip():
             p.category = category.strip()
+        if image_url is not None:
+            p.image_url = image_url.strip()
         if is_published is not None:
             p.is_published = bool(is_published)
 
@@ -341,6 +346,7 @@ def update_product(
             "cost_price": p.cost_price,
             "gross_margin_percent": margin_pct,
             "stock": p.stock,
+            "image_url": p.image_url,
             "is_published": p.is_published
         }
 
@@ -349,6 +355,48 @@ def update_product(
     except Exception as e:
         db.rollback()
         log_mcp_activity(merchant_id, "update_product", {"product_id": product_id}, "ERROR", str(e))
+        raise
+    finally:
+        db.close()
+
+
+# ---------------------------------------------------------------------------
+# Tool 4b: set_product_image
+# ---------------------------------------------------------------------------
+@mcp.tool()
+def set_product_image(product_id: str, image_url: str) -> Dict[str, Any]:
+    """
+    Set or update the photo image URL of an existing product in the merchant's store.
+    Accepts web URLs (https://...) or relative paths (/images/...).
+    """
+    merchant_info = _get_active_merchant()
+    merchant_id = merchant_info["merchant_id"]
+
+    db = SessionLocal()
+    try:
+        p = db.query(Product).filter(
+            (Product.id == product_id) | (Product.name.ilike(f"%{product_id}%")),
+            Product.merchant_id == merchant_id
+        ).first()
+
+        if not p:
+            raise ValueError(f"Product '{product_id}' not found.")
+
+        p.image_url = image_url.strip()
+        p.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(p)
+
+        log_mcp_activity(merchant_id, "set_product_image", {"product_id": p.id, "image_url": image_url}, "SUCCESS", f"Updated photo for {p.name}")
+        return {
+            "success": True,
+            "product_id": p.id,
+            "name": p.name,
+            "image_url": p.image_url
+        }
+    except Exception as e:
+        db.rollback()
+        log_mcp_activity(merchant_id, "set_product_image", {"product_id": product_id, "image_url": image_url}, "ERROR", str(e))
         raise
     finally:
         db.close()
